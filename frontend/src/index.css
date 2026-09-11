@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+  body { @apply bg-cream text-navy font-body; }
+  h1, h2, h3, h4 { @apply font-display font-semibold text-navy; }
+}
+
+@layer components {
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-slate-300 rounded-full; }
+  .section-tag {
+    @apply inline-block text-sm font-extrabold text-pink-deep bg-pink-pale px-4 py-1.5 rounded-full mb-3;
+  }
+}

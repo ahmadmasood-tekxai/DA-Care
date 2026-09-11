@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.db
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# Uploaded files (keep folder structure only)
+backend/uploads/products/*
+!backend/uploads/products/.gitkeep
+
+# Env files
+.env
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# OS
+.DS_Store

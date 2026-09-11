@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: dababycare_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dababycare_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - dababycare_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d dababycare_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: dababycare_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/dababycare_db
+      SECRET_KEY: ${SECRET_KEY:-change-this-in-production-please}
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000,http://localhost
+      DEBUG: "false"
+      STORE_WHATSAPP_NUMBER_1: ${STORE_WHATSAPP_NUMBER_1:-923194392573}
+      STORE_WHATSAPP_NUMBER_2: ${STORE_WHATSAPP_NUMBER_2:-923021735137}
+    volumes:
+      - dababycare_uploads:/app/uploads
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:8000/api/v1
+        VITE_UPLOADS_BASE_URL: http://localhost:8000
+        VITE_WHATSAPP_NUMBER_1: ${STORE_WHATSAPP_NUMBER_1:-923194392573}
+        VITE_WHATSAPP_NUMBER_2: ${STORE_WHATSAPP_NUMBER_2:-923021735137}
+    container_name: dababycare_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  dababycare_pgdata:
+  dababycare_uploads:
