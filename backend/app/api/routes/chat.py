@@ -1,5 +1,5 @@
 """
-Chat route — rule-based assistant for OKIRA store.
+Chat route — rule-based assistant for OQIRA store.
 
 The previous OpenAI implementation used an expired API key and was causing
 500 errors. This replaces it with a fast, zero-cost rule-based chatbot that
@@ -42,7 +42,7 @@ _RULES: list[tuple[list[str], str]] = [
 
     # Products / categories
     (["product", "sell", "what", "category", "jewellery", "jewelry", "skin", "care", "suit", "baby", "apparel"],
-     "OKIRA offers a curated selection of:\n\n- 💎 **Premium Jewellery** — Elegant pieces for every occasion\n- 🌿 **Skin Care** — Nourishing premium formulations\n- 👔 **Luxury Apparel** — Tailored suits & premium wear\n- 🍼 **Baby Essentials** — Soft, comfortable, beautifully crafted items"),
+     "OQIRA offers a curated selection of:\n\n- 💎 **Premium Jewellery** — Elegant pieces for every occasion\n- 🌿 **Skin Care** — Nourishing premium formulations\n- 👔 **Luxury Apparel** — Tailored suits & premium wear\n- 🍼 **Baby Essentials** — Soft, comfortable, beautifully crafted items"),
 
     # Order status / tracking
     (["order", "status", "track", "where", "my order"],
@@ -58,7 +58,7 @@ _RULES: list[tuple[list[str], str]] = [
 
     # Greeting
     (["hi", "hello", "hey", "salam", "assalam", "good morning", "good evening"],
-     "Hello! 👋 Welcome to **OKIRA**. How can I help you today? You can ask me about our products, delivery, payment methods, or returns."),
+     "Hello! 👋 Welcome to **OQIRA**. How can I help you today? You can ask me about our products, delivery, payment methods, or returns."),
 ]
 
 
@@ -68,7 +68,7 @@ def _get_reply(message: str) -> str:
         if any(kw in msg_lower for kw in keywords):
             return response
     return (
-        "Thank you for reaching out to OKIRA! 😊\n\n"
+        "Thank you for reaching out to OQIRA! 😊\n\n"
         "I can help you with information about our **products**, **delivery**, **payment methods**, and **returns**. "
         "Could you please rephrase your question? Or feel free to contact us at "
         "+923021735137 for direct assistance."

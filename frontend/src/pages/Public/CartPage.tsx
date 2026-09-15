@@ -20,8 +20,8 @@ export function CartPage() {
   useSEO({
     title: 'Your Shopping Cart',
     description:
-      'Review your OKIRA order, enter your details, and choose between Cash on Delivery or Bank Transfer. Nationwide delivery across Pakistan.',
-    keywords: 'OKIRA cart, checkout Pakistan, cash on delivery Pakistan',
+      'Review your OQIRA order, enter your details, and choose between Cash on Delivery or Bank Transfer. Nationwide delivery across Pakistan.',
+    keywords: 'OQIRA cart, checkout Pakistan, cash on delivery Pakistan',
   });
 
   const { items, subtotal, updateQuantity, removeItem, clearCart } = useCart();
@@ -31,7 +31,7 @@ export function CartPage() {
   const [customerAddress, setCustomerAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CASH_ON_DELIVERY);
   const [formError, setFormError] = useState('');
-  
+
   // Bank transfer flow state
   const [orderId, setOrderId] = useState<number | null>(null);
   const [showBankTransferDetails, setShowBankTransferDetails] = useState(false);
@@ -156,7 +156,7 @@ export function CartPage() {
 
             <div className="space-y-4">
               <h3 className="font-semibold">Confirm your transfer</h3>
-              
+
               <Input
                 label="Transaction Reference Number (Optional)"
                 placeholder="e.g. 1234567890"
@@ -166,7 +166,7 @@ export function CartPage() {
 
               <div>
                 <label className="mb-1.5 block text-sm font-bold text-navy">Payment Receipt (Optional)</label>
-                <div 
+                <div
                   className="flex cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-navy/20 bg-cream py-6 transition-colors hover:border-pink-deep"
                   onClick={() => fileInputRef.current?.click()}
                 >

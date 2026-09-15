@@ -29,11 +29,11 @@ export function ProductDetailPage() {
   });
 
   useSEO({
-    title: product ? `${product.name} — ${product.category?.name || 'OKIRA'}` : 'Product Detail',
+    title: product ? `${product.name} — ${product.category?.name || 'OQIRA'}` : 'Product Detail',
     description: product
-      ? `${product.name} by OKIRA — ${product.short_description || ''} Available for Rs. ${product.price}. Buy online in Pakistan with nationwide delivery.`
-      : 'Discover premium products at OKIRA. Nationwide delivery in Pakistan.',
-    keywords: product ? `${product.name}, OKIRA, ${product.category?.name || ''}, buy online Pakistan` : 'OKIRA',
+      ? `${product.name} by OQIRA — ${product.short_description || ''} Available for Rs. ${product.price}. Buy online in Pakistan with nationwide delivery.`
+      : 'Discover premium products at OQIRA. Nationwide delivery in Pakistan.',
+    keywords: product ? `${product.name}, OQIRA, ${product.category?.name || ''}, buy online Pakistan` : 'OQIRA',
   });
 
   function handleAddToCart() {

@@ -31,9 +31,9 @@ export function ProductsPage() {
   useSEO({
     title: activeCategoryName ? `${activeCategoryName} Collection` : 'Shop All Products',
     description: activeCategoryName
-      ? `Browse OKIRA's ${activeCategoryName} collection — premium quality products delivered nationwide across Pakistan.`
-      : 'Shop OKIRA\'s complete collection of premium skin care, fine jewellery, luxury apparel, and baby essentials. Nationwide delivery in Pakistan.',
-    keywords: `OKIRA, ${activeCategoryName || 'products'} Pakistan, buy online Pakistan`,
+      ? `Browse OQIRA's ${activeCategoryName} collection — premium quality products delivered nationwide across Pakistan.`
+      : 'Shop OQIRA\'s complete collection of premium skin care, fine jewellery, luxury apparel, and baby essentials. Nationwide delivery in Pakistan.',
+    keywords: `OQIRA, ${activeCategoryName || 'products'} Pakistan, buy online Pakistan`,
   });
 
   function selectCategory(slug: string) {
@@ -75,9 +75,8 @@ export function ProductsPage() {
               <SlidersHorizontal className="h-4 w-4 text-navy-soft" />
               <button
                 onClick={() => selectCategory('')}
-                className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
-                  !activeCategory ? 'bg-navy text-white' : 'bg-white text-navy-soft border border-navy/15 hover:bg-pink-pale'
-                }`}
+                className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${!activeCategory ? 'bg-navy text-white' : 'bg-white text-navy-soft border border-navy/15 hover:bg-pink-pale'
+                  }`}
               >
                 All
               </button>
@@ -88,9 +87,8 @@ export function ProductsPage() {
                   <button
                     key={cat.id}
                     onClick={() => selectCategory(cat.slug)}
-                    className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-colors ${
-                      isActive ? 'bg-navy text-white' : 'bg-white text-navy-soft border border-navy/15 hover:bg-pink-pale'
-                    }`}
+                    className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-colors ${isActive ? 'bg-navy text-white' : 'bg-white text-navy-soft border border-navy/15 hover:bg-pink-pale'
+                      }`}
                   >
                     <Icon className="h-3.5 w-3.5" /> {cat.name}
                   </button>

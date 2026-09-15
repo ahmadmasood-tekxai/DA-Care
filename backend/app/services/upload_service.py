@@ -1,5 +1,5 @@
 """
-File upload handling for OKIRA store.
+File upload handling for OQIRA store.
 
 Files are saved under `uploads/<subfolder>/` (served statically at
 `/uploads/<subfolder>/...` by FastAPI's StaticFiles). This is intentionally a

@@ -1,5 +1,5 @@
 """
-Email notification service for OKIRA store.
+Email notification service for OQIRA store.
 Uses aiosmtplib with Gmail SMTP (TLS on port 587).
 All templates are inline HTML — no external template files needed.
 """
@@ -13,7 +13,7 @@ import aiosmtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-logger = logging.getLogger("okira.email")
+logger = logging.getLogger("oqira.email")
 
 # ---------------------------------------------------------------------------
 # SMTP Configuration (from environment / .env)
@@ -23,7 +23,7 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "Ahmad")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "feda qvam kqed xkrc")
 FROM_EMAIL = os.getenv("FROM_EMAIL", "ahmadmasood171717@gmail.com")
-FROM_NAME = os.getenv("FROM_NAME", "OKIRA")
+FROM_NAME = os.getenv("FROM_NAME", "OQIRA")
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "ahmadmasood171717@gmail.com")
 
 
@@ -49,7 +49,7 @@ def _base_template(title: str, body_html: str) -> str:
               <div style="display:inline-block;background:rgba(209,208,208,0.15);border:1px solid rgba(209,208,208,0.3);border-radius:50px;padding:6px 20px;margin-bottom:20px;">
                 <span style="color:#D1D0D0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">Premium Store</span>
               </div>
-              <h1 style="margin:0;color:#ffffff;font-size:38px;font-weight:300;letter-spacing:4px;text-transform:uppercase;">OKIRA</h1>
+              <h1 style="margin:0;color:#ffffff;font-size:38px;font-weight:300;letter-spacing:4px;text-transform:uppercase;">OQIRA</h1>
               <p style="margin:8px 0 0;color:#988686;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Skin Care · Jewellery · Apparel</p>
               <div style="width:60px;height:2px;background:linear-gradient(90deg,transparent,#D1D0D0,transparent);margin:20px auto 0;"></div>
             </td>
@@ -66,7 +66,7 @@ def _base_template(title: str, body_html: str) -> str:
           <tr>
             <td style="background:#000000;padding:30px 40px;text-align:center;">
               <p style="margin:0;color:#988686;font-size:12px;letter-spacing:1px;">
-                © 2024 OKIRA · Premium Lifestyle Store
+                © 2024 OQIRA · Premium Lifestyle Store
               </p>
               <p style="margin:8px 0 0;color:#5C4E4E;font-size:11px;">
                 Questions? Email us at <a href="mailto:{ADMIN_EMAIL}" style="color:#D1D0D0;text-decoration:none;">{ADMIN_EMAIL}</a>
@@ -178,7 +178,7 @@ async def send_cod_order_email(
     </p>
     """
 
-    subject = f"🛍️ New COD Order #{order_id} — OKIRA"
+    subject = f"🛍️ New COD Order #{order_id} — OQIRA"
     await _send(ADMIN_EMAIL, subject, _base_template(subject, body))
 
 
@@ -236,7 +236,7 @@ async def send_bank_transfer_pending_email(
     </p>
     """
 
-    subject = f"🏦 Bank Transfer Pending Verification — Order #{order_id} — OKIRA"
+    subject = f"🏦 Bank Transfer Pending Verification — Order #{order_id} — OQIRA"
     await _send(ADMIN_EMAIL, subject, _base_template(subject, body))
 
 
@@ -264,7 +264,7 @@ async def send_payment_confirmed_email(
       <p style="margin:0;color:#666;font-size:13px;">Need help? Contact us at <a href="mailto:{ADMIN_EMAIL}" style="color:#5C4E4E;font-weight:600;">{ADMIN_EMAIL}</a></p>
     </div>
     """
-    subject = f"✅ Payment Confirmed — Order #{order_id} — OKIRA"
+    subject = f"✅ Payment Confirmed — Order #{order_id} — OQIRA"
     await _send(customer_email, subject, _base_template(subject, body))
 
 
@@ -288,7 +288,7 @@ async def send_low_stock_email(product_name: str, remaining_stock: int, product_
       Please log in to the admin panel to update your inventory before this item goes out of stock.
     </p>
     """
-    subject = f"⚠️ CRITICAL STOCK ALERT: {product_name} is running low! — OKIRA"
+    subject = f"⚠️ CRITICAL STOCK ALERT: {product_name} is running low! — OQIRA"
     await _send(ADMIN_EMAIL, subject, _base_template(subject, body))
 
 

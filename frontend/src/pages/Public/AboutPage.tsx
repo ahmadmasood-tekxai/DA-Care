@@ -15,11 +15,11 @@ const values = [
 
 export function AboutPage() {
   useSEO({
-    title: 'About OKIRA — Our Story & Values',
+    title: 'About OQIRA — Our Story & Values',
     description:
-      'Learn about OKIRA — Pakistan\'s premium lifestyle brand offering luxury skin care, fine jewellery, elegant apparel, and baby essentials with unmatched quality.',
+      'Learn about OQIRA — Pakistan\'s premium lifestyle brand offering luxury skin care, fine jewellery, elegant apparel, and baby essentials with unmatched quality.',
     keywords:
-      'About OKIRA, OKIRA brand story, premium store Pakistan, luxury lifestyle Pakistan',
+      'About OQIRA, OQIRA brand story, premium store Pakistan, luxury lifestyle Pakistan',
   });
 
   return (

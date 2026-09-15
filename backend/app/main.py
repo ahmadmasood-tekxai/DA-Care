@@ -13,7 +13,7 @@ from app.core.config import settings
 from app.core.database import Base, engine
 
 logging.basicConfig(level=logging.INFO if not settings.DEBUG else logging.DEBUG)
-logger = logging.getLogger("okira")
+logger = logging.getLogger("oqira")
 
 UPLOAD_ROOT = Path(__file__).resolve().parent.parent / "uploads"
 try:
@@ -35,7 +35,7 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(
     title=settings.APP_NAME,
-    description="Backend API for OKIRA — premium skin care, jewellery, apparel & baby essentials.",
+    description="Backend API for OQIRA — premium skin care, jewellery, apparel & baby essentials.",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",

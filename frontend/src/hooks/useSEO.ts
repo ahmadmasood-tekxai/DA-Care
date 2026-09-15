@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const BRAND = 'OKIRA';
+const BRAND = 'OQIRA';
 
 interface SEOOptions {
   title: string;

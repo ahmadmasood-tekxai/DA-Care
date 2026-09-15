@@ -99,9 +99,9 @@ export function HomePage() {
   useSEO({
     title: 'Premium Skin Care, Jewellery & Apparel in Pakistan',
     description:
-      'OKIRA — Pakistan\'s luxury destination for premium skin care, fine jewellery, elegant suits, and baby essentials. Shop online with secure payments and nationwide delivery.',
+      'OQIRA — Pakistan\'s luxury destination for premium skin care, fine jewellery, elegant suits, and baby essentials. Shop online with secure payments and nationwide delivery.',
     keywords:
-      'OKIRA, skin care Pakistan, jewellery Pakistan, luxury apparel, baby products, online shopping Pakistan',
+      'OQIRA, skin care Pakistan, jewellery Pakistan, luxury apparel, baby products, online shopping Pakistan',
   });
 
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -130,7 +130,7 @@ export function HomePage() {
         {/* Hero Content */}
         <div className="relative z-10 mx-auto max-w-4xl glass rounded-3xl p-10 sm:p-14 border-white/10 bg-navy/40 text-cream">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2 text-xs font-bold uppercase tracking-widest text-gold shadow-md backdrop-blur-md">
-            <Sparkles className="h-4 w-4" /> Welcome to OKIRA
+            <Sparkles className="h-4 w-4" /> Welcome to OQIRA
           </div>
           <h1 className="text-5xl leading-[1.1] tracking-tight sm:text-6xl lg:text-7xl font-display font-semibold text-white">
             Elevate your <br />
@@ -183,7 +183,7 @@ export function HomePage() {
       {/* WHY US */}
       <section className="bg-navy px-6 py-24 text-cream">
         <div className="mx-auto mb-16 max-w-2xl text-center">
-          <span className="inline-block text-xs font-bold tracking-widest uppercase text-navy bg-gold px-4 py-1.5 rounded-full mb-4">The OKIRA Standard</span>
+          <span className="inline-block text-xs font-bold tracking-widest uppercase text-navy bg-gold px-4 py-1.5 rounded-full mb-4">The OQIRA Standard</span>
           <h2 className="text-4xl sm:text-5xl text-white">Why choose us</h2>
         </div>
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -306,7 +306,7 @@ export function HomePage() {
       {/* CTA */}
       <section className="bg-navy px-6 py-32 text-center text-white border-t-8 border-gold">
         <h2 className="mx-auto max-w-2xl text-4xl font-display text-white sm:text-5xl lg:text-6xl mb-6">
-          Experience the OKIRA difference today
+          Experience the OQIRA difference today
         </h2>
         <p className="mx-auto max-w-xl text-lg text-cream/70 mb-10 font-light">
           Shop our exclusive collections and enjoy premium quality, secure payments, and nationwide delivery.

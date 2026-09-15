@@ -114,5 +114,5 @@ export const ROUTES = {
 
 export const CURRENCY_SYMBOL = 'Rs.';
 
-export const STORE_NAME = 'OKIRA';
+export const STORE_NAME = 'OQIRA';
 export const STORE_TAGLINE = 'Skin Care · Jewellery · Apparel';
