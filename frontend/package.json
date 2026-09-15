@@ -20,8 +20,6 @@
     "lucide-react": "^0.446.0",
     "three": "^0.160.0",
     "@react-three/fiber": "^8.15.12",
-    "@react-three/drei": "^9.96.1",
-    "@react-three/fiber": "^8.15.12",
     "@react-three/drei": "^9.96.1"
   },
   "devDependencies": {
