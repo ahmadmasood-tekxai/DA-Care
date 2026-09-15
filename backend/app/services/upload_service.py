@@ -6,15 +6,29 @@ Files are saved under `uploads/<subfolder>/` (served statically at
 local-disk folder for development/small deployments — for production at scale,
 swap for an S3/cloud-storage backed implementation without touching route code.
 
-On serverless environments (e.g. Vercel), file writes will fail gracefully
-since the filesystem is read-only. In that case, upload via a cloud provider.
+On serverless environments (e.g. Vercel), the project's own filesystem is
+read-only, but `/tmp` is writable. We detect this and redirect uploads there
+so the app doesn't crash or 503 on every upload — but note this storage is
+EPHEMERAL on serverless: files written to /tmp can disappear between
+invocations/cold starts. For real production use on Vercel, replace this
+module's disk-write calls with a cloud storage provider (S3, Cloudinary,
+Supabase Storage, etc.) without touching any route code.
 """
+import os
 import uuid
 from pathlib import Path
 
 from fastapi import HTTPException, UploadFile, status
 
-UPLOAD_ROOT = Path(__file__).resolve().parents[2] / "uploads"
+# Vercel sets this env var automatically at runtime — no manual config needed.
+IS_SERVERLESS = bool(os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"))
+
+if IS_SERVERLESS:
+    # Only /tmp is writable in Vercel/Lambda-style serverless functions.
+    UPLOAD_ROOT = Path("/tmp/uploads")
+else:
+    UPLOAD_ROOT = Path(__file__).resolve().parents[2] / "uploads"
+
 PRODUCT_UPLOAD_DIR = UPLOAD_ROOT / "products"
 RECEIPT_UPLOAD_DIR = UPLOAD_ROOT / "receipts"
 
