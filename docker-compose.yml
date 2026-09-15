@@ -42,8 +42,8 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_BASE_URL: http://localhost:8000/api/v1
-        VITE_UPLOADS_BASE_URL: http://localhost:8000
+        VITE_API_BASE_URL: https://okira-backend.vercel.app/api/v1
+        VITE_UPLOADS_BASE_URL: https://okira-backend.vercel.app
         VITE_WHATSAPP_NUMBER_1: ${STORE_WHATSAPP_NUMBER_1:-923194392573}
         VITE_WHATSAPP_NUMBER_2: ${STORE_WHATSAPP_NUMBER_2:-923021735137}
     container_name: dababycare_frontend

@@ -17,10 +17,10 @@ import {
 import { OrderStatus, PaymentStatus, PaymentMethod, ProductBadge, UserRole } from '@/types';
 
 export const API_BASE_URL: string =
-  (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:8000/api/v1';
+  (import.meta.env.VITE_API_BASE_URL as string) || 'https://okira-backend.vercel.app/api/v1';
 
 export const UPLOADS_BASE_URL: string =
-  (import.meta.env.VITE_UPLOADS_BASE_URL as string) || 'http://localhost:8000';
+  (import.meta.env.VITE_UPLOADS_BASE_URL as string) || 'https://okira-backend.vercel.app';
 
 export const WHATSAPP_NUMBER_1: string = (import.meta.env.VITE_WHATSAPP_NUMBER_1 as string) || '923194392573';
 export const WHATSAPP_NUMBER_2: string = (import.meta.env.VITE_WHATSAPP_NUMBER_2 as string) || '923021735137';
