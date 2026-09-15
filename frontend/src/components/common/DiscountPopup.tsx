@@ -10,13 +10,13 @@ export function DiscountPopup() {
   useEffect(() => {
     // Check if the user has already seen the popup
     const hasSeenPopup = localStorage.getItem('hasSeenDiscountPopup');
-    
+
     if (!hasSeenPopup) {
       // Small delay to make it feel more natural
       const timer = setTimeout(() => {
         setIsOpen(true);
       }, 1500);
-      
+
       return () => clearTimeout(timer);
     }
   }, []);
@@ -31,10 +31,10 @@ export function DiscountPopup() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/60 backdrop-blur-sm p-4">
       <div className="relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl animate-in fade-in zoom-in duration-300">
-        
+
         {/* Decorative Header */}
         <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-pink-pale to-cream-2 rounded-t-3xl" />
-        
+
         <button
           onClick={handleClose}
           className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/50 text-navy hover:bg-white transition-colors"
@@ -46,16 +46,12 @@ export function DiscountPopup() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-pink-deep text-white shadow-lg shadow-pink-deep/30 transform rotate-12">
             <Sparkles className="h-8 w-8" />
           </div>
-          
+
           <h2 className="font-display text-3xl font-bold text-navy mb-2">Wait, little one!</h2>
           <p className="text-navy-soft mb-6">
-            Get <span className="font-bold text-pink-deep">20% OFF</span> your first order of premium waistcoat sets. Dress him up in style!
+            Get <span className="font-bold text-pink-deep">20% OFF</span> your first order of premium sets. Dress him up in style!
           </p>
-          
-          <div className="border border-dashed border-pink-deep/40 bg-pink-pale/50 rounded-xl py-3 px-4 mb-6 inline-block">
-            <p className="text-xs text-navy-soft uppercase tracking-wider mb-1">Use Code</p>
-            <p className="font-bold text-xl text-pink-deep tracking-widest">BABY20</p>
-          </div>
+
 
           <div className="flex flex-col gap-3">
             <Link to={ROUTES.PRODUCTS} onClick={handleClose}>
@@ -63,7 +59,7 @@ export function DiscountPopup() {
                 Shop Now & Save 20%
               </Button>
             </Link>
-            <button 
+            <button
               onClick={handleClose}
               className="text-sm font-medium text-navy-soft hover:text-navy underline-offset-4 hover:underline"
             >
