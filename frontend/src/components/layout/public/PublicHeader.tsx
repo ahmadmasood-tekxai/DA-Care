@@ -21,7 +21,7 @@ export function PublicHeader() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
         <Link to={ROUTES.HOME} className="flex items-center gap-2.5">
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-pink-deep to-navy text-white">
-            <span className="font-display text-sm font-bold">OK</span>
+            <span className="font-display text-sm font-bold">OQ</span>
           </div>
           <div className="leading-tight">
             <p className="font-display text-lg font-bold text-navy">{STORE_NAME}</p>

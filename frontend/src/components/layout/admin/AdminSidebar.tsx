@@ -22,7 +22,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       <div className="flex items-center justify-between border-b border-navy/10 px-5 py-5">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-pink-deep to-navy text-white">
-            <span className="font-display text-xs font-bold">OK</span>
+            <span className="font-display text-xs font-bold">OQ</span>
           </div>
           <div>
             <p className="font-display text-sm font-bold leading-none text-navy">{STORE_NAME}</p>
