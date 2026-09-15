@@ -100,7 +100,8 @@ python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\act
 pip install -r requirements.txt
 cp .env.example .env                                  # edit DATABASE_URL & SECRET_KEY
 alembic upgrade head                                    # create tables via migration
-uvicorn app.main:app --reload
+
+
 ```
 
 API at `http://localhost:8000`, docs at `/docs`. Uploaded product images are served from `/uploads/products/...`.

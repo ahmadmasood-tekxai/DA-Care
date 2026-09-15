@@ -4,6 +4,7 @@ import { Award, Heart, MessageCircle, Recycle, Ruler, Sparkles } from 'lucide-re
 import { Button } from '@/components/common/Button';
 import { PublicLayout } from '@/components/layout/public/PublicLayout';
 import { ROUTES, STORE_NAME, WHATSAPP_NUMBER_1 } from '@/constants';
+import { useSEO } from '@/hooks/useSEO';
 
 const values = [
   { icon: Sparkles, title: 'Premium Fabric', desc: 'Every set is cut from a soft, breathable blend chosen for comfort, not just looks.' },
@@ -13,6 +14,14 @@ const values = [
 ];
 
 export function AboutPage() {
+  useSEO({
+    title: 'About OKIRA — Our Story & Values',
+    description:
+      'Learn about OKIRA — Pakistan\'s premium lifestyle brand offering luxury skin care, fine jewellery, elegant apparel, and baby essentials with unmatched quality.',
+    keywords:
+      'About OKIRA, OKIRA brand story, premium store Pakistan, luxury lifestyle Pakistan',
+  });
+
   return (
     <PublicLayout>
       <section className="bg-gradient-to-b from-cream-2 to-cream px-6 pb-20 pt-24 text-center">

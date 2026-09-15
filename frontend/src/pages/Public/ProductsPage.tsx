@@ -10,6 +10,7 @@ import { Loader } from '@/components/common/Loader';
 import { ProductCard } from '@/components/common/ProductCard';
 import { PublicLayout } from '@/components/layout/public/PublicLayout';
 import { resolveIcon } from '@/constants';
+import { useSEO } from '@/hooks/useSEO';
 
 export function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,6 +28,14 @@ export function ProductsPage() {
     [categories, activeCategory]
   );
 
+  useSEO({
+    title: activeCategoryName ? `${activeCategoryName} Collection` : 'Shop All Products',
+    description: activeCategoryName
+      ? `Browse OKIRA's ${activeCategoryName} collection — premium quality products delivered nationwide across Pakistan.`
+      : 'Shop OKIRA\'s complete collection of premium skin care, fine jewellery, luxury apparel, and baby essentials. Nationwide delivery in Pakistan.',
+    keywords: `OKIRA, ${activeCategoryName || 'products'} Pakistan, buy online Pakistan`,
+  });
+
   function selectCategory(slug: string) {
     if (slug === activeCategory) {
       searchParams.delete('category');
@@ -42,7 +51,9 @@ export function ProductsPage() {
         <span className="section-tag">The Collection</span>
         <h1 className="text-4xl sm:text-5xl">{activeCategoryName || 'All Products'}</h1>
         <p className="mx-auto mt-3 max-w-md text-navy-soft">
-          Waistcoat sets for every little gentleman, every occasion.
+          {activeCategoryName
+            ? `Browse our full range of ${activeCategoryName} — premium quality for every occasion.`
+            : 'Discover our premium skin care, jewellery, luxury apparel, and baby essentials.'}
         </p>
       </section>
 

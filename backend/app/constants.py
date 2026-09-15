@@ -18,6 +18,17 @@ class OrderStatus(str, enum.Enum):
     CANCELLED = "CANCELLED"
 
 
+class PaymentMethod(str, enum.Enum):
+    CASH_ON_DELIVERY = "CASH_ON_DELIVERY"
+    BANK_TRANSFER = "BANK_TRANSFER"
+
+
+class PaymentStatus(str, enum.Enum):
+    UNPAID = "UNPAID"
+    PENDING_VERIFICATION = "PENDING_VERIFICATION"
+    PAID = "PAID"
+
+
 class ProductBadge(str, enum.Enum):
     NONE = "NONE"
     BESTSELLER = "BESTSELLER"
@@ -30,3 +41,11 @@ DEFAULT_PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
 
 LOW_STOCK_THRESHOLD_DEFAULT = 5
+
+# ---------------------------------------------------------------------------
+# Bank Details — Single source of truth. Change here to update everywhere.
+# ---------------------------------------------------------------------------
+BANK_ACCOUNT_TITLE = "Muhammad Ahmad"
+BANK_NAME = "Mashriq Bank"
+BANK_ACCOUNT_NUMBER = "089010046367"
+BANK_IBAN = "PK45MSHQ0000089010046367"

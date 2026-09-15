@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-from app.constants import OrderStatus
+from app.constants import OrderStatus, PaymentMethod, PaymentStatus
 from app.schemas.common import ORMBase
 
 
@@ -19,10 +19,22 @@ class OrderCreate(BaseModel):
     customer_address: Optional[str] = Field(default="", max_length=255)
     note: Optional[str] = Field(default="", max_length=255)
     items: List[OrderItemCreate] = Field(min_length=1)
+    payment_method: PaymentMethod = PaymentMethod.CASH_ON_DELIVERY
 
 
 class OrderStatusUpdate(BaseModel):
     status: OrderStatus
+
+
+class BankTransferConfirm(BaseModel):
+    """Payload sent when the customer clicks 'I've Made the Transfer'."""
+    transaction_ref: Optional[str] = Field(default=None, max_length=255)
+
+
+class PaymentVerificationAction(BaseModel):
+    """Admin action: confirm or reject a pending bank transfer."""
+    action: str = Field(..., pattern="^(confirm|reject)$")
+    rejection_reason: Optional[str] = Field(default=None, max_length=500)
 
 
 class OrderItemOut(ORMBase):
@@ -44,7 +56,22 @@ class OrderOut(ORMBase):
     customer_address: Optional[str]
     status: OrderStatus
     note: Optional[str]
+    payment_method: PaymentMethod
+    payment_status: PaymentStatus
+    transaction_ref: Optional[str]
+    receipt_image_url: Optional[str]
+    rejection_reason: Optional[str]
+    transferred_at: Optional[datetime]
+    confirmed_at: Optional[datetime]
     created_at: datetime
     updated_at: datetime
     items: List[OrderItemOut] = []
     total_amount: Decimal
+
+
+class BankDetailsOut(BaseModel):
+    """Public bank details returned to the storefront at checkout."""
+    account_title: str
+    bank_name: str
+    account_number: str
+    iban: str

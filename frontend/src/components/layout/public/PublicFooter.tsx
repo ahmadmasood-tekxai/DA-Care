@@ -10,7 +10,7 @@ export function PublicFooter() {
         <div>
           <div className="mb-3 flex items-center gap-2.5">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-pink-deep to-navy-soft text-white">
-              <span className="font-display text-sm font-bold">DB</span>
+              <span className="font-display text-sm font-bold">OQ</span>
             </div>
             <div>
               <p className="font-display text-lg font-bold text-white leading-none">{STORE_NAME}</p>
@@ -50,8 +50,8 @@ export function PublicFooter() {
             <a href={`https://wa.me/${WHATSAPP_NUMBER_2}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-pink">
               <Phone className="h-3.5 w-3.5 shrink-0" /> +{WHATSAPP_NUMBER_2}
             </a>
-            <a href="mailto:realdababycare@gmail.com" className="flex items-center gap-2 hover:text-pink">
-              <Mail className="h-3.5 w-3.5 shrink-0" /> realdababycare@gmail.com
+            <a href="mailto:contact@oqira.com" className="flex items-center gap-2 hover:text-pink">
+              <Mail className="h-3.5 w-3.5 shrink-0" /> contact@oqira.com
             </a>
             <span className="flex items-center gap-2">
               <MapPin className="h-3.5 w-3.5 shrink-0" /> Lahore Pakistan

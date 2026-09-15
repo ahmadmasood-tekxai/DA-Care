@@ -11,13 +11,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    APP_NAME: str = "Da Baby Care API"
+    APP_NAME: str = "OQIRA API"
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
     API_V1_PREFIX: str = "/api/v1"
 
-    DATABASE_URL: str = "postgresql+psycopg2://postgres:postgres@localhost:5432/dababycare_db"
-    TEST_DATABASE_URL: str = "sqlite:///./test_dababycare.db"
+    DATABASE_URL: str = "postgresql+psycopg2://postgres:postgres@localhost:5432/oqira_db"
+    TEST_DATABASE_URL: str = "sqlite:///./test_oqira.db"
 
     SECRET_KEY: str = "insecure-dev-secret-change-me"
     ALGORITHM: str = "HS256"

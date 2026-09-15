@@ -8,12 +8,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api.routes import auth, categories, dashboard, orders, products
+from app.api.routes import auth, categories, dashboard, orders, products, chat
 from app.core.config import settings
 from app.core.database import Base, engine
 
 logging.basicConfig(level=logging.INFO if not settings.DEBUG else logging.DEBUG)
-logger = logging.getLogger("dababycare")
+logger = logging.getLogger("oqira")
 
 UPLOAD_ROOT = Path(__file__).resolve().parent.parent / "uploads"
 UPLOAD_ROOT.mkdir(exist_ok=True)
@@ -30,7 +30,7 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(
     title=settings.APP_NAME,
-    description="Backend API for Da Baby Care — storefront catalogue, cart checkout, and admin management.",
+    description="Backend API for OQIRA — storefront catalogue, cart checkout, and admin management.",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -71,3 +71,4 @@ app.include_router(categories.router, prefix=API_PREFIX)
 app.include_router(products.router, prefix=API_PREFIX)
 app.include_router(orders.router, prefix=API_PREFIX)
 app.include_router(dashboard.router, prefix=API_PREFIX)
+app.include_router(chat.router, prefix=API_PREFIX)

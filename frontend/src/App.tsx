@@ -15,6 +15,7 @@ import { CartPage } from '@/pages/Public/CartPage';
 import { HomePage } from '@/pages/Public/HomePage';
 import { ProductDetailPage } from '@/pages/Public/ProductDetailPage';
 import { ProductsPage } from '@/pages/Public/ProductsPage';
+import { ChatAssistant } from '@/components/common/ChatAssistant';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,6 +74,7 @@ export default function App() {
 
               <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
             </Routes>
+            <ChatAssistant />
           </BrowserRouter>
         </CartProvider>
       </AuthProvider>

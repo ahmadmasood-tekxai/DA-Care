@@ -14,7 +14,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
-import { OrderStatus, ProductBadge, UserRole } from '@/types';
+import { OrderStatus, PaymentStatus, PaymentMethod, ProductBadge, UserRole } from '@/types';
 
 export const API_BASE_URL: string =
   (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:8000/api/v1';
@@ -25,9 +25,9 @@ export const UPLOADS_BASE_URL: string =
 export const WHATSAPP_NUMBER_1: string = (import.meta.env.VITE_WHATSAPP_NUMBER_1 as string) || '923194392573';
 export const WHATSAPP_NUMBER_2: string = (import.meta.env.VITE_WHATSAPP_NUMBER_2 as string) || '923021735137';
 
-export const AUTH_TOKEN_KEY = 'dababycare_access_token';
-export const AUTH_USER_KEY = 'dababycare_user';
-export const CART_STORAGE_KEY = 'dababycare_cart';
+export const AUTH_TOKEN_KEY = 'oqira_access_token';
+export const AUTH_USER_KEY = 'oqira_user';
+export const CART_STORAGE_KEY = 'oqira_cart';
 
 export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 100;
@@ -74,6 +74,23 @@ export const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
   [OrderStatus.CANCELLED]: 'bg-rose-50 text-rose-700 border-rose-200',
 };
 
+export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
+  [PaymentStatus.UNPAID]: 'Unpaid',
+  [PaymentStatus.PENDING_VERIFICATION]: 'Pending Verification',
+  [PaymentStatus.PAID]: 'Paid',
+};
+
+export const PAYMENT_STATUS_COLORS: Record<PaymentStatus, string> = {
+  [PaymentStatus.UNPAID]: 'bg-slate-100 text-slate-700 border-slate-200',
+  [PaymentStatus.PENDING_VERIFICATION]: 'bg-amber-50 text-amber-700 border-amber-200',
+  [PaymentStatus.PAID]: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+};
+
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  [PaymentMethod.CASH_ON_DELIVERY]: 'Cash on Delivery',
+  [PaymentMethod.BANK_TRANSFER]: 'Bank Transfer',
+};
+
 export const PRODUCT_BADGE_LABELS: Record<ProductBadge, string> = {
   [ProductBadge.NONE]: '',
   [ProductBadge.BESTSELLER]: 'Bestseller',
@@ -97,5 +114,5 @@ export const ROUTES = {
 
 export const CURRENCY_SYMBOL = 'Rs.';
 
-export const STORE_NAME = 'Da Baby Care';
-export const STORE_TAGLINE = 'Little Gentlemen Occasion Wear';
+export const STORE_NAME = 'OKIRA';
+export const STORE_TAGLINE = 'Skin Care · Jewellery · Apparel';

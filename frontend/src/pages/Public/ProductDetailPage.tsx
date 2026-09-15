@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Check, Minus, MessageCircle, Plus, ShieldCheck, ShoppingBag, Truck, Wallet } from 'lucide-react';
+import { ArrowLeft, Check, Minus, Plus, ShieldCheck, ShoppingBag, Truck, Wallet } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { productsApi } from '@/api/products';
@@ -8,10 +8,12 @@ import { Button } from '@/components/common/Button';
 import { Loader } from '@/components/common/Loader';
 import { ProductImage } from '@/components/common/ProductImage';
 import { PublicLayout } from '@/components/layout/public/PublicLayout';
-import { PRODUCT_BADGE_LABELS, ROUTES, WHATSAPP_NUMBER_1, resolveIcon } from '@/constants';
+import { PRODUCT_BADGE_LABELS, ROUTES, resolveIcon } from '@/constants';
 import { ProductBadge } from '@/types';
 import { useCart } from '@/hooks/useCart';
+import { useSEO } from '@/hooks/useSEO';
 import { formatCurrency } from '@/utils/format';
+
 
 export function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -24,6 +26,14 @@ export function ProductDetailPage() {
     queryKey: ['product', slug],
     queryFn: () => productsApi.getBySlug(slug!),
     enabled: !!slug,
+  });
+
+  useSEO({
+    title: product ? `${product.name} — ${product.category?.name || 'OKIRA'}` : 'Product Detail',
+    description: product
+      ? `${product.name} by OKIRA — ${product.short_description || ''} Available for Rs. ${product.price}. Buy online in Pakistan with nationwide delivery.`
+      : 'Discover premium products at OKIRA. Nationwide delivery in Pakistan.',
+    keywords: product ? `${product.name}, OKIRA, ${product.category?.name || ''}, buy online Pakistan` : 'OKIRA',
   });
 
   function handleAddToCart() {
@@ -42,9 +52,6 @@ export function ProductDetailPage() {
   }
 
   const CategoryIcon = resolveIcon(product.category.icon);
-  const whatsappText = encodeURIComponent(
-    `Hi! I'd like to order the "${product.name}" (${formatCurrency(product.price)}) from Da Baby Care 👶`
-  );
 
   return (
     <PublicLayout>
@@ -59,12 +66,21 @@ export function ProductDetailPage() {
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
           {/* Image */}
           <div className="relative aspect-square overflow-hidden rounded-4xl border border-navy/10 bg-cream-2">
-            {product.badge !== ProductBadge.NONE && (
+            {product.stock <= 0 ? (
+              <span className="absolute left-4 top-4 z-10 rounded-full bg-slate-800 px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-widest text-white shadow-lg">
+                Out of Stock
+              </span>
+            ) : product.badge !== ProductBadge.NONE ? (
               <span className="absolute left-4 top-4 z-10 rounded-full bg-pink-deep px-3.5 py-1.5 text-xs font-extrabold text-white">
                 {PRODUCT_BADGE_LABELS[product.badge]}
               </span>
-            )}
-            <ProductImage imageUrl={product.image_url} imageColor={product.image_color} alt={product.name} />
+            ) : null}
+            <ProductImage
+              imageUrl={product.image_url}
+              imageColor={product.image_color}
+              alt={product.name}
+              className={product.stock <= 0 ? 'opacity-60 grayscale' : ''}
+            />
           </div>
 
           {/* Info */}
@@ -76,7 +92,7 @@ export function ProductDetailPage() {
               <CategoryIcon className="h-3.5 w-3.5" /> {product.category.name}
             </Link>
 
-            <h1 className="text-3xl sm:text-4xl">{product.name}</h1>
+            <h1 className="text-3xl sm:text-4xl font-display font-semibold text-navy">{product.name}</h1>
             <p className="mt-3 text-navy-soft">{product.short_description}</p>
 
             <div className="mt-6 flex items-baseline gap-3">
@@ -100,37 +116,30 @@ export function ProductDetailPage() {
 
             {/* Quantity + Add to Cart */}
             <div className="mt-7 flex flex-wrap items-center gap-4">
-              <div className="flex items-center rounded-full border border-navy/15 bg-white">
+              <div className={`flex items-center rounded-full border border-navy/15 bg-white ${product.stock <= 0 ? 'opacity-50' : ''}`}>
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="flex h-11 w-11 items-center justify-center rounded-full text-navy hover:bg-pink-pale"
+                  className="flex h-11 w-11 items-center justify-center rounded-full text-navy hover:bg-pink-pale disabled:opacity-50"
                   aria-label="Decrease quantity"
+                  disabled={product.stock <= 0}
                 >
                   <Minus className="h-4 w-4" />
                 </button>
                 <span className="w-10 text-center font-bold text-navy">{quantity}</span>
                 <button
-                  onClick={() => setQuantity((q) => q + 1)}
-                  className="flex h-11 w-11 items-center justify-center rounded-full text-navy hover:bg-pink-pale"
+                  onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
+                  className="flex h-11 w-11 items-center justify-center rounded-full text-navy hover:bg-pink-pale disabled:opacity-50"
                   aria-label="Increase quantity"
+                  disabled={product.stock <= 0}
                 >
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
 
               <Button size="lg" onClick={handleAddToCart} disabled={product.stock <= 0} className="flex-1 sm:flex-none">
-                <ShoppingBag className="h-5 w-5" /> {justAdded ? 'Added to Cart!' : 'Add to Cart'}
+                <ShoppingBag className="h-5 w-5" /> {product.stock <= 0 ? 'Out of Stock' : justAdded ? 'Added to Cart!' : 'Add to Cart'}
               </Button>
             </div>
-
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMBER_1}?text=${whatsappText}`}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-3 flex items-center justify-center gap-2 rounded-full border-2 border-navy px-6 py-3 text-sm font-bold text-navy hover:bg-pink-pale sm:inline-flex"
-            >
-              <MessageCircle className="h-4 w-4" /> Order Directly on WhatsApp
-            </a>
 
             <div className="mt-8 grid grid-cols-1 gap-3 border-t border-navy/10 pt-6 sm:grid-cols-3">
               {[

@@ -45,7 +45,7 @@ def auth_headers(client):
         "/api/v1/auth/register",
         json={
             "username": "admin",
-            "email": "admin@dababycare.example.com",
+            "email": "admin@oqira.example.com",
             "password": "SuperSecret123",
             "full_name": "Admin User",
             "role": "ADMIN",

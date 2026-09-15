@@ -19,6 +19,17 @@ export enum OrderStatus {
   CANCELLED = 'CANCELLED',
 }
 
+export enum PaymentMethod {
+  CASH_ON_DELIVERY = 'CASH_ON_DELIVERY',
+  BANK_TRANSFER = 'BANK_TRANSFER',
+}
+
+export enum PaymentStatus {
+  UNPAID = 'UNPAID',
+  PENDING_VERIFICATION = 'PENDING_VERIFICATION',
+  PAID = 'PAID',
+}
+
 export enum ProductBadge {
   NONE = 'NONE',
   BESTSELLER = 'BESTSELLER',
@@ -149,6 +160,7 @@ export interface OrderCreateInput {
   customer_address?: string;
   note?: string;
   items: OrderItemInput[];
+  payment_method: PaymentMethod;
 }
 
 export interface OrderItem {
@@ -166,10 +178,24 @@ export interface Order {
   customer_address?: string | null;
   status: OrderStatus;
   note?: string | null;
+  payment_method: PaymentMethod;
+  payment_status: PaymentStatus;
+  transaction_ref?: string | null;
+  receipt_image_url?: string | null;
+  rejection_reason?: string | null;
+  transferred_at?: string | null;
+  confirmed_at?: string | null;
   created_at: string;
   updated_at: string;
   items: OrderItem[];
   total_amount: number;
+}
+
+export interface BankDetailsOut {
+  account_title: string;
+  bank_name: string;
+  account_number: string;
+  iban: string;
 }
 
 // ---------------------------------------------------------------------------

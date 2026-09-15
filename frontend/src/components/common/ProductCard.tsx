@@ -13,16 +13,20 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <div className="group overflow-hidden rounded-3xl border border-navy/10 bg-white transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-navy/10">
       <Link to={ROUTES.PRODUCT_DETAIL(product.slug)} className="relative block aspect-square overflow-hidden bg-cream-2">
-        {product.badge !== ProductBadge.NONE && (
+        {product.stock <= 0 ? (
+          <span className="absolute left-3 top-3 z-10 rounded-full bg-slate-800 px-3 py-1 text-[11px] font-extrabold uppercase tracking-widest text-white">
+            Out of Stock
+          </span>
+        ) : product.badge !== ProductBadge.NONE ? (
           <span className="absolute left-3 top-3 z-10 rounded-full bg-pink-deep px-3 py-1 text-[11px] font-extrabold text-white">
             {PRODUCT_BADGE_LABELS[product.badge]}
           </span>
-        )}
+        ) : null}
         <ProductImage
           imageUrl={product.image_url}
           imageColor={product.image_color}
           alt={product.name}
-          className="transition-transform duration-500 group-hover:scale-105"
+          className={`transition-transform duration-500 group-hover:scale-105 ${product.stock <= 0 ? 'opacity-60 grayscale' : ''}`}
         />
       </Link>
 

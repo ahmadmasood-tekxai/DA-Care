@@ -3,16 +3,15 @@ from datetime import datetime
 from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Numeric, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.constants import OrderStatus
+from app.constants import OrderStatus, PaymentMethod, PaymentStatus
 from app.core.database import Base
 
 
 class Order(Base):
     """
-    A customer order, logged by the admin (from a WhatsApp conversation or
-    a storefront checkout). Total is always derived from its line items —
-    never entered manually — so revenue figures can never disagree with
-    the items actually sold.
+    A customer order placed through the storefront.
+    Supports both Cash-on-Delivery and Manual Bank Transfer payment flows.
+    Total is always derived from its line items — never entered manually.
     """
     __tablename__ = "orders"
 
@@ -23,6 +22,19 @@ class Order(Base):
     status: Mapped[OrderStatus] = mapped_column(Enum(OrderStatus), default=OrderStatus.PENDING, nullable=False)
     note: Mapped[str] = mapped_column(String(255), nullable=True, default="")
     created_by_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+
+    # Payment fields
+    payment_method: Mapped[PaymentMethod] = mapped_column(
+        Enum(PaymentMethod), default=PaymentMethod.CASH_ON_DELIVERY, nullable=False
+    )
+    payment_status: Mapped[PaymentStatus] = mapped_column(
+        Enum(PaymentStatus), default=PaymentStatus.UNPAID, nullable=False
+    )
+    transaction_ref: Mapped[str] = mapped_column(String(255), nullable=True, default=None)
+    receipt_image_url: Mapped[str] = mapped_column(String(500), nullable=True, default=None)
+    rejection_reason: Mapped[str] = mapped_column(String(500), nullable=True, default=None)
+    transferred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True, default=None)
+    confirmed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True, default=None)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
     updated_at: Mapped[datetime] = mapped_column(

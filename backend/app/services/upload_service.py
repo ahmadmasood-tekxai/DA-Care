@@ -1,11 +1,10 @@
 """
-Product image upload handling.
+File upload handling for OKIRA store.
 
-Images are saved under `uploads/products/` (served statically at
-`/uploads/products/...` by FastAPI's StaticFiles). This is intentionally a
-local-disk "temp uploads" folder for development/small deployments — for
-production at scale, swap this module's `save_product_image` for an S3 /
-cloud-storage backed implementation without touching any route code.
+Files are saved under `uploads/<subfolder>/` (served statically at
+`/uploads/<subfolder>/...` by FastAPI's StaticFiles). This is intentionally a
+local-disk folder for development/small deployments — for production at scale,
+swap for an S3/cloud-storage backed implementation without touching route code.
 """
 import uuid
 from pathlib import Path
@@ -15,6 +14,8 @@ from fastapi import HTTPException, UploadFile, status
 UPLOAD_ROOT = Path(__file__).resolve().parents[2] / "uploads"
 PRODUCT_UPLOAD_DIR = UPLOAD_ROOT / "products"
 PRODUCT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+RECEIPT_UPLOAD_DIR = UPLOAD_ROOT / "receipts"
+RECEIPT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
@@ -49,6 +50,26 @@ async def save_product_image(file: UploadFile) -> str:
     destination.write_bytes(contents)
 
     return f"/uploads/products/{filename}"
+
+
+async def save_upload(file: UploadFile, subfolder: str = "products") -> str:
+    """Generic upload handler that saves to any subfolder under uploads/."""
+    if file.content_type not in ALLOWED_CONTENT_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only JPEG, PNG, WEBP or GIF images are allowed.",
+        )
+    contents = await file.read()
+    if len(contents) > MAX_FILE_SIZE_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File is too large — max size is 5 MB.",
+        )
+    dest_dir = UPLOAD_ROOT / subfolder
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    filename = f"{uuid.uuid4().hex}{_extension_for(file.content_type)}"
+    (dest_dir / filename).write_bytes(contents)
+    return f"/uploads/{subfolder}/{filename}"
 
 
 def delete_product_image(image_url: str) -> None:

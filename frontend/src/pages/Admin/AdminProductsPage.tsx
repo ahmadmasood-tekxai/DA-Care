@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, ChevronRight, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 
 import { categoriesApi } from '@/api/categories';
 import { getApiErrorMessage } from '@/api/client';
@@ -38,11 +38,17 @@ export function AdminProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [form, setForm] = useState<ProductCreateInput>(emptyForm);
   const [formError, setFormError] = useState('');
+  
+  // Pagination & Search state
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState(''); // local state for input
 
   const { data: categories } = useQuery({ queryKey: ['admin-categories'], queryFn: categoriesApi.list });
-  const { data: products, isLoading } = useQuery({
-    queryKey: ['admin-products'],
-    queryFn: () => productsApi.list({ include_inactive: true, page_size: 100 }),
+  
+  const { data: productsData, isLoading } = useQuery({
+    queryKey: ['admin-products', page, search],
+    queryFn: () => productsApi.list({ include_inactive: true, page_size: 10, page, search }),
   });
 
   const createMutation = useMutation({
@@ -50,7 +56,6 @@ export function AdminProductsPage() {
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      // Keep the modal open on the newly created product so the admin can immediately upload its image.
       setEditingProduct(created);
       setFormError('');
     },
@@ -123,6 +128,12 @@ export function AdminProductsPage() {
     }
   }
 
+  function handleSearchSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setPage(1); // Reset to page 1 on new search
+    setSearch(searchInput);
+  }
+
   const columns: TableColumn<Product>[] = [
     {
       key: 'image',
@@ -146,7 +157,24 @@ export function AdminProductsPage() {
       ),
     },
     { key: 'price', header: 'Price', align: 'right', render: (p) => formatCurrency(p.price) },
-    { key: 'stock', header: 'Stock', align: 'right', render: (p) => p.stock },
+    { 
+      key: 'stock', 
+      header: 'Stock', 
+      align: 'right', 
+      render: (p) => (
+        <div className="flex flex-col items-end gap-1">
+          <span className={`font-bold ${p.stock <= 0 ? 'text-rose-600' : p.stock <= 5 ? 'text-amber-600' : 'text-navy'}`}>
+            {p.stock}
+          </span>
+          {p.stock <= 5 && (
+            <span className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${p.stock <= 0 ? 'text-rose-600' : 'text-amber-600'}`}>
+              <AlertTriangle className="h-3 w-3" />
+              {p.stock <= 0 ? 'Out of Stock' : 'Critical'}
+            </span>
+          )}
+        </div>
+      ) 
+    },
     {
       key: 'status',
       header: 'Status',
@@ -178,15 +206,57 @@ export function AdminProductsPage() {
       <Card
         noPadding
         title="Products"
-        subtitle="Add, edit, and manage stock across all categories"
+        subtitle="Manage inventory, prices, and product details"
         action={
           <Button size="sm" onClick={openCreateModal}>
             <Plus className="h-3.5 w-3.5" /> Add Product
           </Button>
         }
       >
+        <div className="border-b border-navy/5 bg-cream-2/50 p-4">
+          <form onSubmit={handleSearchSubmit} className="flex max-w-sm items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-soft" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 py-2 pl-9 pr-3 text-sm focus:border-pink-deep focus:outline-none focus:ring-1 focus:ring-pink-deep"
+              />
+            </div>
+            <Button type="submit" variant="secondary" size="sm">Search</Button>
+          </form>
+        </div>
+
         <div className="p-4">
-          <Table columns={columns} data={products?.items ?? []} rowKey={(p) => p.id} isLoading={isLoading} emptyMessage="No products yet." />
+          <Table columns={columns} data={productsData?.items ?? []} rowKey={(p) => p.id} isLoading={isLoading} emptyMessage="No products found." />
+          
+          {productsData && productsData.total_pages > 1 && (
+            <div className="mt-6 flex items-center justify-between border-t border-navy/5 pt-4 text-sm text-navy-soft">
+              <span>
+                Showing page <strong className="text-navy">{productsData.page}</strong> of <strong className="text-navy">{productsData.total_pages}</strong>
+              </span>
+              <div className="flex gap-2">
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={productsData.page <= 1}
+                >
+                  <ChevronLeft className="h-4 w-4" /> Previous
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  onClick={() => setPage(p => Math.min(productsData.total_pages, p + 1))}
+                  disabled={productsData.page >= productsData.total_pages}
+                >
+                  Next <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </Card>
 

@@ -4,14 +4,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        cream: { DEFAULT: '#FFF9F4', 2: '#FFF1E7' },
-        navy: { DEFAULT: '#22304F', soft: '#4A5A80' },
-        pink: { DEFAULT: '#F3A0BF', deep: '#E97FA6', pale: '#FCE2EC' },
-        gold: '#E7B84F',
+        cream: { DEFAULT: '#f5f0ed', 2: '#f0ebe8' },
+        navy: { DEFAULT: '#000000', soft: '#333333' },
+        pink: { DEFAULT: '#988686', deep: '#5C4E4E', pale: '#D1D0D0' },
+        gold: '#D1D0D0',
       },
       fontFamily: {
-        display: ['Fredoka', 'sans-serif'],
-        body: ['Nunito', 'sans-serif'],
+        display: ['"Playfair Display"', 'serif'],
+        body: ['Inter', 'sans-serif'],
       },
       borderRadius: { '4xl': '28px' },
     },
