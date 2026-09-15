@@ -30,11 +30,11 @@ _RULES: list[tuple[list[str], str]] = [
 
     # Payment methods
     (["payment", "pay", "how to pay", "method"],
-     "We offer two payment methods:\n\n1. **Cash on Delivery (COD)** — Pay when your package arrives.\n2. **Manual Bank Transfer** — Transfer to our Meezan Bank account, upload your receipt, and we'll verify it within a few hours."),
+     "We offer two payment methods:\n\n1. **Cash on Delivery (COD)** — Pay when your package arrives.\n2. **Manual Bank Transfer** — Transfer to our Mashriq Bank account, upload your receipt, and we'll verify it within a few hours."),
 
     # Bank transfer details
     (["bank", "transfer", "meezan", "account", "iban"],
-     "Our bank details are:\n\n- **Bank:** Meezan Bank\n- **Account Title:** Muhammad Ahmad\n- **Account Number:** 089010046367\n- **IBAN:** PK45MSHQ0000089010046367\n\nAfter transferring, please upload your receipt screenshot at checkout."),
+     "Our bank details are:\n\n- **Bank:** Mashriq Bank\n- **Account Title:** Muhammad Ahmad\n- **Account Number:** 089010046367\n- **IBAN:** PK45MSHQ0000089010046367\n\nAfter transferring, please upload your receipt screenshot at checkout."),
 
     # Return / exchange
     (["return", "exchange", "refund", "replace"],

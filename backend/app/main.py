@@ -13,11 +13,16 @@ from app.core.config import settings
 from app.core.database import Base, engine
 
 logging.basicConfig(level=logging.INFO if not settings.DEBUG else logging.DEBUG)
-logger = logging.getLogger("oqira")
+logger = logging.getLogger("okira")
 
 UPLOAD_ROOT = Path(__file__).resolve().parent.parent / "uploads"
-UPLOAD_ROOT.mkdir(exist_ok=True)
-(UPLOAD_ROOT / "products").mkdir(exist_ok=True)
+try:
+    UPLOAD_ROOT.mkdir(exist_ok=True)
+    (UPLOAD_ROOT / "products").mkdir(exist_ok=True)
+    (UPLOAD_ROOT / "receipts").mkdir(exist_ok=True)
+except OSError:
+    # On Vercel serverless, filesystem is read-only — skip silently
+    pass
 
 
 @asynccontextmanager
@@ -30,7 +35,7 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(
     title=settings.APP_NAME,
-    description="Backend API for OQIRA — storefront catalogue, cart checkout, and admin management.",
+    description="Backend API for OKIRA — premium skin care, jewellery, apparel & baby essentials.",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -45,8 +50,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve uploaded product images (temp/local storage — see services/upload_service.py)
-app.mount("/uploads", StaticFiles(directory=str(UPLOAD_ROOT)), name="uploads")
+# Serve uploaded product images — only works in non-serverless environments
+try:
+    if UPLOAD_ROOT.exists():
+        app.mount("/uploads", StaticFiles(directory=str(UPLOAD_ROOT)), name="uploads")
+except Exception:
+    logger.warning("Uploads directory not available — static file serving disabled.")
 
 
 @app.exception_handler(RequestValidationError)
