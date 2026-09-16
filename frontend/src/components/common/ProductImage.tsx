@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Shirt } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -17,15 +18,24 @@ interface ProductImageProps {
  * and a Lucide icon — never a broken <img> or an emoji.
  */
 export function ProductImage({ imageUrl, imageColor = '#22304F', alt, className }: ProductImageProps) {
+  const [hasError, setHasError] = useState(false);
   const resolvedUrl = resolveImageUrl(imageUrl);
 
-  if (resolvedUrl) {
+  console.log(resolvedUrl);
+
+  // Reset error state if the imageUrl changes
+  useEffect(() => {
+    setHasError(false);
+  }, [resolvedUrl]);
+
+  if (resolvedUrl && !hasError) {
     return (
       <img
         src={resolvedUrl}
         alt={alt}
         className={clsx('h-full w-full object-cover', className)}
         loading="lazy"
+        onError={() => setHasError(true)}
       />
     );
   }
@@ -41,3 +51,4 @@ export function ProductImage({ imageUrl, imageColor = '#22304F', alt, className 
     </div>
   );
 }
+

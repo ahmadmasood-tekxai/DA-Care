@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     STORE_WHATSAPP_NUMBER_1: str = "923194392573"
     STORE_WHATSAPP_NUMBER_2: str = "923021735137"
 
+    CLOUDINARY_CLOUD_NAME: str = ""
+    CLOUDINARY_API_KEY: str = ""
+    CLOUDINARY_API_SECRET: str = ""
+
     @property
     def cors_origins_list(self) -> List[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]

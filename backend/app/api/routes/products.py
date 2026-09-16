@@ -7,12 +7,12 @@ from app.api.deps import get_current_user
 from app.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 from app.core.database import get_db
 from app.models.category import Category
-from app.models.product import Product
+from app.models.product import Product, ProductImage
 from app.models.user import User
 from app.schemas.common import PaginatedResponse
 from app.schemas.product import ProductCreate, ProductDetailOut, ProductOut, ProductUpdate
 from app.services.slug_service import generate_unique_slug
-from app.services.upload_service import delete_product_image, save_product_image
+from app.services.cloudinary_service import delete_image_from_cloudinary, upload_image_to_cloudinary, upload_multiple_images_to_cloudinary
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
@@ -28,7 +28,7 @@ def list_products(
     db: Session = Depends(get_db),
 ):
     """Public — powers the storefront's Products page & category filters."""
-    query = db.query(Product)
+    query = db.query(Product).options(joinedload(Product.images))
     if not include_inactive:
         query = query.filter(Product.is_active.is_(True))
     if category_slug:
@@ -56,6 +56,7 @@ def get_product(slug: str, db: Session = Depends(get_db)):
     product = (
         db.query(Product)
         .options(joinedload(Product.category))
+        .options(joinedload(Product.images))
         .filter(Product.slug == slug)
         .first()
     )
@@ -122,24 +123,54 @@ async def upload_product_image(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
 
     old_image_url = product.image_url
-    new_image_url = await save_product_image(file)
+    old_public_id = product.image_public_id
+    new_image_url, new_public_id = await upload_image_to_cloudinary(file)
 
     product.image_url = new_image_url
+    product.image_public_id = new_public_id
     db.commit()
     db.refresh(product)
 
-    if old_image_url:
-        delete_product_image(old_image_url)
+    if old_public_id:
+        delete_image_from_cloudinary(old_public_id)
 
+    return product
+
+
+@router.post("/{product_id}/images", response_model=ProductOut)
+async def upload_product_images(
+    product_id: int,
+    files: List[UploadFile] = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Uploads multiple images to Cloudinary for a product."""
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+
+    uploaded = await upload_multiple_images_to_cloudinary(files, product_id)
+    
+    for secure_url, public_id in uploaded:
+        new_img = ProductImage(product_id=product_id, url=secure_url, public_id=public_id)
+        db.add(new_img)
+    
+    db.commit()
+    db.refresh(product)
     return product
 
 
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_product(product_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    product = db.query(Product).filter(Product.id == product_id).first()
+    product = db.query(Product).options(joinedload(Product.images)).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
-    if product.image_url:
-        delete_product_image(product.image_url)
+        
+    if product.image_public_id:
+        delete_image_from_cloudinary(product.image_public_id)
+        
+    for image in product.images:
+        delete_image_from_cloudinary(image.public_id)
+        
     db.delete(product)
     db.commit()

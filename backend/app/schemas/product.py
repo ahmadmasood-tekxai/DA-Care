@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
@@ -8,6 +8,13 @@ from app.constants import ProductBadge
 from app.schemas.category import CategoryOut
 from app.schemas.common import ORMBase
 
+
+class ProductImageOut(ORMBase):
+    id: int
+    product_id: int
+    url: str
+    public_id: str
+    created_at: datetime
 
 class ProductCreate(BaseModel):
     category_id: int
@@ -54,6 +61,7 @@ class ProductOut(ORMBase):
     is_active: bool
     created_at: datetime
     updated_at: datetime
+    images: List[ProductImageOut] = []
 
 
 class ProductDetailOut(ProductOut):

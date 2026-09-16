@@ -11,5 +11,23 @@ export default defineConfig({
             '/uploads': { target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8000', changeOrigin: true },
         },
     },
-    build: { outDir: 'dist', sourcemap: false, chunkSizeWarningLimit: 800 },
+    build: {
+        outDir: 'dist',
+        sourcemap: false,
+        chunkSizeWarningLimit: 1500,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    // React core
+                    'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+                    // Data fetching
+                    'vendor-query': ['@tanstack/react-query', 'axios'],
+                    // Three.js (largest — isolated to its own chunk)
+                    'vendor-three': ['three', '@react-three/fiber', '@react-three/drei'],
+                    // Icons
+                    'vendor-icons': ['lucide-react'],
+                },
+            },
+        },
+    },
 });
