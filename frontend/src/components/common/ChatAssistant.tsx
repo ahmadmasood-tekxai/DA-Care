@@ -36,7 +36,7 @@ export function ChatAssistant() {
 
     try {
       // In a real app, API_URL from environment would be used
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/chat`, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://okira-backend.vercel.app/api/v1'}/chat`, {
         message: userMessage
       });
 
