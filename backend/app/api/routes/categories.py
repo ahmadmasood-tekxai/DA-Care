@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
@@ -10,6 +10,7 @@ from app.models.product import Product
 from app.models.user import User
 from app.schemas.category import CategoryCreate, CategoryOut, CategoryUpdate, CategoryWithCountOut
 from app.services.slug_service import generate_unique_slug
+from app.services.cloudinary_service import upload_image_to_cloudinary
 
 router = APIRouter(prefix="/categories", tags=["Categories"])
 
@@ -19,6 +20,7 @@ def _with_count(db: Session, category: Category) -> dict:
     return {
         "id": category.id, "name": category.name, "slug": category.slug,
         "description": category.description, "icon": category.icon,
+        "image_url": category.image_url,
         "display_order": category.display_order, "created_at": category.created_at,
         "updated_at": category.updated_at, "product_count": count,
     }
@@ -44,7 +46,7 @@ def create_category(payload: CategoryCreate, db: Session = Depends(get_db), curr
     slug = generate_unique_slug(db, Category, payload.name)
     category = Category(
         name=payload.name, slug=slug, description=payload.description or "",
-        icon=payload.icon, display_order=payload.display_order,
+        icon=payload.icon, image_url=payload.image_url, display_order=payload.display_order,
     )
     db.add(category)
     db.commit()
@@ -78,3 +80,21 @@ def delete_category(category_id: int, db: Session = Depends(get_db), current_use
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     db.delete(category)
     db.commit()
+
+@router.post("/{category_id}/image", response_model=CategoryOut)
+async def upload_category_image(
+    category_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    category = db.query(Category).filter(Category.id == category_id).first()
+    if not category:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
+
+    new_image_url, _ = await upload_image_to_cloudinary(file)
+    category.image_url = new_image_url
+    
+    db.commit()
+    db.refresh(category)
+    return category

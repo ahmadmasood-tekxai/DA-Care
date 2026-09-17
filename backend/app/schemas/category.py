@@ -10,6 +10,7 @@ class CategoryCreate(BaseModel):
     name: str = Field(min_length=1, max_length=128)
     description: Optional[str] = ""
     icon: str = Field(default="Shirt", max_length=64, description="Lucide icon name, e.g. 'PartyPopper'")
+    image_url: Optional[str] = Field(default="", max_length=500)
     display_order: int = 0
 
 
@@ -17,6 +18,7 @@ class CategoryUpdate(BaseModel):
     name: Optional[str] = Field(default=None, max_length=128)
     description: Optional[str] = None
     icon: Optional[str] = Field(default=None, max_length=64)
+    image_url: Optional[str] = Field(default=None, max_length=500)
     display_order: Optional[int] = None
 
 
@@ -26,6 +28,7 @@ class CategoryOut(ORMBase):
     slug: str
     description: Optional[str]
     icon: str
+    image_url: Optional[str]
     display_order: int
     created_at: datetime
     updated_at: datetime

@@ -16,6 +16,7 @@ class Category(Base):
     slug: Mapped[str] = mapped_column(String(160), unique=True, index=True, nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=True, default="")
     icon: Mapped[str] = mapped_column(String(64), nullable=False, default="Shirt")  # lucide icon name
+    image_url: Mapped[str] = mapped_column(String(500), nullable=True, default="")
     display_order: Mapped[int] = mapped_column(default=0)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
