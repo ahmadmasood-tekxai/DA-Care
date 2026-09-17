@@ -33,6 +33,14 @@ export const productsApi = {
     });
     return data;
   },
+  uploadImages: async (id: number, files: File[]): Promise<Product> => {
+    const formData = new FormData();
+    files.forEach(file => formData.append('files', file));
+    const { data } = await apiClient.post<Product>(`/products/${id}/images`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  },
   remove: async (id: number): Promise<void> => {
     await apiClient.delete(`/products/${id}`);
   },

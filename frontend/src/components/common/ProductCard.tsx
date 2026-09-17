@@ -20,6 +20,8 @@ export function ProductCard({ product }: { product: Product }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const displayImageUrl = product.image_url || (product.images && product.images.length > 0 ? product.images[0].url : '');
+
   return (
     <div className="group overflow-hidden rounded-3xl border border-navy/10 bg-white transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-navy/10">
       <Link to={ROUTES.PRODUCT_DETAIL(product.slug)} className="relative block aspect-square overflow-hidden bg-cream-2">
@@ -33,7 +35,7 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
         ) : null}
         <ProductImage
-          imageUrl={product.image_url}
+          imageUrl={displayImageUrl}
           imageColor={product.image_color}
           alt={product.name}
           className={`transition-transform duration-500 group-hover:scale-105 ${product.stock <= 0 ? 'opacity-60 grayscale' : ''}`}

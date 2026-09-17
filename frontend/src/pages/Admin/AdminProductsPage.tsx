@@ -11,6 +11,7 @@ import { Card } from '@/components/common/Card';
 import { ImageUpload } from '@/components/common/ImageUpload';
 import { Input, Select } from '@/components/common/Input';
 import { Modal } from '@/components/common/Modal';
+import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { ProductImage } from '@/components/common/ProductImage';
 import { Table, type TableColumn } from '@/components/common/Table';
 import { AdminLayout } from '@/components/layout/admin/AdminLayout';
@@ -36,16 +37,17 @@ export function AdminProductsPage() {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [form, setForm] = useState<ProductCreateInput>(emptyForm);
   const [formError, setFormError] = useState('');
-  
+
   // Pagination & Search state
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState(''); // local state for input
 
   const { data: categories } = useQuery({ queryKey: ['admin-categories'], queryFn: categoriesApi.list });
-  
+
   const { data: productsData, isLoading } = useQuery({
     queryKey: ['admin-products', page, search],
     queryFn: () => productsApi.list({ include_inactive: true, page_size: 10, page, search }),
@@ -74,11 +76,12 @@ export function AdminProductsPage() {
   });
 
   const uploadImageMutation = useMutation({
-    mutationFn: ({ id, file }: { id: number; file: File }) => productsApi.uploadImage(id, file),
+    mutationFn: ({ id, files }: { id: number; files: File[] }) => productsApi.uploadImages(id, files),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setEditingProduct(updated);
+      closeModal();
     },
   });
 
@@ -87,6 +90,7 @@ export function AdminProductsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      setProductToDelete(null);
     },
   });
 
@@ -138,11 +142,14 @@ export function AdminProductsPage() {
     {
       key: 'image',
       header: '',
-      render: (p) => (
-        <div className="h-11 w-11 overflow-hidden rounded-lg">
-          <ProductImage imageUrl={p.image_url} imageColor={p.image_color} alt={p.name} />
-        </div>
-      ),
+      render: (p) => {
+        const displayImageUrl = p.image_url || (p.images && p.images.length > 0 ? p.images[0].url : '');
+        return (
+          <div className="h-11 w-11 overflow-hidden rounded-lg">
+            <ProductImage imageUrl={displayImageUrl} imageColor={p.image_color} alt={p.name} />
+          </div>
+        );
+      },
     },
     {
       key: 'name',
@@ -157,10 +164,10 @@ export function AdminProductsPage() {
       ),
     },
     { key: 'price', header: 'Price', align: 'right', render: (p) => formatCurrency(p.price) },
-    { 
-      key: 'stock', 
-      header: 'Stock', 
-      align: 'right', 
+    {
+      key: 'stock',
+      header: 'Stock',
+      align: 'right',
       render: (p) => (
         <div className="flex flex-col items-end gap-1">
           <span className={`font-bold ${p.stock <= 0 ? 'text-rose-600' : p.stock <= 5 ? 'text-amber-600' : 'text-navy'}`}>
@@ -173,7 +180,7 @@ export function AdminProductsPage() {
             </span>
           )}
         </div>
-      ) 
+      )
     },
     {
       key: 'status',
@@ -191,7 +198,7 @@ export function AdminProductsPage() {
             <Pencil className="h-3.5 w-3.5" />
           </button>
           <button
-            onClick={() => confirm(`Delete "${p.name}"?`) && deleteMutation.mutate(p.id)}
+            onClick={() => setProductToDelete(p)}
             className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -231,24 +238,24 @@ export function AdminProductsPage() {
 
         <div className="p-4">
           <Table columns={columns} data={productsData?.items ?? []} rowKey={(p) => p.id} isLoading={isLoading} emptyMessage="No products found." />
-          
+
           {productsData && productsData.total_pages > 1 && (
             <div className="mt-6 flex items-center justify-between border-t border-navy/5 pt-4 text-sm text-navy-soft">
               <span>
                 Showing page <strong className="text-navy">{productsData.page}</strong> of <strong className="text-navy">{productsData.total_pages}</strong>
               </span>
               <div className="flex gap-2">
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={productsData.page <= 1}
                 >
                   <ChevronLeft className="h-4 w-4" /> Previous
                 </Button>
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => setPage(p => Math.min(productsData.total_pages, p + 1))}
                   disabled={productsData.page >= productsData.total_pages}
                 >
@@ -278,8 +285,10 @@ export function AdminProductsPage() {
           {editingProduct && (
             <ImageUpload
               currentImageUrl={editingProduct.image_url}
+              additionalImages={editingProduct.images}
               isUploading={uploadImageMutation.isPending}
-              onUpload={(file) => uploadImageMutation.mutateAsync({ id: editingProduct.id, file }).then(() => {})}
+              multiple={true}
+              onUploadMultiple={(files) => uploadImageMutation.mutateAsync({ id: editingProduct.id, files }).then(() => { })}
             />
           )}
           {!editingProduct && (
@@ -347,6 +356,17 @@ export function AdminProductsPage() {
           {formError && <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600">{formError}</p>}
         </div>
       </Modal>
+
+      <ConfirmModal
+        isOpen={!!productToDelete}
+        onClose={() => setProductToDelete(null)}
+        onConfirm={() => productToDelete && deleteMutation.mutate(productToDelete.id)}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${productToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        isLoading={deleteMutation.isPending}
+        variant="danger"
+      />
     </AdminLayout>
   );
 }

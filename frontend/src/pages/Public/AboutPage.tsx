@@ -4,7 +4,7 @@ import { Award, Heart, MessageCircle, Recycle, Ruler, Sparkles } from 'lucide-re
 import { Button } from '@/components/common/Button';
 import { PublicLayout } from '@/components/layout/public/PublicLayout';
 import { ROUTES, STORE_NAME, WHATSAPP_NUMBER_1 } from '@/constants';
-import { useSEO } from '@/hooks/useSEO';
+import { SEO } from '@/components/common/SEO';
 
 const values = [
   { icon: Sparkles, title: 'Premium Fabric', desc: 'Every set is cut from a soft, breathable blend chosen for comfort, not just looks.' },
@@ -14,16 +14,13 @@ const values = [
 ];
 
 export function AboutPage() {
-  useSEO({
-    title: 'About OQIRA — Our Story & Values',
-    description:
-      'Learn about OQIRA — Pakistan\'s premium lifestyle brand offering luxury skin care, fine jewellery, elegant apparel, and baby essentials with unmatched quality.',
-    keywords:
-      'About OQIRA, OQIRA brand story, premium store Pakistan, luxury lifestyle Pakistan',
-  });
-
   return (
     <PublicLayout>
+      <SEO
+        title="About Us"
+        description="Learn more about OQIRA, our mission, and our commitment to providing premium skin care, jewellery, and luxury apparel."
+        keywords="about OQIRA, luxury brand Pakistan, premium quality, mission, values"
+      />
       <section className="bg-gradient-to-b from-cream-2 to-cream px-6 pb-20 pt-24 text-center">
         <span className="section-tag">Our Story</span>
         <h1 className="mx-auto max-w-2xl text-4xl sm:text-5xl">Little gentlemen deserve great style too</h1>

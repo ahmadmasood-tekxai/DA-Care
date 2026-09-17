@@ -11,6 +11,7 @@ import { Modal } from '@/components/common/Modal';
 import { Table, type TableColumn } from '@/components/common/Table';
 import { AdminLayout } from '@/components/layout/admin/AdminLayout';
 import { ImageUpload } from '@/components/common/ImageUpload';
+import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { resolveIcon } from '@/constants';
 import type { CategoryCreateInput, CategoryWithCount } from '@/types';
 
@@ -20,6 +21,7 @@ export function AdminCategoriesPage() {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<CategoryWithCount | null>(null);
   const [form, setForm] = useState<CategoryCreateInput>(emptyForm);
   const [formError, setFormError] = useState('');
 
@@ -50,6 +52,7 @@ export function AdminCategoriesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
       queryClient.invalidateQueries({ queryKey: ['categories'] });
+      setCategoryToDelete(null);
     },
   });
 
@@ -125,7 +128,7 @@ export function AdminCategoriesPage() {
             <Pencil className="h-3.5 w-3.5" />
           </button>
           <button
-            onClick={() => confirm(`Delete "${c.name}" and all its products?`) && deleteMutation.mutate(c.id)}
+            onClick={() => setCategoryToDelete(c)}
             className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -190,6 +193,17 @@ export function AdminCategoriesPage() {
           {formError && <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600">{formError}</p>}
         </div>
       </Modal>
+
+      <ConfirmModal
+        isOpen={!!categoryToDelete}
+        onClose={() => setCategoryToDelete(null)}
+        onConfirm={() => categoryToDelete && deleteMutation.mutate(categoryToDelete.id)}
+        title="Delete Category"
+        message={`Are you sure you want to delete "${categoryToDelete?.name}"? All products in this category will also be deleted. This action cannot be undone.`}
+        confirmText="Delete Category"
+        isLoading={deleteMutation.isPending}
+        variant="danger"
+      />
     </AdminLayout>
   );
 }

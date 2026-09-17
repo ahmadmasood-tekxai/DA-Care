@@ -12,17 +12,12 @@ import { ProductImage } from '@/components/common/ProductImage';
 import { PublicLayout } from '@/components/layout/public/PublicLayout';
 import { ROUTES } from '@/constants';
 import { useCart } from '@/hooks/useCart';
-import { useSEO } from '@/hooks/useSEO';
+import { SEO } from '@/components/common/SEO';
 import { PaymentMethod } from '@/types';
 import { formatCurrency } from '@/utils/format';
 
 export function CartPage() {
-  useSEO({
-    title: 'Your Shopping Cart',
-    description:
-      'Review your OQIRA order, enter your details, and choose between Cash on Delivery or Bank Transfer. Nationwide delivery across Pakistan.',
-    keywords: 'OQIRA cart, checkout Pakistan, cash on delivery Pakistan',
-  });
+
 
   const { items, subtotal, updateQuantity, removeItem, clearCart } = useCart();
 
@@ -113,6 +108,10 @@ export function CartPage() {
   if (showBankTransferDetails && bankDetails) {
     return (
       <PublicLayout>
+        <SEO
+          title="Your Cart"
+          description="Review your shopping cart before checkout. Secure bank transfer and COD available for premium products across Pakistan."
+        />
         <div className="mx-auto max-w-xl px-6 py-14">
           <div className="rounded-3xl border border-navy/10 bg-white p-8 shadow-xl shadow-navy/5">
             <div className="text-center mb-8">

@@ -9,7 +9,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { ProductCard } from '@/components/common/ProductCard';
 import { PublicLayout } from '@/components/layout/public/PublicLayout';
 import { resolveIcon } from '@/constants';
-import { useSEO } from '@/hooks/useSEO';
+import { SEO } from '@/components/common/SEO';
 
 export function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,14 +27,6 @@ export function ProductsPage() {
     [categories, activeCategory]
   );
 
-  useSEO({
-    title: activeCategoryName ? `${activeCategoryName} Collection` : 'Shop All Products',
-    description: activeCategoryName
-      ? `Browse OQIRA's ${activeCategoryName} collection — premium quality products delivered nationwide across Pakistan.`
-      : 'Shop OQIRA\'s complete collection of premium skin care, fine jewellery, luxury apparel, and baby essentials. Nationwide delivery in Pakistan.',
-    keywords: `OQIRA, ${activeCategoryName || 'products'} Pakistan, buy online Pakistan`,
-  });
-
   function selectCategory(slug: string) {
     if (slug === activeCategory) {
       searchParams.delete('category');
@@ -46,6 +38,13 @@ export function ProductsPage() {
 
   return (
     <PublicLayout>
+      <SEO
+        title={activeCategoryName ? `${activeCategoryName} Collection` : 'Shop All Products'}
+        description={activeCategoryName
+          ? `Browse OQIRA's ${activeCategoryName} collection — premium quality products delivered nationwide across Pakistan.`
+          : 'Shop OQIRA\'s complete collection of premium skin care, fine jewellery, luxury apparel, and baby essentials. Nationwide delivery in Pakistan.'}
+        keywords={`OQIRA, ${activeCategoryName || 'products'} Pakistan, buy online Pakistan`}
+      />
       <section className="bg-cream-2 px-6 pb-14 pt-16 text-center">
         <span className="section-tag">The Collection</span>
         <h1 className="text-4xl sm:text-5xl">{activeCategoryName || 'All Products'}</h1>

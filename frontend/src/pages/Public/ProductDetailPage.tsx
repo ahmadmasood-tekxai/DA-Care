@@ -11,7 +11,7 @@ import { PublicLayout } from '@/components/layout/public/PublicLayout';
 import { PRODUCT_BADGE_LABELS, ROUTES, resolveIcon } from '@/constants';
 import { ProductBadge } from '@/types';
 import { useCart } from '@/hooks/useCart';
-import { useSEO } from '@/hooks/useSEO';
+import { SEO } from '@/components/common/SEO';
 import { formatCurrency } from '@/utils/format';
 import { ProductCard } from '@/components/common/ProductCard';
 
@@ -23,6 +23,7 @@ export function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', slug],
@@ -42,14 +43,6 @@ export function ProductDetailPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  useSEO({
-    title: product ? `${product.name} — ${product.category?.name || 'OQIRA'}` : 'Product Detail',
-    description: product
-      ? `${product.name} by OQIRA — ${product.short_description || ''} Available for Rs. ${product.price}. Buy online in Pakistan with nationwide delivery.`
-      : 'Discover premium products at OQIRA. Nationwide delivery in Pakistan.',
-    keywords: product ? `${product.name}, OQIRA, ${product.category?.name || ''}, buy online Pakistan` : 'OQIRA',
-  });
-
   function handleAddToCart() {
     if (!product) return;
     addItem(product, quantity);
@@ -66,9 +59,21 @@ export function ProductDetailPage() {
   }
 
   const CategoryIcon = resolveIcon(product.category.icon);
+  const fallbackMainImage = product.image_url || (product.images && product.images.length > 0 ? product.images[0].url : '');
+  const allImages = [fallbackMainImage, ...(product.images?.map(i => i.url) || [])]
+    .filter(Boolean)
+    .filter((v, i, a) => a.indexOf(v) === i) as string[];
+  const currentMainImage = selectedImage ?? fallbackMainImage;
 
   return (
     <PublicLayout>
+      <SEO
+        title={product ? `${product.name} — ${product.category?.name || 'OQIRA'}` : 'Product Detail'}
+        description={product
+          ? `${product.name} by OQIRA — ${product.short_description || ''} Available for Rs. ${product.price}. Buy online in Pakistan with nationwide delivery.`
+          : 'Discover premium products at OQIRA. Nationwide delivery in Pakistan.'}
+        keywords={product ? `${product.name}, OQIRA, ${product.category?.name || ''}, buy online Pakistan` : 'OQIRA'}
+      />
       <div className="mx-auto max-w-6xl px-6 py-10">
         <button
           onClick={() => navigate(ROUTES.PRODUCTS)}
@@ -78,28 +83,44 @@ export function ProductDetailPage() {
         </button>
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
-          {/* Image */}
-          <div className="relative aspect-square overflow-hidden rounded-4xl border border-navy/10 bg-cream-2">
-            {product.stock <= 0 ? (
-              <span className="absolute left-4 top-4 z-10 rounded-full bg-slate-800 px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-widest text-white shadow-lg">
-                Out of Stock
-              </span>
-            ) : product.badge !== ProductBadge.NONE ? (
-              <span className="absolute left-4 top-4 z-10 rounded-full bg-pink-deep px-3.5 py-1.5 text-xs font-extrabold text-white">
-                {PRODUCT_BADGE_LABELS[product.badge]}
-              </span>
-            ) : null}
-            <ProductImage
-              imageUrl={product.image_url}
-              imageColor={product.image_color}
-              alt={product.name}
-              className={product.stock <= 0 ? 'opacity-60 grayscale' : ''}
-            />
+          {/* Left Column: Image + Gallery */}
+          <div>
+            <div className="relative aspect-square overflow-hidden rounded-4xl border border-navy/10 bg-cream-2">
+              {product.stock <= 0 ? (
+                <span className="absolute left-4 top-4 z-10 rounded-full bg-slate-800 px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-widest text-white shadow-lg">
+                  Out of Stock
+                </span>
+              ) : product.badge !== ProductBadge.NONE ? (
+                <span className="absolute left-4 top-4 z-10 rounded-full bg-pink-deep px-3.5 py-1.5 text-xs font-extrabold text-white">
+                  {PRODUCT_BADGE_LABELS[product.badge]}
+                </span>
+              ) : null}
+              <ProductImage
+                imageUrl={currentMainImage}
+                imageColor={product.image_color}
+                alt={product.name}
+                className={product.stock <= 0 ? 'opacity-60 grayscale' : ''}
+              />
+            </div>
+
+            {allImages.length > 1 && (
+              <div className="mt-4 flex flex-wrap gap-3">
+                {allImages.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImage(img)}
+                    className={`h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all ${currentMainImage === img ? 'border-pink-deep opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                  >
+                    <img src={img} alt={`${product.name} thumbnail ${idx + 1}`} className="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Info */}
+          {/* Right Column: Info */}
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="mb-3 flex items-center justify-between">
               <Link
                 to={`${ROUTES.PRODUCTS}?category=${product.category.slug}`}
                 className="inline-flex items-center gap-1.5 rounded-full bg-pink-pale px-3.5 py-1.5 text-xs font-bold text-pink-deep hover:bg-pink"
@@ -108,7 +129,7 @@ export function ProductDetailPage() {
               </Link>
               <button
                 onClick={handleCopyLink}
-                className="relative flex h-8 w-8 items-center justify-center rounded-full bg-cream-2 text-navy hover:bg-pink-deep hover:text-white transition-colors"
+                className="relative flex h-8 w-8 items-center justify-center rounded-full bg-cream-2 text-navy transition-colors hover:bg-pink-deep hover:text-white"
                 title="Copy Link"
               >
                 {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Link2 className="h-4 w-4" />}
@@ -120,7 +141,7 @@ export function ProductDetailPage() {
               </button>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-display font-semibold text-navy">{product.name}</h1>
+            <h1 className="font-display text-3xl font-semibold text-navy sm:text-4xl">{product.name}</h1>
             <p className="mt-3 text-navy-soft">{product.short_description}</p>
 
             <div className="mt-6 flex items-baseline gap-3">

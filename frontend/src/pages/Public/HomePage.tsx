@@ -7,13 +7,14 @@ import * as THREE from 'three';
 import {
   ChevronDown,
   Diamond,
-  Gift,
   Heart,
-  Shirt,
   Sparkles,
   Star,
   Truck,
-  Building
+  Building,
+  ShoppingBag,
+  Smartphone,
+  Baby
 } from 'lucide-react';
 
 import { categoriesApi } from '@/api/categories';
@@ -24,7 +25,7 @@ import { ProductCard } from '@/components/common/ProductCard';
 import { DiscountPopup } from '@/components/common/DiscountPopup';
 import { PublicLayout } from '@/components/layout/public/PublicLayout';
 import { ROUTES, resolveIcon } from '@/constants';
-import { useSEO } from '@/hooks/useSEO';
+import { SEO } from '@/components/common/SEO';
 
 // ---------------------------------------------------------------------------
 // Three.js Animated Background Component
@@ -66,44 +67,37 @@ function FloatingIcons() {
 }
 
 // ---------------------------------------------------------------------------
-// Page Data
+// Page Data - Optimized for Target Niches
 // ---------------------------------------------------------------------------
 const categories_preview = [
-  { icon: Diamond, title: 'Premium Jewellery', desc: 'Elegant pieces that make a statement for any occasion.' },
-  { icon: Heart, title: 'Skin Care', desc: 'Nourishing, premium formulations for radiant, healthy skin.' },
-  { icon: Shirt, title: 'Luxury Apparel', desc: 'Tailored suits and premium wear for those who dress to impress.' },
-  { icon: Gift, title: 'Baby Essentials', desc: "Soft, comfortable, and beautifully crafted items for the little ones." },
+  { icon: Sparkles, title: 'Premium Cosmetics', desc: 'Radiant skincare and makeup formulations for a flawless, natural glow.' },
+  { icon: ShoppingBag, title: 'Luxury Hand Purses', desc: 'Elegant, designer-inspired bags that make a statement wherever you go.' },
+  { icon: Diamond, title: 'Exquisite Jewellery', desc: 'Timeless ornaments crafted to perfection for your most special occasions.' },
+  { icon: Smartphone, title: 'Smart Electronics', desc: 'Cutting-edge gadgets and premium accessories to elevate your lifestyle.' },
+  { icon: Baby, title: 'Baby Garments', desc: 'Soft, breathable, and beautifully designed clothing for your little ones.' },
 ];
 
 const whyUs = [
-  { icon: Sparkles, title: 'Uncompromising Quality', desc: 'Curated materials that look, feel, and perform flawlessly.' },
-  { icon: Heart, title: 'Ethically Sourced', desc: 'We care about how our products are made and where they come from.' },
-  { icon: Diamond, title: 'Timeless Elegance', desc: 'Designs that transcend fleeting trends to remain beautiful forever.' },
-  { icon: Truck, title: 'Secure Nationwide Delivery', desc: 'Carefully packaged and delivered straight to your door.' },
+  { icon: Sparkles, title: 'Uncompromising Quality', desc: 'We source only the finest materials, ensuring every product exceeds your expectations.' },
+  { icon: Heart, title: 'Customer First', desc: 'Your satisfaction is our priority. Experience seamless shopping with dedicated support.' },
+  { icon: Building, title: 'Secure Payments', desc: 'Shop with confidence using our secure bank transfer and cash on delivery options.' },
+  { icon: Truck, title: 'Fast Nationwide Delivery', desc: 'Carefully packaged and delivered straight to your doorstep across Pakistan.' },
 ];
 
 const testimonials = [
   { name: 'Ayesha M.', role: 'Verified Buyer', quote: 'The jewellery set I ordered exceeded my expectations. The packaging was beautiful and the quality is outstanding.' },
-  { name: 'Kamran S.', role: 'Verified Buyer', quote: 'I used the manual bank transfer option and the process was seamless. The suit fit perfectly for my event.' },
-  { name: 'Zahra K.', role: 'Verified Buyer', quote: 'Their skin care line is incredible. Noticed a difference in just one week. Highly recommended!' },
+  { name: 'Sana R.', role: 'Verified Buyer', quote: 'I bought a luxury hand purse and some cosmetics. Absolutely in love with the premium feel! OQIRA is my new favorite store.' },
+  { name: 'Zahra K.', role: 'Verified Buyer', quote: 'The baby garments are so soft and beautifully stitched. Plus, my husband loves the smart electronics I got him. Highly recommended!' },
 ];
 
 const faqs = [
   { q: 'How do I pay using Bank Transfer?', a: 'Select "Bank Transfer" at checkout. You will see our bank details. Transfer the amount, upload the receipt, and we will verify and process your order immediately.' },
   { q: 'Is Cash on Delivery available?', a: 'Yes, Cash on Delivery is available across Pakistan for most items.' },
   { q: 'How long does delivery take?', a: 'Standard delivery takes 3-5 working days. You will receive an email confirmation once your payment is verified and the order is dispatched.' },
-  { q: 'What is your return policy?', a: 'We accept returns on unused apparel and jewellery within 7 days. Skin care items cannot be returned once opened for hygiene reasons.' },
+  { q: 'What is your return policy?', a: 'We accept returns on unused apparel, bags, electronics, and jewellery within 7 days. Cosmetics and skin care items cannot be returned once opened for hygiene reasons.' },
 ];
 
 export function HomePage() {
-  useSEO({
-    title: 'Premium Skin Care, Jewellery & Apparel in Pakistan',
-    description:
-      'OQIRA — Pakistan\'s luxury destination for premium skin care, fine jewellery, elegant suits, and baby essentials. Shop online with secure payments and nationwide delivery.',
-    keywords:
-      'OQIRA, skin care Pakistan, jewellery Pakistan, luxury apparel, baby products, online shopping Pakistan',
-  });
-
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: categoriesApi.list });
@@ -114,6 +108,11 @@ export function HomePage() {
 
   return (
     <PublicLayout>
+      <SEO
+        title="Premium Cosmetics, Purses, Jewellery, Electronics & Baby Garments"
+        description="OQIRA — Pakistan's premium lifestyle destination. Shop top-tier cosmetics, luxury hand purses, fine jewellery, smart electronics, and baby garments online."
+        keywords="OQIRA, cosmetics Pakistan, luxury purses, jewellery online, smart electronics, baby garments, premium shopping Pakistan"
+      />
       <DiscountPopup />
 
       {/* HERO SECTION WITH THREE.JS BACKGROUND */}
@@ -128,29 +127,29 @@ export function HomePage() {
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 mx-auto max-w-4xl glass rounded-3xl p-10 sm:p-14 border-white/10 bg-navy/40 text-cream">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2 text-xs font-bold uppercase tracking-widest text-gold shadow-md backdrop-blur-md">
+        <div className="relative z-10 mx-auto max-w-5xl glass rounded-3xl p-10 sm:p-14 border-white/10 bg-navy/40 text-cream">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2 text-xs font-bold uppercase tracking-widest text-gold shadow-md backdrop-blur-md animate-fade-in-up">
             <Sparkles className="h-4 w-4" /> Welcome to OQIRA
           </div>
-          <h1 className="text-5xl leading-[1.1] tracking-tight sm:text-6xl lg:text-7xl font-display font-semibold text-white">
-            Elevate your <br />
-            <span className="text-pink-pale italic">lifestyle</span> with elegance
+          <h1 className="text-5xl leading-[1.1] tracking-tight sm:text-6xl lg:text-7xl font-display font-semibold text-white animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            Elevate your lifestyle <br />
+            with <span className="text-pink-pale italic">premium</span> essentials
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg font-light text-cream/80">
-            Discover our curated collection of premium skin care, exquisite jewellery, luxury apparel, and baby essentials. Crafted for those who appreciate the finer things.
+          <p className="mx-auto mt-6 max-w-3xl text-lg font-light text-cream/80 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+            Discover our exclusive collection of flawless cosmetics, designer-inspired hand purses, exquisite jewellery, smart electronics, and comfortable baby garments. Crafted for those who demand the best.
           </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
             <Link to={ROUTES.PRODUCTS}>
-              <button className="rounded-full bg-white px-8 py-4 text-sm font-bold uppercase tracking-widest text-navy transition-all hover:bg-gold hover:text-navy hover:scale-105">
-                Explore Collection
+              <button className="rounded-full bg-white px-8 py-4 text-sm font-bold uppercase tracking-widest text-navy transition-all hover:bg-gold hover:text-navy hover:scale-105 shadow-xl shadow-black/20">
+                Explore The Collection
               </button>
             </Link>
           </div>
-          <div className="mt-12 flex flex-wrap justify-center gap-8 border-t border-white/10 pt-8">
+          <div className="mt-12 flex flex-wrap justify-center gap-8 border-t border-white/10 pt-8 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
             {[
               { icon: Truck, label: 'Nationwide Delivery' },
-              { icon: Building, label: 'Secure Bank Transfer' },
-              { icon: Heart, label: 'Premium Quality' },
+              { icon: Building, label: 'Secure Bank Transfer & COD' },
+              { icon: Heart, label: 'Premium Quality Guarantee' },
             ].map(({ icon: Icon, label }) => (
               <div key={label} className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-cream/70">
                 <Icon className="h-4 w-4 text-gold" /> {label}
@@ -160,40 +159,21 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* CATEGORIES PREVIEW */}
+      {/* CATEGORIES PREVIEW - NICHE HIGHLIGHTS */}
       <section className="bg-cream px-6 py-24">
         <div className="mx-auto mb-16 max-w-2xl text-center">
-          <span className="section-tag">Our Collections</span>
+          <span className="section-tag">Our Signatures</span>
           <h2 className="text-4xl sm:text-5xl">Curated for excellence</h2>
-          <p className="mt-4 text-navy-soft text-lg">Everything you need to look and feel your absolute best.</p>
+          <p className="mt-4 text-navy-soft text-lg">Everything you need to look, feel, and live your absolute best.</p>
         </div>
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto flex flex-wrap justify-center gap-6 max-w-7xl">
           {categories_preview.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="group rounded-3xl border border-navy/10 bg-white p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-pink-deep/10">
+            <div key={title} className="group w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] rounded-3xl border border-navy/10 bg-white p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-pink-deep/10">
               <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-cream-2 text-pink-deep transition-colors group-hover:bg-pink-deep group-hover:text-white">
                 <Icon className="h-8 w-8" />
               </div>
-              <h3 className="text-xl mb-3">{title}</h3>
+              <h3 className="text-xl mb-3 font-display font-semibold text-navy">{title}</h3>
               <p className="text-sm text-navy-soft leading-relaxed">{desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* WHY US */}
-      <section className="bg-navy px-6 py-24 text-cream">
-        <div className="mx-auto mb-16 max-w-2xl text-center">
-          <span className="inline-block text-xs font-bold tracking-widest uppercase text-navy bg-gold px-4 py-1.5 rounded-full mb-4">The OQIRA Standard</span>
-          <h2 className="text-4xl sm:text-5xl text-white">Why choose us</h2>
-        </div>
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {whyUs.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-gold">
-                <Icon className="h-6 w-6" />
-              </div>
-              <h4 className="text-lg text-white mb-2">{title}</h4>
-              <p className="text-sm text-cream/70 leading-relaxed">{desc}</p>
             </div>
           ))}
         </div>
@@ -201,7 +181,7 @@ export function HomePage() {
 
       {/* DYNAMIC CATEGORIES FROM DB */}
       {categories && categories.length > 0 && (
-        <section className="bg-cream-2 px-6 py-24">
+        <section className="bg-cream-2 px-6 py-24 border-y border-navy/5">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <span className="section-tag">Shop By Category</span>
             <h2 className="text-4xl sm:text-5xl">Explore the store</h2>
@@ -230,6 +210,7 @@ export function HomePage() {
           </div>
         </section>
       )}
+
       {/* FEATURED PRODUCTS */}
       <section className="bg-white px-6 py-24">
         <div className="mx-auto mb-16 max-w-2xl text-center">
@@ -251,6 +232,25 @@ export function HomePage() {
           <Link to={ROUTES.PRODUCTS}>
             <Button variant="secondary" size="lg">View Entire Collection</Button>
           </Link>
+        </div>
+      </section>
+
+      {/* WHY US */}
+      <section className="bg-navy px-6 py-24 text-cream">
+        <div className="mx-auto mb-16 max-w-2xl text-center">
+          <span className="inline-block text-xs font-bold tracking-widest uppercase text-navy bg-gold px-4 py-1.5 rounded-full mb-4">The OQIRA Standard</span>
+          <h2 className="text-4xl sm:text-5xl text-white">Why choose us</h2>
+        </div>
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {whyUs.map(({ icon: Icon, title, desc }) => (
+            <div key={title} className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-gold">
+                <Icon className="h-6 w-6" />
+              </div>
+              <h4 className="text-lg font-bold text-white mb-2">{title}</h4>
+              <p className="text-sm text-cream/70 leading-relaxed">{desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -313,11 +313,11 @@ export function HomePage() {
           Experience the OQIRA difference today
         </h2>
         <p className="mx-auto max-w-xl text-lg text-cream/70 mb-10 font-light">
-          Shop our exclusive collections and enjoy premium quality, secure payments, and nationwide delivery.
+          Shop our exclusive collections of cosmetics, purses, jewellery, electronics, and baby garments.
         </p>
         <Link to={ROUTES.PRODUCTS}>
           <button className="rounded-full bg-gold px-10 py-5 text-sm font-bold uppercase tracking-widest text-navy transition-all hover:bg-white hover:scale-105 shadow-lg shadow-gold/20">
-            Start Shopping
+            Shop Now
           </button>
         </Link>
       </section>

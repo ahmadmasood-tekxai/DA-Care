@@ -101,6 +101,14 @@ export interface CategoryUpdateInput {
 // ---------------------------------------------------------------------------
 // Products
 // ---------------------------------------------------------------------------
+export interface ProductImage {
+  id: number;
+  product_id: number;
+  url: string;
+  public_id: string;
+  created_at: string;
+}
+
 export interface Product {
   id: number;
   category_id: number;
@@ -118,6 +126,7 @@ export interface Product {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  images: ProductImage[];
 }
 
 export interface ProductDetail extends Product {
@@ -138,7 +147,7 @@ export interface ProductCreateInput {
   is_active?: boolean;
 }
 
-export interface ProductUpdateInput extends Partial<ProductCreateInput> {}
+export interface ProductUpdateInput extends Partial<ProductCreateInput> { }
 
 export interface ListProductsParams {
   category_slug?: string;

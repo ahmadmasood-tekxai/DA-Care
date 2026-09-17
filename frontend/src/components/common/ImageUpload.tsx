@@ -4,24 +4,35 @@ import clsx from 'clsx';
 
 interface ImageUploadProps {
   currentImageUrl?: string | null;
-  onUpload: (file: File) => Promise<void>;
+  additionalImages?: { url: string; id?: number }[];
+  onUpload?: (file: File) => Promise<void>;
+  onUploadMultiple?: (files: File[]) => Promise<void>;
   isUploading?: boolean;
+  multiple?: boolean;
 }
 
 /** Click-to-upload product image picker with local preview shown immediately,
  * then swapped for the server URL once the upload completes. */
-export function ImageUpload({ currentImageUrl, onUpload, isUploading }: ImageUploadProps) {
+export function ImageUpload({ currentImageUrl, additionalImages = [], onUpload, onUploadMultiple, isUploading, multiple }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isDragging, setIsDragging] = useState(false);
 
-  async function handleFile(file: File | undefined) {
-    if (!file) return;
-    setPreviewUrl(URL.createObjectURL(file));
-    await onUpload(file);
+  async function handleFiles(fileList: FileList | null | undefined) {
+    if (!fileList || fileList.length === 0) return;
+    const files = Array.from(fileList);
+    
+    setPreviewUrls(files.map(f => URL.createObjectURL(f)));
+    
+    if (multiple && onUploadMultiple) {
+      await onUploadMultiple(files);
+    } else if (onUpload) {
+      await onUpload(files[0]);
+    }
   }
 
-  const displayUrl = previewUrl || currentImageUrl;
+  const displayUrl = previewUrls.length > 0 ? previewUrls[0] : currentImageUrl;
+  const allThumbnails = previewUrls.length > 0 ? previewUrls.slice(1) : additionalImages.map(i => i.url);
 
   return (
     <div>
@@ -36,7 +47,7 @@ export function ImageUpload({ currentImageUrl, onUpload, isUploading }: ImageUpl
         onDrop={(e) => {
           e.preventDefault();
           setIsDragging(false);
-          handleFile(e.dataTransfer.files?.[0]);
+          handleFiles(e.dataTransfer.files);
         }}
         className={clsx(
           'relative flex h-44 w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border-2 border-dashed transition-colors',
@@ -66,10 +77,21 @@ export function ImageUpload({ currentImageUrl, onUpload, isUploading }: ImageUpl
               e.stopPropagation();
               inputRef.current?.click();
             }}
-            className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full bg-navy/90 px-3 py-1.5 text-xs font-bold text-white hover:bg-pink-deep"
+            className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full bg-navy/90 px-3 py-1.5 text-xs font-bold text-white hover:bg-pink-deep z-10"
           >
-            <UploadCloud className="h-3.5 w-3.5" /> Change
+            <UploadCloud className="h-3.5 w-3.5" /> {multiple ? 'Add More' : 'Change'}
           </button>
+        )}
+        
+        {/* Gallery Thumbnails */}
+        {multiple && allThumbnails.length > 0 && (
+          <div className="absolute top-2 right-2 flex flex-col gap-1.5 max-h-40 overflow-y-auto">
+            {allThumbnails.map((thumb, idx) => (
+              <div key={idx} className="h-10 w-10 overflow-hidden rounded-md border border-white/20 shadow-sm">
+                <img src={thumb} alt="thumbnail" className="h-full w-full object-cover" />
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
@@ -78,7 +100,8 @@ export function ImageUpload({ currentImageUrl, onUpload, isUploading }: ImageUpl
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif"
         className="hidden"
-        onChange={(e) => handleFile(e.target.files?.[0])}
+        multiple={multiple}
+        onChange={(e) => handleFiles(e.target.files)}
       />
     </div>
   );
