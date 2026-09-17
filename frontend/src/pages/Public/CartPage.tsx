@@ -89,6 +89,7 @@ export function CartPage() {
   if (orderConfirmed) {
     return (
       <PublicLayout>
+        <SEO title="Order Confirmed" description="Thank you for your order." />
         <div className="mx-auto max-w-md px-6 py-28 text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
             <CheckCircle2 className="h-10 w-10" />
@@ -206,6 +207,7 @@ export function CartPage() {
   if (items.length === 0) {
     return (
       <PublicLayout>
+        <SEO title="Your Cart is Empty" description="Your shopping cart is empty." />
         <div className="mx-auto max-w-md px-6 py-28">
           <EmptyState
             icon={<ShoppingBag className="h-6 w-6" />}
@@ -224,6 +226,10 @@ export function CartPage() {
 
   return (
     <PublicLayout>
+      <SEO
+        title="Your Cart"
+        description="Review your shopping cart before checkout. Secure bank transfer and COD available for premium products across Pakistan."
+      />
       <section className="bg-cream-2 px-6 py-14 text-center">
         <span className="section-tag">Almost There</span>
         <h1 className="text-4xl sm:text-5xl">Your Cart</h1>
