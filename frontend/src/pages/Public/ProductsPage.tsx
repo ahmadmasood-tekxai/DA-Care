@@ -6,7 +6,6 @@ import { useSearchParams } from 'react-router-dom';
 import { categoriesApi } from '@/api/categories';
 import { productsApi } from '@/api/products';
 import { EmptyState } from '@/components/common/EmptyState';
-import { Loader } from '@/components/common/Loader';
 import { ProductCard } from '@/components/common/ProductCard';
 import { PublicLayout } from '@/components/layout/public/PublicLayout';
 import { resolveIcon } from '@/constants';
@@ -90,7 +89,12 @@ export function ProductsPage() {
                     className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-colors ${isActive ? 'bg-navy text-white' : 'bg-white text-navy-soft border border-navy/15 hover:bg-pink-pale'
                       }`}
                   >
-                    <Icon className="h-3.5 w-3.5" /> {cat.name}
+                    {cat.image_url ? (
+                      <img src={cat.image_url} alt={cat.name} className="h-3.5 w-3.5 rounded-full object-cover" />
+                    ) : (
+                      <Icon className="h-3.5 w-3.5" />
+                    )}
+                    {cat.name}
                   </button>
                 );
               })}
@@ -99,7 +103,21 @@ export function ProductsPage() {
 
           {/* Grid */}
           {isLoading ? (
-            <Loader />
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="animate-pulse overflow-hidden rounded-3xl border border-navy/10 bg-white">
+                  <div className="aspect-square w-full bg-slate-200"></div>
+                  <div className="p-5">
+                    <div className="h-6 w-3/4 rounded bg-slate-200"></div>
+                    <div className="mt-2 h-4 w-full rounded bg-slate-200"></div>
+                    <div className="mt-4 flex items-center justify-between">
+                      <div className="h-6 w-1/3 rounded bg-slate-200"></div>
+                      <div className="h-8 w-20 rounded-full bg-slate-200"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : products && products.items.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {products.items.map((product) => (

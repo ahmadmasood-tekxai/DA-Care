@@ -72,6 +72,7 @@ export interface Category {
   slug: string;
   description?: string | null;
   icon: string; // lucide icon name
+  image_url?: string | null;
   display_order: number;
   created_at: string;
   updated_at: string;
@@ -85,6 +86,7 @@ export interface CategoryCreateInput {
   name: string;
   description?: string;
   icon?: string;
+  image_url?: string;
   display_order?: number;
 }
 
@@ -92,6 +94,7 @@ export interface CategoryUpdateInput {
   name?: string;
   description?: string;
   icon?: string;
+  image_url?: string;
   display_order?: number;
 }
 

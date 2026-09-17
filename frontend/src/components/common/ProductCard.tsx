@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, Link2, Check } from 'lucide-react';
+import { useState } from 'react';
 
 import { ProductImage } from '@/components/common/ProductImage';
 import { PRODUCT_BADGE_LABELS, ROUTES } from '@/constants';
@@ -9,6 +10,15 @@ import { formatCurrency } from '@/utils/format';
 
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(`${window.location.origin}${ROUTES.PRODUCT_DETAIL(product.slug)}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="group overflow-hidden rounded-3xl border border-navy/10 bg-white transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-navy/10">
@@ -28,6 +38,18 @@ export function ProductCard({ product }: { product: Product }) {
           alt={product.name}
           className={`transition-transform duration-500 group-hover:scale-105 ${product.stock <= 0 ? 'opacity-60 grayscale' : ''}`}
         />
+        <button
+          onClick={handleCopyLink}
+          className="absolute bottom-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-navy shadow-sm backdrop-blur-sm transition-all hover:bg-navy hover:text-white"
+          title="Copy Link"
+        >
+          {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Link2 className="h-4 w-4" />}
+        </button>
+        {copied && (
+          <span className="absolute bottom-12 right-3 z-10 animate-fade-in-up rounded-md bg-navy px-2 py-1 text-[10px] font-bold text-white shadow-md">
+            Copied!
+          </span>
+        )}
       </Link>
 
       <div className="p-5">

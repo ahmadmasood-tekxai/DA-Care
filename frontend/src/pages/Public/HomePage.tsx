@@ -215,8 +215,12 @@ export function HomePage() {
                   to={`${ROUTES.PRODUCTS}?category=${cat.slug}`}
                   className="group rounded-2xl border border-navy/10 bg-white p-6 text-center transition-all hover:border-pink-deep hover:shadow-lg"
                 >
-                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-cream-2 text-pink-deep transition-colors group-hover:bg-pink-deep group-hover:text-white">
-                    <Icon className="h-6 w-6" />
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-cream-2 text-pink-deep transition-colors group-hover:bg-pink-deep group-hover:text-white">
+                    {cat.image_url ? (
+                      <img src={cat.image_url} alt={cat.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <Icon className="h-6 w-6" />
+                    )}
                   </div>
                   <h4 className="text-base font-bold text-navy">{cat.name}</h4>
                   <p className="mt-1 text-xs uppercase tracking-wider text-navy-soft">{cat.product_count} items</p>

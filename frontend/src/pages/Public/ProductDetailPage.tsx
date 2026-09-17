@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Check, Minus, Plus, ShieldCheck, ShoppingBag, Truck, Wallet } from 'lucide-react';
+import { ArrowLeft, Check, Minus, Plus, ShieldCheck, ShoppingBag, Truck, Wallet, Link2 } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { productsApi } from '@/api/products';
@@ -13,6 +13,7 @@ import { ProductBadge } from '@/types';
 import { useCart } from '@/hooks/useCart';
 import { useSEO } from '@/hooks/useSEO';
 import { formatCurrency } from '@/utils/format';
+import { ProductCard } from '@/components/common/ProductCard';
 
 
 export function ProductDetailPage() {
@@ -21,12 +22,25 @@ export function ProductDetailPage() {
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', slug],
     queryFn: () => productsApi.getBySlug(slug!),
     enabled: !!slug,
   });
+
+  const { data: relatedProducts } = useQuery({
+    queryKey: ['products', 'related', product?.category?.slug],
+    queryFn: () => productsApi.list({ category_slug: product?.category?.slug, page_size: 5 }),
+    enabled: !!product?.category?.slug,
+  });
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useSEO({
     title: product ? `${product.name} — ${product.category?.name || 'OQIRA'}` : 'Product Detail',
@@ -85,12 +99,26 @@ export function ProductDetailPage() {
 
           {/* Info */}
           <div>
-            <Link
-              to={`${ROUTES.PRODUCTS}?category=${product.category.slug}`}
-              className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-pink-pale px-3.5 py-1.5 text-xs font-bold text-pink-deep hover:bg-pink"
-            >
-              <CategoryIcon className="h-3.5 w-3.5" /> {product.category.name}
-            </Link>
+            <div className="flex items-center justify-between mb-3">
+              <Link
+                to={`${ROUTES.PRODUCTS}?category=${product.category.slug}`}
+                className="inline-flex items-center gap-1.5 rounded-full bg-pink-pale px-3.5 py-1.5 text-xs font-bold text-pink-deep hover:bg-pink"
+              >
+                <CategoryIcon className="h-3.5 w-3.5" /> {product.category.name}
+              </Link>
+              <button
+                onClick={handleCopyLink}
+                className="relative flex h-8 w-8 items-center justify-center rounded-full bg-cream-2 text-navy hover:bg-pink-deep hover:text-white transition-colors"
+                title="Copy Link"
+              >
+                {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Link2 className="h-4 w-4" />}
+                {copied && (
+                  <span className="absolute -top-8 right-0 animate-fade-in-up whitespace-nowrap rounded bg-navy px-2 py-1 text-[10px] font-bold text-white">
+                    Copied!
+                  </span>
+                )}
+              </button>
+            </div>
 
             <h1 className="text-3xl sm:text-4xl font-display font-semibold text-navy">{product.name}</h1>
             <p className="mt-3 text-navy-soft">{product.short_description}</p>
@@ -154,6 +182,21 @@ export function ProductDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Related Products */}
+        {relatedProducts && relatedProducts.items.length > 1 && (
+          <div className="mt-20 border-t border-navy/10 pt-16">
+            <h2 className="mb-8 font-display text-3xl font-semibold text-navy">You may also like</h2>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {relatedProducts.items
+                .filter((p) => p.id !== product.id)
+                .slice(0, 4)
+                .map((relatedProduct) => (
+                  <ProductCard key={relatedProduct.id} product={relatedProduct} />
+                ))}
+            </div>
+          </div>
+        )}
       </div>
     </PublicLayout>
   );

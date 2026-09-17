@@ -6,11 +6,12 @@ import { categoriesApi } from '@/api/categories';
 import { getApiErrorMessage } from '@/api/client';
 import { Button } from '@/components/common/Button';
 import { Card } from '@/components/common/Card';
-import { Input, Select } from '@/components/common/Input';
+import { Input } from '@/components/common/Input';
 import { Modal } from '@/components/common/Modal';
 import { Table, type TableColumn } from '@/components/common/Table';
 import { AdminLayout } from '@/components/layout/admin/AdminLayout';
-import { AVAILABLE_ICON_NAMES, resolveIcon } from '@/constants';
+import { ImageUpload } from '@/components/common/ImageUpload';
+import { resolveIcon } from '@/constants';
 import type { CategoryCreateInput, CategoryWithCount } from '@/types';
 
 const emptyForm: CategoryCreateInput = { name: '', description: '', icon: 'Shirt', display_order: 0 };
@@ -52,6 +53,15 @@ export function AdminCategoriesPage() {
     },
   });
 
+  const uploadImageMutation = useMutation({
+    mutationFn: ({ id, file }: { id: number; file: File }) => categoriesApi.uploadImage(id, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    },
+    onError: (err) => setFormError(getApiErrorMessage(err)),
+  });
+
   function openCreateModal() {
     setEditingId(null);
     setForm(emptyForm);
@@ -84,13 +94,20 @@ export function AdminCategoriesPage() {
 
   const columns: TableColumn<CategoryWithCount>[] = [
     {
-      key: 'icon',
-      header: '',
+      key: 'image',
+      header: 'Image',
       render: (c) => {
+        if (c.image_url) {
+          return (
+            <div className="flex h-10 w-10 overflow-hidden rounded-lg border border-navy/10">
+              <img src={c.image_url} alt={c.name} className="h-full w-full object-cover" />
+            </div>
+          );
+        }
         const Icon = resolveIcon(c.icon);
         return (
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-pink-pale text-pink-deep">
-            <Icon className="h-4 w-4" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-pink-pale text-pink-deep">
+            <Icon className="h-5 w-5" />
           </div>
         );
       },
@@ -149,13 +166,19 @@ export function AdminCategoriesPage() {
         }
       >
         <div className="space-y-4">
+          {editingId ? (
+            <ImageUpload
+              currentImageUrl={categories?.find(c => c.id === editingId)?.image_url}
+              isUploading={uploadImageMutation.isPending}
+              onUpload={(file) => uploadImageMutation.mutateAsync({ id: editingId, file }).then(() => { })}
+            />
+          ) : (
+            <p className="rounded-lg bg-cream-2 px-3 py-2 text-xs text-navy-soft">
+              Save the category first, then you'll be able to upload its image.
+            </p>
+          )}
+
           <Input label="Category Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Wedding Sets" required />
-          <Select
-            label="Icon"
-            value={form.icon}
-            onChange={(e) => setForm({ ...form, icon: e.target.value })}
-            options={AVAILABLE_ICON_NAMES.map((name) => ({ value: name, label: name }))}
-          />
           <Input label="Description (optional)" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           <Input
             label="Display Order"
