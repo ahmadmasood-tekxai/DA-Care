@@ -23,7 +23,7 @@ export function AboutPage() {
       />
       <section className="bg-gradient-to-b from-cream-2 to-cream px-6 pb-20 pt-24 text-center">
         <span className="section-tag">Our Story</span>
-        <h1 className="mx-auto text-base/8 max-w-3xl text-4xl sm:text-5xl lg:text-6xl font-display font-semibold text-navy">
+        <h1 className="mx-auto text-base/8 max-w-3xl text-[30px] sm:text-4xl lg:text-5xl font-display font-semibold text-navy">
           Elevating your everyday lifestyle
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-navy-soft leading-relaxed">

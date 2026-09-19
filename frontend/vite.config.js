@@ -6,6 +6,7 @@ export default defineConfig({
     resolve: { alias: { '@': path.resolve(__dirname, './src') } },
     server: {
         port: 5173,
+        allowedHosts: ['.ngrok-free.dev'],
         proxy: {
             '/api': { target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8000', changeOrigin: true },
             '/uploads': { target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8000', changeOrigin: true },

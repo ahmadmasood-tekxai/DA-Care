@@ -127,7 +127,7 @@ export function HomePage() {
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 mx-auto max-w-5xl glass rounded-3xl p-10 sm:p-14 border-white/10 bg-navy/40 text-cream">
+        <div className="relative z-10 mx-auto max-w-5xl glass rounded-3xl p-6 sm:p-14 sm:border-white/10 bg-navy/40 text-cream">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2 text-xs font-bold uppercase tracking-widest text-gold shadow-md backdrop-blur-md animate-fade-in-up">
             <Sparkles className="h-4 w-4" /> Welcome to OQIRA
           </div>
