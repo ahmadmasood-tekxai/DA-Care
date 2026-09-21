@@ -68,13 +68,13 @@ export function ProductsPage() {
           ? `OQIRA par ${activeCategoryName} khareeden — premium quality, fast delivery, COD available. Pakistan ke sabse behtareen products sirf OQIRA par!`
           : 'OQIRA par shop karein — cosmetics, skin care, jewellery, luxury suits, baby garments. 1000+ products. Cash on delivery + bank transfer. Poori Pakistan delivery.'}
         keywords={`OQIRA, ${activeCategoryName ? activeCategoryName + ' Pakistan, ' : ''}online shopping Pakistan, buy ${activeCategoryName || 'products'} online, cosmetics Pakistan, jewellery online, baby clothes, luxury suits, COD Pakistan, skin care products Pakistan`}
-        url={`https://oqira.vercel.app/products${activeCategory ? '?category=' + activeCategory : ''}`}
+        url={`https://okira.vercel.app/products${activeCategory ? '?category=' + activeCategory : ''}`}
         schema={{
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://oqira.vercel.app/" },
-            { "@type": "ListItem", "position": 2, "name": activeCategoryName || "All Products", "item": `https://oqira.vercel.app/products${activeCategory ? '?category=' + activeCategory : ''}` }
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://okira.vercel.app/" },
+            { "@type": "ListItem", "position": 2, "name": activeCategoryName || "All Products", "item": `https://okira.vercel.app/products${activeCategory ? '?category=' + activeCategory : ''}` }
           ]
         }}
       />
@@ -118,11 +118,10 @@ export function ProductsPage() {
               <SlidersHorizontal className="h-4 w-4 text-navy-soft" />
               <button
                 onClick={() => selectCategory('')}
-                className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
-                  !activeCategory
+                className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${!activeCategory
                     ? 'bg-navy text-white'
                     : 'bg-white text-navy-soft border border-navy/15 hover:bg-pink-pale'
-                }`}
+                  }`}
               >
                 All
               </button>
@@ -133,11 +132,10 @@ export function ProductsPage() {
                   <button
                     key={cat.id}
                     onClick={() => selectCategory(cat.slug)}
-                    className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-colors ${
-                      isActive
+                    className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-colors ${isActive
                         ? 'bg-navy text-white'
                         : 'bg-white text-navy-soft border border-navy/15 hover:bg-pink-pale'
-                    }`}
+                      }`}
                   >
                     {cat.image_url ? (
                       <img src={cat.image_url} alt={cat.name} className="h-3.5 w-3.5 rounded-full object-cover" />

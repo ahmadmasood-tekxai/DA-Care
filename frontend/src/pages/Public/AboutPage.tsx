@@ -21,13 +21,13 @@ export function AboutPage() {
         title="About OQIRA — Pakistan ka Trusted Premium Online Store"
         description="OQIRA ke barey mein janein — Pakistan ka trusted premium online store for cosmetics, jewellery, luxury suits & baby garments. Quality commitment, COD, nationwide delivery."
         keywords="about OQIRA, OQIRA Pakistan, trusted online store Pakistan, premium cosmetics brand, jewellery brand Pakistan, baby clothes brand, luxury suits online, OQIRA story, online shopping Pakistan"
-        url="https://oqira.vercel.app/about"
+        url="https://okira.vercel.app/about"
         schema={{
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://oqira.vercel.app/" },
-            { "@type": "ListItem", "position": 2, "name": "About", "item": "https://oqira.vercel.app/about" }
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://okira.vercel.app/" },
+            { "@type": "ListItem", "position": 2, "name": "About", "item": "https://okira.vercel.app/about" }
           ]
         }}
       />

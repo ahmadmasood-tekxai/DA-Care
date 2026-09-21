@@ -140,12 +140,12 @@ export function HomePage() {
         title="Online Shopping Pakistan — Cosmetics, Jewellery, Suits & Baby Clothes"
         description="OQIRA — Pakistan ka No.1 premium online store. Shop cosmetics, skin care, fine jewellery, luxury suits & baby garments online. Cash on delivery + bank transfer. Poori Pakistan delivery. Aaj hi order karein!"
         keywords="OQIRA, online shopping Pakistan, cosmetics Pakistan, skin care online, jewellery Pakistan, baby clothes online, luxury suits Pakistan, kids garments, online store Pakistan, COD Pakistan, cash on delivery, bank transfer Pakistan, makeup online, necklace earrings Pakistan, baby dress Pakistan, premium shopping, best online shop Pakistan"
-        url="https://oqira.vercel.app/"
+        url="https://okira.vercel.app/"
         schema={{
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://oqira.vercel.app/" }
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://okira.vercel.app/" }
           ]
         }}
       />

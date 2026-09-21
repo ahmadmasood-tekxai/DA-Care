@@ -4,7 +4,7 @@
 
   <!-- Home Page -->
   <url>
-    <loc>https://oqira.vercel.app/</loc>
+    <loc>https://okira.vercel.app/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <lastmod>2024-01-01</lastmod>
@@ -12,7 +12,7 @@
 
   <!-- About Page -->
   <url>
-    <loc>https://oqira.vercel.app/about</loc>
+    <loc>https://okira.vercel.app/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <lastmod>2024-01-01</lastmod>
@@ -20,7 +20,7 @@
 
   <!-- All Products -->
   <url>
-    <loc>https://oqira.vercel.app/products</loc>
+    <loc>https://okira.vercel.app/products</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
     <lastmod>2024-01-01</lastmod>

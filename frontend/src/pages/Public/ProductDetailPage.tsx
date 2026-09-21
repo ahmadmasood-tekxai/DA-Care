@@ -118,7 +118,7 @@ export function ProductDetailPage() {
           ? `${product.name} — Rs. ${product.price}. ${product.short_description || ''} OQIRA par khareeden — COD + bank transfer. Pakistan bhar delivery. Aaj hi order karein!`
           : 'Discover premium products at OQIRA. Nationwide delivery in Pakistan.'}
         keywords={product ? `${product.name}, ${product.name} Pakistan, ${product.category?.name || ''} Pakistan, buy ${product.name} online, OQIRA, online shopping Pakistan, COD Pakistan` : 'OQIRA'}
-        url={`https://oqira.vercel.app/products/${product?.slug}`}
+        url={`https://okira.vercel.app/products/${product?.slug}`}
         image={product?.image_url || undefined}
         schema={product ? {
           "@context": "https://schema.org",
@@ -130,7 +130,7 @@ export function ProductDetailPage() {
           "sku": String(product.id),
           "offers": {
             "@type": "Offer",
-            "url": `https://oqira.vercel.app/products/${product.slug}`,
+            "url": `https://okira.vercel.app/products/${product.slug}`,
             "priceCurrency": "PKR",
             "price": String(product.price),
             "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
@@ -139,15 +139,15 @@ export function ProductDetailPage() {
             "shippingDetails": {
               "@type": "OfferShippingDetails",
               "shippingRate": { "@type": "MonetaryAmount", "value": "0", "currency": "PKR" },
-              "deliveryTime": { "@type": "ShippingDeliveryTime", "businessDays": { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"] } }
+              "deliveryTime": { "@type": "ShippingDeliveryTime", "businessDays": { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] } }
             }
           },
           "breadcrumb": {
             "@type": "BreadcrumbList",
             "itemListElement": [
-              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://oqira.vercel.app/" },
-              { "@type": "ListItem", "position": 2, "name": product.category?.name, "item": `https://oqira.vercel.app/products?category=${product.category?.slug}` },
-              { "@type": "ListItem", "position": 3, "name": product.name, "item": `https://oqira.vercel.app/products/${product.slug}` }
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://okira.vercel.app/" },
+              { "@type": "ListItem", "position": 2, "name": product.category?.name, "item": `https://okira.vercel.app/products?category=${product.category?.slug}` },
+              { "@type": "ListItem", "position": 3, "name": product.name, "item": `https://okira.vercel.app/products/${product.slug}` }
             ]
           }
         } : undefined}
