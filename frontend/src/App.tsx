@@ -7,7 +7,7 @@ import { ProtectedRoute } from '@/components/layout/admin/ProtectedRoute';
 import { ROUTES } from '@/constants';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
-import { Loader } from '@/components/common/Loader';
+
 import { ChatAssistant } from '@/components/common/ChatAssistant';
 
 // Lazy-loaded Admin Pages
@@ -30,6 +30,55 @@ const queryClient = new QueryClient({
   },
 });
 
+/** Shown while a lazy page chunk is downloading — looks like a real page shell */
+function PageShellSkeleton() {
+  return (
+    <div className="flex min-h-screen flex-col bg-cream">
+      {/* Header skeleton */}
+      <div className="fixed inset-x-0 top-0 z-50 border-b border-navy/10 bg-cream/85 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-11 w-11 animate-pulse rounded-full bg-slate-200" />
+            <div className="space-y-1.5">
+              <div className="h-4 w-20 animate-pulse rounded-full bg-slate-200" />
+              <div className="h-2.5 w-28 animate-pulse rounded-full bg-slate-200" />
+            </div>
+          </div>
+          <div className="hidden items-center gap-8 md:flex">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-3.5 w-14 animate-pulse rounded-full bg-slate-200" />
+            ))}
+          </div>
+          <div className="h-9 w-24 animate-pulse rounded-full bg-slate-200" />
+        </div>
+      </div>
+      {/* Page body */}
+      <main className="flex-1 pt-[72px]">
+        <div className="h-64 w-full animate-pulse bg-slate-100" />
+        <div className="mx-auto max-w-6xl px-6 py-14 space-y-6">
+          <div className="h-6 w-1/4 animate-pulse rounded-full bg-slate-200" />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="animate-pulse overflow-hidden rounded-3xl border border-navy/10 bg-white">
+                <div className="aspect-square w-full bg-slate-200" />
+                <div className="p-5 space-y-3">
+                  <div className="h-5 w-3/4 rounded-full bg-slate-200" />
+                  <div className="h-4 w-full rounded-full bg-slate-200" />
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="h-6 w-1/3 rounded-full bg-slate-200" />
+                    <div className="h-9 w-20 rounded-full bg-slate-200" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+
 export default function App() {
   return (
     <HelmetProvider>
@@ -37,7 +86,7 @@ export default function App() {
         <AuthProvider>
           <CartProvider>
             <BrowserRouter>
-              <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader /></div>}>
+              <Suspense fallback={<PageShellSkeleton />}>
                 <Routes>
                   {/* Public storefront */}
                   <Route path={ROUTES.HOME} element={<HomePage />} />

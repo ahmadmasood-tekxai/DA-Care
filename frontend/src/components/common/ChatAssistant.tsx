@@ -14,6 +14,8 @@ export function ChatAssistant() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [streamingMessage, setStreamingMessage] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -40,7 +42,24 @@ export function ChatAssistant() {
         message: userMessage
       });
 
-      setMessages((prev) => [...prev, { role: 'assistant', content: response.data.reply }]);
+      const reply = response.data.reply;
+      
+      // Simulate chunked streaming response
+      setIsStreaming(true);
+      let currentText = '';
+      const chunks = reply.split(''); // stream char by char
+      
+      for (let i = 0; i < chunks.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, 20)); // typing speed
+        currentText += chunks[i];
+        setStreamingMessage(currentText);
+        scrollToBottom();
+      }
+      
+      setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+      setStreamingMessage('');
+      setIsStreaming(false);
+
     } catch (error) {
       console.error('Chat error:', error);
       setMessages((prev) => [...prev, { role: 'assistant', content: 'Sorry, I am having trouble connecting right now. Please try again later or contact us on WhatsApp.' }]);
@@ -54,7 +73,7 @@ export function ChatAssistant() {
       {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-navy text-white shadow-xl transition-transform hover:scale-110 ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}
+        className={`fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-navy to-pink-deep text-white shadow-2xl shadow-pink-deep/30 transition-all duration-300 hover:scale-110 hover:shadow-pink-deep/50 ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}
         aria-label="Open Chat Support"
       >
         <MessageCircle className="h-6 w-6" />
@@ -62,36 +81,52 @@ export function ChatAssistant() {
 
       {/* Chat Window */}
       <div
-        className={`fixed bottom-6 right-6 z-50 flex h-[500px] max-h-[80vh] w-[350px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl transition-all duration-300 ${isOpen ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-10 opacity-0'}`}
+        className={`fixed bottom-6 right-6 z-50 flex h-[500px] max-h-[80vh] w-[350px] flex-col overflow-hidden rounded-3xl glass shadow-2xl transition-all duration-500 origin-bottom-right ${isOpen ? 'scale-100 opacity-100' : 'pointer-events-none scale-95 opacity-0'}`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between bg-navy px-4 py-3 text-white">
-          <div className="flex items-center gap-2">
-            <Bot className="h-5 w-5 text-pink-pale" />
-            <span className="font-display font-semibold">Support Assistant</span>
+        <div className="flex items-center justify-between bg-gradient-to-r from-navy to-navy/90 px-5 py-4 text-white">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-deep/30">
+              <Bot className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <span className="block font-display text-sm font-semibold tracking-wide">Support Assistant</span>
+              <span className="block text-[10px] text-pink-pale">Typically replies instantly</span>
+            </div>
           </div>
-          <button onClick={() => setIsOpen(false)} className="rounded-full p-1 hover:bg-white/20">
-            <X className="h-5 w-5" />
+          <button onClick={() => setIsOpen(false)} className="rounded-full p-1.5 hover:bg-white/10 transition-colors">
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Messages List */}
-        <div className="flex-1 overflow-y-auto bg-cream-2 p-4">
-          <div className="flex flex-col gap-3">
+        <div className="flex-1 overflow-y-auto scrollbar-thin bg-cream/50 p-5 backdrop-blur-sm">
+          <div className="flex flex-col gap-4">
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm shadow-sm ${msg.role === 'user' ? 'bg-pink-deep text-white rounded-tr-sm' : 'bg-white text-navy rounded-tl-sm'}`}>
+                <div className={`max-w-[85%] px-4 py-2.5 text-sm shadow-sm ${msg.role === 'user' ? 'bg-navy text-white rounded-2xl rounded-tr-sm' : 'bg-white border border-white/50 text-navy-soft rounded-2xl rounded-tl-sm'}`}>
                   {msg.content}
                 </div>
               </div>
             ))}
-            {isLoading && (
+            
+            {/* Streaming Message block */}
+            {isStreaming && streamingMessage && (
               <div className="flex justify-start">
-                <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-white px-4 py-3 text-sm shadow-sm">
-                  <div className="flex gap-1">
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-navy/40"></span>
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-navy/40" style={{ animationDelay: '150ms' }}></span>
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-navy/40" style={{ animationDelay: '300ms' }}></span>
+                <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-white border border-white/50 px-4 py-2.5 text-sm text-navy-soft shadow-sm">
+                  {streamingMessage}
+                  <span className="ml-1 inline-block h-3 w-1.5 animate-pulse bg-pink-deep"></span>
+                </div>
+              </div>
+            )}
+            
+            {isLoading && !isStreaming && (
+              <div className="flex justify-start">
+                <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-white border border-white/50 px-4 py-3 text-sm shadow-sm">
+                  <div className="flex gap-1.5">
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-pink-deep/40"></span>
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-pink-deep/40" style={{ animationDelay: '150ms' }}></span>
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-pink-deep/40" style={{ animationDelay: '300ms' }}></span>
                   </div>
                 </div>
               </div>
@@ -101,7 +136,7 @@ export function ChatAssistant() {
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-navy/10 bg-white p-3">
+        <div className="border-t border-navy/5 bg-white/80 backdrop-blur-md p-4">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -113,14 +148,14 @@ export function ChatAssistant() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1 rounded-full border border-navy/20 bg-cream-2 px-4 py-2 text-sm text-navy outline-none focus:border-pink-deep focus:ring-1 focus:ring-pink-deep"
-              disabled={isLoading}
+              placeholder="Ask about products, delivery..."
+              className="flex-1 rounded-full border border-navy/10 bg-cream/50 px-4 py-2.5 text-sm text-navy outline-none transition-all focus:border-pink-deep focus:bg-white focus:ring-2 focus:ring-pink-deep/20"
+              disabled={isLoading || isStreaming}
             />
             <button
               type="submit"
-              disabled={!input.trim() || isLoading}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy text-white transition-colors hover:bg-pink-deep disabled:opacity-50"
+              disabled={!input.trim() || isLoading || isStreaming}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy text-white transition-all hover:scale-105 hover:bg-pink-deep hover:shadow-md disabled:pointer-events-none disabled:opacity-40"
             >
               <Send className="h-4 w-4 ml-0.5" />
             </button>

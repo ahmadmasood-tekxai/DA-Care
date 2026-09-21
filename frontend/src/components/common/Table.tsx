@@ -52,11 +52,18 @@ export function Table<T>({
         </thead>
         <tbody>
           {isLoading ? (
-            <tr>
-              <td colSpan={columns.length} className="px-4 py-8 text-center text-sm text-slate-400">
-                Loading…
-              </td>
-            </tr>
+            <>
+              {Array.from({ length: 6 }).map((_, rowIdx) => (
+                <tr key={rowIdx} className="border-b border-slate-100 last:border-0">
+                  {columns.map((col) => (
+                    <td key={col.key} className="px-4 py-3">
+                      <div className="h-4 w-full animate-pulse rounded-full bg-slate-200" />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </>
+
           ) : data.length === 0 ? (
             <tr>
               <td colSpan={columns.length} className="px-4 py-8 text-center text-sm text-slate-400">

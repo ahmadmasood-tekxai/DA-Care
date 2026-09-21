@@ -11,6 +11,7 @@ import { Input } from '@/components/common/Input';
 import { ProductImage } from '@/components/common/ProductImage';
 import { PublicLayout } from '@/components/layout/public/PublicLayout';
 import { ROUTES } from '@/constants';
+import { HeroBackground } from '@/components/common/HeroBackground';
 import { useCart } from '@/hooks/useCart';
 import { SEO } from '@/components/common/SEO';
 import { PaymentMethod } from '@/types';
@@ -230,9 +231,22 @@ export function CartPage() {
         title="Your Cart"
         description="Review your shopping cart before checkout. Secure bank transfer and COD available for premium products across Pakistan."
       />
-      <section className="bg-cream-2 px-6 py-14 text-center">
-        <span className="section-tag">Almost There</span>
-        <h1 className="text-4xl sm:text-5xl">Your Cart</h1>
+      {/* DARK HERO */}
+      <section className="relative overflow-hidden bg-navy px-6 pb-16 pt-28 text-center">
+        <HeroBackground />
+        <div className="pointer-events-none absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_50%_0%,_#D1D0D0_0%,_transparent_60%)]" />
+        <div className="relative z-10">
+          <span className="section-tag animate-fade-in-up">Almost There</span>
+          <h1 className="mt-3 text-4xl font-display font-semibold tracking-tight text-white sm:text-6xl animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            Your Cart
+          </h1>
+          <p className="mx-auto mt-5 max-w-md text-base font-light text-cream/70 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+            Review your items and complete your order — COD &amp; bank transfer available.
+          </p>
+          <span className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-5 py-2 text-xs font-bold uppercase tracking-widest text-gold backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+            {items.length} {items.length === 1 ? 'item' : 'items'} in cart
+          </span>
+        </div>
       </section>
 
       <section className="px-6 py-14">
@@ -242,7 +256,7 @@ export function CartPage() {
             {items.map(({ product, quantity }) => (
               <div key={product.id} className="flex gap-4 rounded-2xl border border-navy/10 bg-white p-4">
                 <Link to={ROUTES.PRODUCT_DETAIL(product.slug)} className="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-cream-2">
-                  <ProductImage imageUrl={product.image_url} imageColor={product.image_color} alt={product.name} />
+                  <ProductImage imageUrl={product.image_url || product.images?.[0]?.url} imageColor={product.image_color} alt={product.name} />
                 </Link>
 
                 <div className="flex flex-1 flex-col justify-between">

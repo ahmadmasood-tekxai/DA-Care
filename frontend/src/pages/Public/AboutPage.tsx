@@ -5,6 +5,7 @@ import { Button } from '@/components/common/Button';
 import { PublicLayout } from '@/components/layout/public/PublicLayout';
 import { ROUTES, STORE_NAME, WHATSAPP_NUMBER_1 } from '@/constants';
 import { SEO } from '@/components/common/SEO';
+import { HeroBackground } from '@/components/common/HeroBackground';
 
 const values = [
   { icon: Sparkles, title: 'Premium Sourcing', desc: 'From pure cosmetic ingredients to durable electronics, we only source the absolute best.' },
@@ -17,18 +18,32 @@ export function AboutPage() {
   return (
     <PublicLayout>
       <SEO
-        title="About OQIRA — Premium Lifestyle Brand"
-        description="Learn more about OQIRA. We provide premium cosmetics, luxury purses, fine jewellery, smart electronics, and baby garments across Pakistan."
-        keywords="about OQIRA, luxury brand Pakistan, premium cosmetics, fine jewellery, smart electronics, baby clothes"
+        title="About OQIRA — Pakistan ka Trusted Premium Online Store"
+        description="OQIRA ke barey mein janein — Pakistan ka trusted premium online store for cosmetics, jewellery, luxury suits & baby garments. Quality commitment, COD, nationwide delivery."
+        keywords="about OQIRA, OQIRA Pakistan, trusted online store Pakistan, premium cosmetics brand, jewellery brand Pakistan, baby clothes brand, luxury suits online, OQIRA story, online shopping Pakistan"
+        url="https://oqira.vercel.app/about"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://oqira.vercel.app/" },
+            { "@type": "ListItem", "position": 2, "name": "About", "item": "https://oqira.vercel.app/about" }
+          ]
+        }}
       />
-      <section className="bg-gradient-to-b from-cream-2 to-cream px-6 pb-20 pt-24 text-center">
-        <span className="section-tag">Our Story</span>
-        <h1 className="mx-auto text-base/8 max-w-3xl text-[30px] sm:text-4xl lg:text-5xl font-display font-semibold text-navy">
-          Elevating your everyday lifestyle
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-navy-soft leading-relaxed">
-          {STORE_NAME} started with a simple idea: true premium quality shouldn't be out of reach. From flawless cosmetics and designer-inspired hand purses, to exquisite jewellery, smart electronics, and comfortable baby garments — we curate products that bring elegance and utility to your daily life.
-        </p>
+      {/* DARK HERO */}
+      <section className="relative overflow-hidden bg-navy px-6 pb-20 pt-28 text-center">
+        <HeroBackground />
+        <div className="pointer-events-none absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_50%_0%,_#D1D0D0_0%,_transparent_60%)]" />
+        <div className="relative z-10">
+          <span className="section-tag animate-fade-in-up">Our Story</span>
+          <h1 className="mt-3 mx-auto max-w-3xl text-4xl font-display font-semibold tracking-tight text-white sm:text-6xl animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            Elevating your everyday lifestyle
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg font-light text-cream/70 leading-relaxed animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+            {STORE_NAME} started with a simple idea: true premium quality shouldn’t be out of reach. From cosmetics and jewellery to luxury suits and baby garments — we curate products that bring elegance to your daily life.
+          </p>
+        </div>
       </section>
 
       <section className="px-6 py-20 bg-white">

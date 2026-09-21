@@ -2,11 +2,15 @@ import { Link } from 'react-router-dom';
 import { Heart, Mail, MapPin, Phone } from 'lucide-react';
 
 import { ROUTES, STORE_NAME, STORE_TAGLINE, WHATSAPP_NUMBER_1, WHATSAPP_NUMBER_2 } from '@/constants';
+import { HeroBackground } from '@/components/common/HeroBackground';
 
 export function PublicFooter() {
   return (
-    <footer className="bg-navy px-6 py-16 text-white/70">
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 border-b border-white/10 pb-10 sm:grid-cols-2 lg:grid-cols-4">
+    <footer className="relative overflow-hidden bg-navy px-6 py-16 text-white/70">
+      <HeroBackground />
+      <div className="pointer-events-none absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_50%_100%,_#D1D0D0_0%,_transparent_60%)]" />
+      
+      <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-1 gap-10 border-b border-white/10 pb-10 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <div className="mb-3 flex items-center gap-2.5">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-pink-deep to-navy-soft text-white">
@@ -60,7 +64,7 @@ export function PublicFooter() {
         </div>
       </div>
 
-      <div className="mx-auto mt-6 flex max-w-6xl flex-wrap items-center justify-between gap-2 text-xs text-white/50">
+      <div className="relative z-10 mx-auto mt-6 flex max-w-6xl flex-wrap items-center justify-between gap-2 text-xs text-white/50">
         <span>&copy; {new Date().getFullYear()} {STORE_NAME}. Quality Today, Happy Tomorrow.</span>
         <span className="flex items-center gap-1.5">
           Made with <Heart className="h-3.5 w-3.5 fill-pink text-pink" /> for little gentlemen

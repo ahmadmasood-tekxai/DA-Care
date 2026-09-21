@@ -17,7 +17,7 @@ export function PublicHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-navy/10 bg-cream/85 backdrop-blur-md">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/40 bg-white/70 backdrop-blur-xl shadow-lg shadow-navy/5">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
         <Link to={ROUTES.HOME} className="flex items-center gap-2.5">
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-pink-deep to-navy text-white">
@@ -25,7 +25,7 @@ export function PublicHeader() {
           </div>
           <div className="leading-tight">
             <p className="font-display text-lg font-bold text-navy">{STORE_NAME}</p>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-pink-deep">{STORE_TAGLINE}</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-pink-deep to-navy">{STORE_TAGLINE}</p>
           </div>
         </Link>
 

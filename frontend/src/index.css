@@ -11,12 +11,27 @@
 }
 
 @layer components {
-  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
-  .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-slate-300 rounded-full; }
+  /* Premium custom scrollbar */
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-pink-deep/30 rounded-full hover:bg-pink-deep/50 transition-colors; }
+  
+  /* Refined section tags */
   .section-tag {
-    @apply inline-block text-xs font-bold tracking-widest uppercase text-white bg-pink-deep px-4 py-1.5 rounded-full mb-3;
+    @apply inline-flex items-center justify-center text-[10px] font-bold tracking-[0.2em] uppercase text-white bg-navy px-5 py-2 rounded-full mb-6 shadow-md shadow-navy/20 border border-white/10;
   }
+  
+  /* High-end glassmorphism */
   .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-lg shadow-black/5;
+    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl shadow-navy/5;
+  }
+  .glass-dark {
+    @apply bg-navy/80 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20;
+  }
+  
+  /* Premium text gradients */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-navy via-pink-deep to-navy bg-[length:200%_auto];
+    animation: gradient 8s linear infinite;
   }
 }

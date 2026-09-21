@@ -1,6 +1,19 @@
 User-agent: *
 Allow: /
-Disallow: /admin
-Disallow: /cart
+Allow: /products
+Allow: /products/
+Allow: /about
+Allow: /cart
 
-Sitemap: https://okira.vercel.app/sitemap.xml
+# Block admin panel from indexing
+Disallow: /admin
+Disallow: /admin/
+
+# Block API endpoints
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://oqira.vercel.app/sitemap.xml
+
+# Crawl delay (be nice to servers)
+Crawl-delay: 1
