@@ -103,8 +103,8 @@ export function ProductsPage() {
       <section className="px-6 py-14">
         <div className="mx-auto max-w-6xl">
           {/* Filters */}
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="relative w-full max-w-xs">
+          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="relative w-full md:max-w-xs">
               <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-soft" />
               <input
                 value={search}
@@ -114,13 +114,13 @@ export function ProductsPage() {
               />
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4 text-navy-soft" />
+            <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-2">
+              {/* <SlidersHorizontal className="h-4 w-4 text-navy-soft" /> */}
               <button
                 onClick={() => selectCategory('')}
-                className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${!activeCategory
-                    ? 'bg-navy text-white'
-                    : 'bg-white text-navy-soft border border-navy/15 hover:bg-pink-pale'
+                className={`rounded-full px-4 py-2  text-xs font-bold transition-colors ${!activeCategory
+                  ? 'bg-navy text-white'
+                  : 'bg-white text-navy-soft border border-navy/15 hover:bg-pink-pale'
                   }`}
               >
                 All
@@ -132,9 +132,9 @@ export function ProductsPage() {
                   <button
                     key={cat.id}
                     onClick={() => selectCategory(cat.slug)}
-                    className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-colors ${isActive
-                        ? 'bg-navy text-white'
-                        : 'bg-white text-navy-soft border border-navy/15 hover:bg-pink-pale'
+                    className={`flex items-center gap-1.5 justify-center rounded-full px-4 py-2 text-xs font-bold transition-colors ${isActive
+                      ? 'bg-navy text-white'
+                      : 'bg-white text-navy-soft border border-navy/15 hover:bg-pink-pale'
                       }`}
                   >
                     {cat.image_url ? (
