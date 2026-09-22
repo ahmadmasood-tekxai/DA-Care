@@ -261,7 +261,7 @@ export function ProductDetailPage() {
 
             {/* Quantity + Add to Cart */}
             <div className="mt-7 flex flex-wrap sm:flex-row flex-col items-center gap-4">
-              <div className={`flex items-center rounded-full border border-navy/15 bg-white ${product.stock <= 0 ? 'opacity-50' : ''}`}>
+              <div className={`flex w-full justify-center items-center rounded-full border border-navy/15 bg-white ${product.stock <= 0 ? 'opacity-50' : ''}`}>
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   className="flex h-11 w-11 items-center justify-center rounded-full text-navy hover:bg-pink-pale disabled:opacity-50"
@@ -273,7 +273,7 @@ export function ProductDetailPage() {
                 <span className="w-10 text-center font-bold text-navy">{quantity}</span>
                 <button
                   onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
-                  className="flex h-11 w-11 items-center justify-center rounded-full w-full text-navy hover:bg-pink-pale disabled:opacity-50"
+                  className="flex h-11 w-11 items-center justify-center rounded-full  text-navy hover:bg-pink-pale disabled:opacity-50"
                   aria-label="Increase quantity"
                   disabled={product.stock <= 0}
                 >
