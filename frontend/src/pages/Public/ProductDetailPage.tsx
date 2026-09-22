@@ -260,7 +260,7 @@ export function ProductDetailPage() {
             </div>
 
             {/* Quantity + Add to Cart */}
-            <div className="mt-7 flex flex-wrap items-center gap-4">
+            <div className="mt-7 flex flex-wrap sm:flex-row flex-col items-center gap-4">
               <div className={`flex items-center rounded-full border border-navy/15 bg-white ${product.stock <= 0 ? 'opacity-50' : ''}`}>
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
