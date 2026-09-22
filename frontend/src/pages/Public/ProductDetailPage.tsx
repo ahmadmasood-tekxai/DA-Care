@@ -273,7 +273,7 @@ export function ProductDetailPage() {
                 <span className="w-10 text-center font-bold text-navy">{quantity}</span>
                 <button
                   onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
-                  className="flex h-11 w-11 items-center justify-center rounded-full text-navy hover:bg-pink-pale disabled:opacity-50"
+                  className="flex h-11 w-11 items-center justify-center rounded-full w-full text-navy hover:bg-pink-pale disabled:opacity-50"
                   aria-label="Increase quantity"
                   disabled={product.stock <= 0}
                 >
@@ -281,7 +281,7 @@ export function ProductDetailPage() {
                 </button>
               </div>
 
-              <Button size="lg" onClick={handleAddToCart} disabled={product.stock <= 0} className="flex-1 sm:flex-none">
+              <Button size="lg" onClick={handleAddToCart} disabled={product.stock <= 0} className="flex-1 sm:flex-none w-full">
                 <ShoppingBag className="h-5 w-5" /> {product.stock <= 0 ? 'Out of Stock' : justAdded ? 'Added to Cart!' : 'Add to Cart'}
               </Button>
             </div>
