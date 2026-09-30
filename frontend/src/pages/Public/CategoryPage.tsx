@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, FolderTree, LayoutGrid, Search, SlidersHorizontal, X } from 'lucide-react';
+import { ArrowLeft, LayoutGrid, Search, SlidersHorizontal, X } from 'lucide-react';
 
 import { categoriesApi } from '@/api/categories';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -153,8 +153,8 @@ export function CategoryPage() {
               <button
                 onClick={() => handleSubcategoryClick(null)}
                 className={`relative flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 ${activeSubcategoryId === null
-                    ? 'bg-navy text-white shadow-md shadow-navy/25 scale-[1.02]'
-                    : 'bg-navy/5 text-navy-soft hover:bg-navy/10 hover:text-navy'
+                  ? 'bg-navy text-white shadow-md shadow-navy/25 scale-[1.02]'
+                  : 'bg-navy/5 text-navy-soft hover:bg-navy/10 hover:text-navy'
                   }`}
               >
                 <LayoutGrid className="h-3.5 w-3.5" />
@@ -174,8 +174,8 @@ export function CategoryPage() {
                     key={sub.id}
                     onClick={() => handleSubcategoryClick(sub.id)}
                     className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 ${isActive
-                        ? 'bg-pink-deep text-white shadow-md shadow-pink-deep/25 scale-[1.02]'
-                        : 'bg-pink-pale/30 text-pink-deep/80 border border-pink-deep/10 hover:bg-pink-pale hover:text-pink-deep hover:border-pink-deep/30'
+                      ? 'bg-pink-deep text-white shadow-md shadow-pink-deep/25 scale-[1.02]'
+                      : 'bg-pink-pale/30 text-pink-deep/80 border border-pink-deep/10 hover:bg-pink-pale hover:text-pink-deep hover:border-pink-deep/30'
                       }`}
                   >
                     {sub.image_url ? (

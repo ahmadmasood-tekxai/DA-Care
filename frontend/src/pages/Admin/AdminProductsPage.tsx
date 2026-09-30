@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, ChevronLeft, ChevronRight, FolderTree, Pencil, Plus, Search, Tag, Trash2 } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, ChevronRight, Pencil, Plus, Search, Tag, Trash2 } from 'lucide-react';
 
 import { categoriesApi } from '@/api/categories';
 import { getApiErrorMessage } from '@/api/client';
@@ -15,7 +15,7 @@ import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { ProductImage } from '@/components/common/ProductImage';
 import { Table, type TableColumn } from '@/components/common/Table';
 import { AdminLayout } from '@/components/layout/admin/AdminLayout';
-import { PRODUCT_BADGE_LABELS } from '@/constants';
+import { PRODUCT_BADGE_LABELS, resolveIcon } from '@/constants';
 import { ProductBadge, type Product, type ProductCreateInput, type CategoryWithCount } from '@/types';
 import { formatCurrency } from '@/utils/format';
 
