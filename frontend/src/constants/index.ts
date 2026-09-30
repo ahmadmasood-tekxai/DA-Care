@@ -104,6 +104,7 @@ export const ROUTES = {
   ABOUT: '/about',
   PRODUCTS: '/products',
   PRODUCT_DETAIL: (slug: string = ':slug') => `/products/${slug}`,
+  CATEGORY_PAGE: (slug: string = ':slug') => `/categories/${slug}`,
   CART: '/cart',
   ADMIN_LOGIN: '/admin/login',
   ADMIN_DASHBOARD: '/admin',

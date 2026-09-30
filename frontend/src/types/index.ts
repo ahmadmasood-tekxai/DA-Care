@@ -74,11 +74,16 @@ export interface Category {
   icon: string; // lucide icon name
   image_url?: string | null;
   display_order: number;
+  parent_id?: number | null;
   created_at: string;
   updated_at: string;
 }
 
-export interface CategoryWithCount extends Category {
+export interface CategoryWithSubcategories extends Category {
+  subcategories: Category[];
+}
+
+export interface CategoryWithCount extends CategoryWithSubcategories {
   product_count: number;
 }
 
@@ -88,6 +93,7 @@ export interface CategoryCreateInput {
   icon?: string;
   image_url?: string;
   display_order?: number;
+  parent_id?: number | null;
 }
 
 export interface CategoryUpdateInput {
@@ -96,6 +102,7 @@ export interface CategoryUpdateInput {
   icon?: string;
   image_url?: string;
   display_order?: number;
+  parent_id?: number | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -112,6 +119,7 @@ export interface ProductImage {
 export interface Product {
   id: number;
   category_id: number;
+  subcategory_id?: number | null;
   name: string;
   slug: string;
   short_description: string;
@@ -131,10 +139,12 @@ export interface Product {
 
 export interface ProductDetail extends Product {
   category: Category;
+  subcategory?: Category | null;
 }
 
 export interface ProductCreateInput {
   category_id: number;
+  subcategory_id?: number | null;
   name: string;
   short_description?: string;
   description?: string;
@@ -151,6 +161,7 @@ export interface ProductUpdateInput extends Partial<ProductCreateInput> { }
 
 export interface ListProductsParams {
   category_slug?: string;
+  subcategory_id?: number;
   search?: string;
   is_featured?: boolean;
   include_inactive?: boolean;

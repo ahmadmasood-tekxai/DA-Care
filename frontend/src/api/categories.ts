@@ -1,13 +1,32 @@
 import { apiClient } from '@/api/client';
-import type { Category, CategoryCreateInput, CategoryUpdateInput, CategoryWithCount } from '@/types';
+import type {
+  Category,
+  CategoryCreateInput,
+  CategoryUpdateInput,
+  CategoryWithCount,
+  PaginatedResponse,
+  Product,
+} from '@/types';
 
 export const categoriesApi = {
   list: async (): Promise<CategoryWithCount[]> => {
     const { data } = await apiClient.get<CategoryWithCount[]>('/categories');
     return data;
   },
-  getBySlug: async (slug: string): Promise<Category> => {
-    const { data } = await apiClient.get<Category>(`/categories/${slug}`);
+  listAll: async (): Promise<CategoryWithCount[]> => {
+    // Returns all categories including subcategories flat
+    const { data } = await apiClient.get<CategoryWithCount[]>('/categories', { params: { parent_only: false } });
+    return data;
+  },
+  getBySlug: async (slug: string): Promise<CategoryWithCount> => {
+    const { data } = await apiClient.get<CategoryWithCount>(`/categories/${slug}`);
+    return data;
+  },
+  getCategoryProducts: async (
+    slug: string,
+    params: { search?: string; subcategory_id?: number; page?: number; page_size?: number } = {}
+  ): Promise<PaginatedResponse<Product>> => {
+    const { data } = await apiClient.get<PaginatedResponse<Product>>(`/categories/${slug}/products`, { params });
     return data;
   },
   create: async (payload: CategoryCreateInput): Promise<Category> => {

@@ -41,6 +41,9 @@ export const productsApi = {
     });
     return data;
   },
+  deleteImage: async (productId: number, imageId: number): Promise<void> => {
+    await apiClient.delete(`/products/${productId}/images/${imageId}`);
+  },
   remove: async (id: number): Promise<void> => {
     await apiClient.delete(`/products/${id}`);
   },

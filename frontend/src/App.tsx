@@ -20,6 +20,7 @@ const AdminProductsPage = lazy(() => import('@/pages/Admin/AdminProductsPage').t
 // Lazy-loaded Public Pages
 const AboutPage = lazy(() => import('@/pages/Public/AboutPage').then(m => ({ default: m.AboutPage })));
 const CartPage = lazy(() => import('@/pages/Public/CartPage').then(m => ({ default: m.CartPage })));
+const CategoryPage = lazy(() => import('@/pages/Public/CategoryPage').then(m => ({ default: m.CategoryPage })));
 const HomePage = lazy(() => import('@/pages/Public/HomePage').then(m => ({ default: m.HomePage })));
 const ProductDetailPage = lazy(() => import('@/pages/Public/ProductDetailPage').then(m => ({ default: m.ProductDetailPage })));
 const ProductsPage = lazy(() => import('@/pages/Public/ProductsPage').then(m => ({ default: m.ProductsPage })));
@@ -93,6 +94,7 @@ export default function App() {
                   <Route path={ROUTES.ABOUT} element={<AboutPage />} />
                   <Route path={ROUTES.PRODUCTS} element={<ProductsPage />} />
                   <Route path={ROUTES.PRODUCT_DETAIL()} element={<ProductDetailPage />} />
+                  <Route path={ROUTES.CATEGORY_PAGE()} element={<CategoryPage />} />
                   <Route path={ROUTES.CART} element={<CartPage />} />
 
                   {/* Admin */}

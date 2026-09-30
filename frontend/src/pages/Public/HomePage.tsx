@@ -17,7 +17,8 @@ import {
   Building,
   ShoppingBag,
   Smartphone,
-  Baby
+  Baby,
+  ChevronRight
 } from 'lucide-react';
 
 import { categoriesApi } from '@/api/categories';
@@ -131,7 +132,7 @@ export function HomePage() {
   const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: categoriesApi.list });
   const { data: featured, isLoading: loadingFeatured } = useQuery({
     queryKey: ['products', 'featured'],
-    queryFn: () => productsApi.list({ is_featured: true, page_size: 4 }),
+    queryFn: () => productsApi.list({ is_featured: true, page_size: 8 }),
   });
 
   return (
@@ -215,71 +216,92 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* DYNAMIC CATEGORIES FROM DB */}
+      {/* DYNAMIC CATEGORIES — GRID */}
       {categories && categories.length > 0 && (
-        <section className="bg-cream-2 px-6 py-24 border-y border-navy/5">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
+        <section className="bg-cream-2 py-20 border-y border-navy/5">
+          <div className="mx-auto mb-12 max-w-2xl text-center px-6">
             <span className="section-tag">Shop By Category</span>
             <h2 className="text-4xl sm:text-5xl font-display font-semibold text-gradient">Explore the store</h2>
+            <p className="mt-4 text-navy-soft">Every category, curated with care.</p>
           </div>
-          <div className="mx-auto grid max-w-6xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {categories.map((cat) => {
-              const Icon = resolveIcon(cat.icon);
-              return (
-                <Link
-                  key={cat.id}
-                  to={`${ROUTES.PRODUCTS}?category=${cat.slug}`}
-                  className="group rounded-2xl border border-navy/10 bg-white p-6 text-center transition-all hover:border-pink-deep hover:shadow-lg"
-                >
-                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-cream-2 text-pink-deep transition-colors group-hover:bg-pink-deep group-hover:text-white">
-                    {cat.image_url ? (
-                      <img src={cat.image_url} alt={cat.name} className="h-full w-full object-cover" />
-                    ) : (
-                      <Icon className="h-6 w-6" />
-                    )}
-                  </div>
-                  <h4 className="text-base font-bold text-navy">{cat.name}</h4>
-                  <p className="mt-1 text-xs uppercase tracking-wider text-navy-soft">{cat.product_count} items</p>
-                </Link>
-              );
-            })}
+
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="flex flex-wrap justify-center gap-4">
+              {categories.map((cat) => {
+                const Icon = resolveIcon(cat.icon);
+                return (
+                  <Link
+                    key={cat.id}
+                    to={`${ROUTES.PRODUCTS}?category=${cat.slug}`}
+                    className="group flex w-36 flex-col items-center gap-3 rounded-2xl border border-navy/10 bg-white px-4 py-5 text-center transition-all hover:border-pink-deep hover:shadow-lg hover:-translate-y-1"
+                  >
+                    <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-cream-2 text-pink-deep transition-colors group-hover:bg-pink-deep group-hover:text-white">
+                      {cat.image_url ? (
+                        <img src={cat.image_url} alt={cat.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <Icon className="h-6 w-6" />
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-navy leading-tight">{cat.name}</h4>
+                      <p className="mt-0.5 text-[10px] uppercase tracking-wider text-navy-soft">{cat.product_count} items</p>
+                    </div>
+                    <ChevronRight className="h-3.5 w-3.5 text-pink-deep/0 group-hover:text-pink-deep/70 transition-colors -mt-1" />
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-10 text-center">
+            <Link
+              to={ROUTES.PRODUCTS}
+              className="inline-flex items-center gap-2 rounded-full border border-navy/20 bg-white px-6 py-2.5 text-xs font-bold text-navy transition-all hover:bg-navy hover:text-white hover:border-navy"
+            >
+              View all categories <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
         </section>
       )}
 
-      {/* FEATURED PRODUCTS */}
+      {/* FEATURED PRODUCTS — 2 rows of 4 */}
       <section className="bg-white px-6 py-24">
-        <div className="mx-auto mb-16 max-w-2xl text-center">
+        <div className="mx-auto mb-12 max-w-2xl text-center">
           <span className="section-tag">Featured</span>
           <h2 className="text-4xl sm:text-5xl font-display font-semibold text-gradient">Handpicked for you</h2>
+          <p className="mt-4 text-navy-soft">Our best picks — curated just for you.</p>
         </div>
         {loadingFeatured ? (
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="animate-pulse overflow-hidden rounded-3xl border border-navy/10 bg-white">
-                <div className="aspect-square w-full bg-slate-200" />
-                <div className="p-5 space-y-3">
-                  <div className="h-5 w-3/4 rounded-full bg-slate-200" />
-                  <div className="h-4 w-full rounded-full bg-slate-200" />
-                  <div className="h-4 w-2/3 rounded-full bg-slate-200" />
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="h-6 w-1/3 rounded-full bg-slate-200" />
-                    <div className="h-9 w-20 rounded-full bg-slate-200" />
+          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="animate-pulse overflow-hidden rounded-2xl border border-navy/10 bg-white">
+                <div className="aspect-[4/5] w-full bg-slate-200" />
+                <div className="p-4 space-y-2">
+                  <div className="h-3 w-1/3 rounded-full bg-slate-200" />
+                  <div className="h-4 w-3/4 rounded-full bg-slate-200" />
+                  <div className="h-3 w-full rounded-full bg-slate-200" />
+                  <div className="mt-3 flex items-center justify-between">
+                    <div className="h-5 w-1/3 rounded-full bg-slate-200" />
+                    <div className="h-7 w-16 rounded-full bg-slate-200" />
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : featured && featured.items.length > 0 ? (
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {featured.items.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                categoryName={categories?.find(c => c.id === product.category_id)?.name}
+              />
             ))}
           </div>
         ) : (
           <p className="text-center text-navy-soft">New items arriving soon — check back shortly!</p>
         )}
-        <div className="mt-12 text-center">
+        <div className="mt-10 text-center">
           <Link to={ROUTES.PRODUCTS}>
             <Button variant="secondary" size="lg">View Entire Collection</Button>
           </Link>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, ChevronLeft, ChevronRight, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, ChevronRight, FolderTree, Pencil, Plus, Search, Tag, Trash2 } from 'lucide-react';
 
 import { categoriesApi } from '@/api/categories';
 import { getApiErrorMessage } from '@/api/client';
@@ -16,11 +16,12 @@ import { ProductImage } from '@/components/common/ProductImage';
 import { Table, type TableColumn } from '@/components/common/Table';
 import { AdminLayout } from '@/components/layout/admin/AdminLayout';
 import { PRODUCT_BADGE_LABELS } from '@/constants';
-import { ProductBadge, type Product, type ProductCreateInput } from '@/types';
+import { ProductBadge, type Product, type ProductCreateInput, type CategoryWithCount } from '@/types';
 import { formatCurrency } from '@/utils/format';
 
 const emptyForm: ProductCreateInput = {
   category_id: 0,
+  subcategory_id: null,
   name: '',
   short_description: '',
   description: '',
@@ -40,18 +41,26 @@ export function AdminProductsPage() {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [form, setForm] = useState<ProductCreateInput>(emptyForm);
   const [formError, setFormError] = useState('');
+  const [deletingImageId, setDeletingImageId] = useState<number | null>(null);
 
   // Pagination & Search state
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState(''); // local state for input
+  const [searchInput, setSearchInput] = useState('');
 
-  const { data: categories } = useQuery({ queryKey: ['admin-categories'], queryFn: categoriesApi.list });
+  const { data: categories } = useQuery({
+    queryKey: ['admin-categories'],
+    queryFn: categoriesApi.list,
+  });
 
   const { data: productsData, isLoading } = useQuery({
     queryKey: ['admin-products', page, search],
     queryFn: () => productsApi.list({ include_inactive: true, page_size: 10, page, search }),
   });
+
+  // Get subcategories for the currently selected category
+  const selectedCategory = categories?.find(c => c.id === form.category_id) as CategoryWithCount | undefined;
+  const subcategories = selectedCategory?.subcategories ?? [];
 
   const createMutation = useMutation({
     mutationFn: productsApi.create,
@@ -81,8 +90,25 @@ export function AdminProductsPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setEditingProduct(updated);
-      closeModal();
     },
+  });
+
+  const deleteImageMutation = useMutation({
+    mutationFn: ({ productId, imageId }: { productId: number; imageId: number }) =>
+      productsApi.deleteImage(productId, imageId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      // Update local editing product state
+      if (editingProduct) {
+        setEditingProduct({
+          ...editingProduct,
+          images: editingProduct.images.filter(img => img.id !== variables.imageId),
+        });
+      }
+      setDeletingImageId(null);
+    },
+    onError: () => setDeletingImageId(null),
   });
 
   const deleteMutation = useMutation({
@@ -104,10 +130,18 @@ export function AdminProductsPage() {
   function openEditModal(product: Product) {
     setEditingProduct(product);
     setForm({
-      category_id: product.category_id, name: product.name, short_description: product.short_description,
-      description: product.description || '', price: product.price, old_price: product.old_price,
-      stock: product.stock, image_color: product.image_color, badge: product.badge,
-      is_featured: product.is_featured, is_active: product.is_active,
+      category_id: product.category_id,
+      subcategory_id: product.subcategory_id ?? null,
+      name: product.name,
+      short_description: product.short_description,
+      description: product.description || '',
+      price: product.price,
+      old_price: product.old_price,
+      stock: product.stock,
+      image_color: product.image_color,
+      badge: product.badge,
+      is_featured: product.is_featured,
+      is_active: product.is_active,
     });
     setFormError('');
     setIsModalOpen(true);
@@ -119,25 +153,39 @@ export function AdminProductsPage() {
     setForm(emptyForm);
   }
 
+  function handleCategoryChange(categoryId: number) {
+    setForm({ ...form, category_id: categoryId, subcategory_id: null });
+  }
+
   function handleSubmit() {
     setFormError('');
     if (!form.name.trim()) return setFormError('Product name is required.');
     if (!form.category_id) return setFormError('Please select a category.');
     if (!form.price || form.price <= 0) return setFormError('Enter a valid price.');
 
+    const payload = { ...form };
+    if (!payload.subcategory_id) payload.subcategory_id = null;
+
     if (editingProduct) {
-      updateMutation.mutate({ id: editingProduct.id, payload: form });
+      updateMutation.mutate({ id: editingProduct.id, payload });
     } else {
-      createMutation.mutate(form);
+      createMutation.mutate(payload);
     }
   }
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setPage(1); // Reset to page 1 on new search
+    setPage(1);
     setSearch(searchInput);
   }
 
+  async function handleDeleteImage(imageId: number) {
+    if (!editingProduct) return;
+    setDeletingImageId(imageId);
+    deleteImageMutation.mutate({ productId: editingProduct.id, imageId });
+  }
+
+  // Find category name for display in table
   const columns: TableColumn<Product>[] = [
     {
       key: 'image',
@@ -160,6 +208,32 @@ export function AdminProductsPage() {
           {p.badge !== ProductBadge.NONE && (
             <Badge tone="info" className="mt-1">{PRODUCT_BADGE_LABELS[p.badge]}</Badge>
           )}
+        </div>
+      ),
+    },
+    {
+      key: 'category',
+      header: 'Category',
+      render: (p) => (
+        <div className="flex flex-col gap-0.5">
+          {(() => {
+            const cat = categories?.find(c => c.id === p.category_id);
+            const sub = cat?.subcategories?.find(s => s.id === p.subcategory_id);
+            return (
+              <>
+                <span className="flex items-center gap-1 text-xs font-semibold text-navy">
+                  <Tag className="h-3 w-3 text-pink-deep" />
+                  {cat?.name ?? '—'}
+                </span>
+                {sub && (
+                  <span className="flex items-center gap-1 pl-4 text-[11px] text-navy-soft">
+                    <FolderTree className="h-2.5 w-2.5" />
+                    {sub.name}
+                  </span>
+                )}
+              </>
+            );
+          })()}
         </div>
       ),
     },
@@ -282,28 +356,51 @@ export function AdminProductsPage() {
         }
       >
         <div className="space-y-4">
-          {editingProduct && (
+          {editingProduct ? (
             <ImageUpload
               currentImageUrl={editingProduct.image_url}
               additionalImages={editingProduct.images}
               isUploading={uploadImageMutation.isPending}
+              isDeletingImageId={deletingImageId}
               multiple={true}
               onUploadMultiple={(files) => uploadImageMutation.mutateAsync({ id: editingProduct.id, files }).then(() => { })}
+              onDeleteImage={handleDeleteImage}
             />
-          )}
-          {!editingProduct && (
+          ) : (
             <p className="rounded-lg bg-cream-2 px-3 py-2 text-xs text-navy-soft">
-              Save the product first, then you'll be able to upload its photo.
+              💡 Save the product first, then you'll be able to upload photos.
             </p>
           )}
 
-          <Select
-            label="Category"
-            value={String(form.category_id || '')}
-            onChange={(e) => setForm({ ...form, category_id: Number(e.target.value) })}
-            placeholder="Select a category…"
-            options={(categories ?? []).map((c) => ({ value: String(c.id), label: c.name }))}
-          />
+          {/* Category + Subcategory */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Select
+              label="Category"
+              value={String(form.category_id || '')}
+              onChange={(e) => handleCategoryChange(Number(e.target.value))}
+              placeholder="Select a category…"
+              options={(categories ?? []).map((c) => ({ value: String(c.id), label: c.name }))}
+            />
+            {subcategories.length > 0 ? (
+              <Select
+                label="Subcategory (optional)"
+                value={String(form.subcategory_id ?? '')}
+                onChange={(e) => setForm({ ...form, subcategory_id: e.target.value ? Number(e.target.value) : null })}
+                placeholder="No subcategory"
+                options={[
+                  { value: '', label: '— No subcategory —' },
+                  ...subcategories.map((s) => ({ value: String(s.id), label: s.name })),
+                ]}
+              />
+            ) : (
+              <div className="flex flex-col justify-end">
+                <p className="rounded-lg bg-slate-50 px-3 py-2.5 text-xs text-navy-soft">
+                  No subcategories for this category yet.
+                </p>
+              </div>
+            )}
+          </div>
+
           <Input label="Product Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           <Input
             label="Short Description"
