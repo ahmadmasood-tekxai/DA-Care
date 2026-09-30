@@ -272,7 +272,7 @@ export function HomePage() {
           <p className="mt-4 text-navy-soft">Our best picks — curated just for you.</p>
         </div>
         {loadingFeatured ? (
-          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="animate-pulse overflow-hidden rounded-2xl border border-navy/10 bg-white">
                 <div className="aspect-[4/5] w-full bg-slate-200" />
@@ -289,7 +289,7 @@ export function HomePage() {
             ))}
           </div>
         ) : featured && featured.items.length > 0 ? (
-          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {featured.items.map((product) => (
               <ProductCard
                 key={product.id}
