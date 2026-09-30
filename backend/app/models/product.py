@@ -1,4 +1,10 @@
+from __future__ import annotations
+
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.category import Category
 
 from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, Numeric, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -9,11 +15,15 @@ from app.core.database import Base
 
 class Product(Base):
     """A single sellable product, always attached to one category. Each
-    product renders its own detail page on the storefront (by slug)."""
+    product renders its own detail page on the storefront (by slug).
+    Optionally linked to a subcategory under the main category."""
     __tablename__ = "products"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", ondelete="CASCADE"), index=True, nullable=False)
+    subcategory_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True, default=None
+    )
 
     name: Mapped[str] = mapped_column(String(160), nullable=False)
     slug: Mapped[str] = mapped_column(String(180), unique=True, index=True, nullable=False)
@@ -21,11 +31,11 @@ class Product(Base):
     description: Mapped[str] = mapped_column(Text, nullable=True, default="")
 
     price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
-    old_price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=True)
+    old_price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=True, default=None)
 
     stock: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     image_url: Mapped[str] = mapped_column(String(500), nullable=True, default="")  # Cloudinary URL
-    image_public_id: Mapped[str] = mapped_column(String(255), nullable=True)  # Cloudinary public ID for deletion
+    image_public_id: Mapped[str] = mapped_column(String(255), nullable=True, default=None)  # Cloudinary public ID for deletion
     image_color: Mapped[str] = mapped_column(String(16), nullable=False, default="#22304F")  # fallback accent color
     badge: Mapped[ProductBadge] = mapped_column(Enum(ProductBadge), default=ProductBadge.NONE, nullable=False)
     is_featured: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
@@ -36,7 +46,16 @@ class Product(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    category: Mapped["Category"] = relationship(back_populates="products")
+    category: Mapped["Category"] = relationship(
+        "Category",
+        back_populates="products",
+        foreign_keys="[Product.category_id]",
+    )
+    subcategory: Mapped["Category"] = relationship(
+        "Category",
+        foreign_keys="[Product.subcategory_id]",
+        uselist=False,
+    )
     images: Mapped[list["ProductImage"]] = relationship(back_populates="product", cascade="all, delete-orphan")
 
 
@@ -46,7 +65,7 @@ class ProductImage(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id", ondelete="CASCADE"), index=True, nullable=False)
-    
+
     url: Mapped[str] = mapped_column(String(500), nullable=False)
     public_id: Mapped[str] = mapped_column(String(255), nullable=False)
 

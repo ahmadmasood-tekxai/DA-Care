@@ -20,6 +20,7 @@ router = APIRouter(prefix="/products", tags=["Products"])
 @router.get("", response_model=PaginatedResponse[ProductOut])
 def list_products(
     category_slug: Optional[str] = Query(default=None),
+    subcategory_id: Optional[int] = Query(default=None),
     search: Optional[str] = Query(default=None),
     is_featured: Optional[bool] = Query(default=None),
     include_inactive: bool = Query(default=False, description="Admin-only view of inactive products"),
@@ -32,7 +33,9 @@ def list_products(
     if not include_inactive:
         query = query.filter(Product.is_active.is_(True))
     if category_slug:
-        query = query.join(Category).filter(Category.slug == category_slug)
+        query = query.join(Category, Product.category_id == Category.id).filter(Category.slug == category_slug)
+    if subcategory_id:
+        query = query.filter(Product.subcategory_id == subcategory_id)
     if search:
         like = f"%{search}%"
         query = query.filter(Product.name.ilike(like))
@@ -56,6 +59,7 @@ def get_product(slug: str, db: Session = Depends(get_db)):
     product = (
         db.query(Product)
         .options(joinedload(Product.category))
+        .options(joinedload(Product.subcategory))
         .options(joinedload(Product.images))
         .filter(Product.slug == slug)
         .first()
@@ -71,9 +75,18 @@ def create_product(payload: ProductCreate, db: Session = Depends(get_db), curren
     if not category:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
 
+    # Validate subcategory if provided
+    if payload.subcategory_id:
+        subcategory = db.query(Category).filter(Category.id == payload.subcategory_id).first()
+        if not subcategory:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subcategory not found")
+        if subcategory.parent_id != payload.category_id:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Subcategory does not belong to the selected category")
+
     slug = generate_unique_slug(db, Product, payload.name)
     product = Product(
-        category_id=payload.category_id, name=payload.name, slug=slug,
+        category_id=payload.category_id, subcategory_id=payload.subcategory_id,
+        name=payload.name, slug=slug,
         short_description=payload.short_description, description=payload.description or "",
         price=payload.price, old_price=payload.old_price, stock=payload.stock,
         image_color=payload.image_color, badge=payload.badge,
@@ -98,6 +111,10 @@ def update_product(
         category = db.query(Category).filter(Category.id == update_data["category_id"]).first()
         if not category:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
+    if "subcategory_id" in update_data and update_data["subcategory_id"]:
+        subcategory = db.query(Category).filter(Category.id == update_data["subcategory_id"]).first()
+        if not subcategory:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subcategory not found")
     if "name" in update_data and update_data["name"] != product.name:
         product.slug = generate_unique_slug(db, Product, update_data["name"], exclude_id=product.id)
 
@@ -116,8 +133,7 @@ async def upload_product_image(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Uploads/replaces a product's image. Stored under uploads/products/ and
-    served statically at /uploads/products/<filename>."""
+    """Uploads/replaces a product's primary image via Cloudinary."""
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
@@ -144,7 +160,7 @@ async def upload_product_images(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Uploads multiple images to Cloudinary for a product."""
+    """Uploads multiple gallery images to Cloudinary for a product."""
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
@@ -158,6 +174,30 @@ async def upload_product_images(
     db.commit()
     db.refresh(product)
     return product
+
+
+@router.delete("/{product_id}/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_product_image(
+    product_id: int,
+    image_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Deletes a single gallery image from a product (removes from Cloudinary + DB)."""
+    image = db.query(ProductImage).filter(
+        ProductImage.id == image_id,
+        ProductImage.product_id == product_id
+    ).first()
+    if not image:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
+    
+    public_id = image.public_id
+    db.delete(image)
+    db.commit()
+    
+    # Delete from Cloudinary after DB commit succeeds
+    if public_id:
+        delete_image_from_cloudinary(public_id)
 
 
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)

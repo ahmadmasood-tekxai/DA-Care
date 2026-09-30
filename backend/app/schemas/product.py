@@ -18,6 +18,7 @@ class ProductImageOut(ORMBase):
 
 class ProductCreate(BaseModel):
     category_id: int
+    subcategory_id: Optional[int] = None
     name: str = Field(min_length=1, max_length=160)
     short_description: str = Field(default="", max_length=255)
     description: Optional[str] = ""
@@ -32,6 +33,7 @@ class ProductCreate(BaseModel):
 
 class ProductUpdate(BaseModel):
     category_id: Optional[int] = None
+    subcategory_id: Optional[int] = None
     name: Optional[str] = Field(default=None, max_length=160)
     short_description: Optional[str] = Field(default=None, max_length=255)
     description: Optional[str] = None
@@ -47,6 +49,7 @@ class ProductUpdate(BaseModel):
 class ProductOut(ORMBase):
     id: int
     category_id: int
+    subcategory_id: Optional[int]
     name: str
     slug: str
     short_description: str
@@ -66,3 +69,4 @@ class ProductOut(ORMBase):
 
 class ProductDetailOut(ProductOut):
     category: CategoryOut
+    subcategory: Optional[CategoryOut] = None
