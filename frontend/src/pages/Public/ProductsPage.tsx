@@ -364,7 +364,7 @@ export function ProductsPage() {
 
             {/* Grid */}
             {isLoading ? (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {Array.from({ length: PAGE_SIZE }).map((_, i) => (
                   <div key={i} className="animate-pulse overflow-hidden rounded-2xl border border-navy/10 bg-white">
                     <div className="aspect-[4/5] w-full bg-slate-200" />
