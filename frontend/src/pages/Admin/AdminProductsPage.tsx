@@ -225,12 +225,19 @@ export function AdminProductsPage() {
                   <Tag className="h-3 w-3 text-pink-deep" />
                   {cat?.name ?? '—'}
                 </span>
-                {sub && (
-                  <span className="flex items-center gap-1 pl-4 text-[11px] text-navy-soft">
-                    <FolderTree className="h-2.5 w-2.5" />
-                    {sub.name}
-                  </span>
-                )}
+                {sub && (() => {
+                  const SubIcon = resolveIcon(sub.icon);
+                  return (
+                    <span className="flex items-center gap-1 pl-4 text-[11px] text-navy-soft">
+                      {sub.image_url ? (
+                        <img src={sub.image_url} alt={sub.name} className="h-2.5 w-2.5 rounded-full object-cover" />
+                      ) : (
+                        <SubIcon className="h-2.5 w-2.5" />
+                      )}
+                      {sub.name}
+                    </span>
+                  );
+                })()}
               </>
             );
           })()}

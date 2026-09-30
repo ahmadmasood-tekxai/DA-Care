@@ -242,15 +242,22 @@ export function CategoryPage() {
                     </button>
                   </span>
                 )}
-                {activeSubcategory && (
-                  <span className="flex items-center gap-1.5 rounded-full bg-pink-pale px-3 py-1.5 text-xs font-semibold text-pink-deep">
-                    <FolderTree className="h-3 w-3" />
-                    {activeSubcategory.name}
-                    <button onClick={() => handleSubcategoryClick(null)} className="hover:text-rose-600">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                )}
+                {activeSubcategory && (() => {
+                  const SubIcon = resolveIcon(activeSubcategory.icon);
+                  return (
+                    <span className="flex items-center gap-1.5 rounded-full bg-pink-pale px-3 py-1.5 text-xs font-semibold text-pink-deep">
+                      {activeSubcategory.image_url ? (
+                        <img src={activeSubcategory.image_url} alt={activeSubcategory.name} className="h-3 w-3 rounded-full object-cover" />
+                      ) : (
+                        <SubIcon className="h-3 w-3" />
+                      )}
+                      {activeSubcategory.name}
+                      <button onClick={() => handleSubcategoryClick(null)} className="hover:text-rose-600">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  );
+                })()}
               </div>
             )}
 

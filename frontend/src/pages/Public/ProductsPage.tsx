@@ -337,12 +337,20 @@ export function ProductsPage() {
                       <button onClick={() => selectCategory('')} className="hover:text-rose-600"><X className="h-3 w-3" /></button>
                     </span>
                   )}
-                  {activeSubcategoryObj && (
-                    <span className="flex items-center gap-1.5 rounded-full bg-navy/10 px-3 py-1 text-[11px] font-bold text-navy">
-                      {activeSubcategoryObj.name}
-                      <button onClick={() => selectSubcategory(null)} className="hover:text-rose-600"><X className="h-3 w-3" /></button>
-                    </span>
-                  )}
+                  {activeSubcategoryObj && (() => {
+                    const SubIcon = resolveIcon(activeSubcategoryObj.icon);
+                    return (
+                      <span className="flex items-center gap-1.5 rounded-full bg-navy/10 px-3 py-1 text-[11px] font-bold text-navy">
+                        {activeSubcategoryObj.image_url ? (
+                          <img src={activeSubcategoryObj.image_url} alt={activeSubcategoryObj.name} className="h-3 w-3 rounded-full object-cover" />
+                        ) : (
+                          <SubIcon className="h-3 w-3" />
+                        )}
+                        {activeSubcategoryObj.name}
+                        <button onClick={() => selectSubcategory(null)} className="hover:text-rose-600"><X className="h-3 w-3" /></button>
+                      </span>
+                    );
+                  })()}
                   {search && (
                     <span className="flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-bold text-amber-800">
                       "{search}"
