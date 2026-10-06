@@ -228,7 +228,7 @@ export function HomePage() {
               { value: '5,000+', label: 'Orders Delivered', icon: ShoppingBag, color: 'text-[#E8C96D]' },
               { value: '4.9★', label: 'Average Rating', icon: Star, color: 'text-[#E8C96D]' },
               { value: '100%', label: 'Authentic Products', icon: BadgeCheck, color: 'text-emerald-400' },
-              { value: '3–5 Din', label: 'Delivery Time', icon: Truck, color: 'text-[#E8C96D]' },
+              { value: '3–5 Day', label: 'Delivery Time', icon: Truck, color: 'text-[#E8C96D]' },
             ].map(({ value, label, icon: Icon, color }) => (
               <div key={label} className="flex flex-col items-center gap-1.5 py-6 px-4 text-center">
                 <Icon className={`h-5 w-5 mb-1 ${color}`} />
