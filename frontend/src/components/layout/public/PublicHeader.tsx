@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, NavLink } from 'react-router-dom';
 import { Heart, Menu, ShoppingBag, User, X, LogOut, ChevronDown, UserCircle } from 'lucide-react';
 import { ROUTES, STORE_NAME, STORE_TAGLINE } from '@/constants';
@@ -269,7 +270,7 @@ export function PublicHeader() {
         </nav>
       </div>
       {/* Logout Modal */}
-      {showLogoutModal && (
+      {showLogoutModal && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)} />
           <div className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200 text-center">
@@ -296,7 +297,8 @@ export function PublicHeader() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </header>
   );
