@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Link2, Check, Tag, Star } from 'lucide-react';
+import { ShoppingBag, Link2, Check, Tag, Star, Heart } from 'lucide-react';
 import { useState } from 'react';
 
 import { ProductImage } from '@/components/common/ProductImage';
 import { PRODUCT_BADGE_LABELS, ROUTES } from '@/constants';
 import { ProductBadge, type Product } from '@/types';
 import { useCart } from '@/hooks/useCart';
+import { useFavorites } from '@/hooks/useFavorites';
 import { formatCurrency } from '@/utils/format';
 
 interface ProductCardProps {
@@ -26,8 +27,16 @@ const BADGE_STYLES: Partial<Record<ProductBadge, string>> = {
 
 export function ProductCard({ product, categoryName }: ProductCardProps) {
   const { addItem } = useCart();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [copied, setCopied] = useState(false);
   const [addedAnim, setAddedAnim] = useState(false);
+  const favorited = isFavorite(product.id);
+
+  const handleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite(product);
+  };
 
   const handleCopyLink = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -95,6 +104,19 @@ export function ProductCard({ product, categoryName }: ProductCardProps) {
             product.stock <= 0 ? 'opacity-50 grayscale' : ''
           }`}
         />
+
+        {/* Favorite button */}
+        <button
+          onClick={handleFavorite}
+          className={`absolute bottom-3 left-3 z-20 flex h-8 w-8 items-center justify-center rounded-full shadow-md backdrop-blur-sm transition-all hover:scale-110 opacity-0 group-hover:opacity-100 ${
+            favorited
+              ? 'bg-rose-500 text-white opacity-100'
+              : 'bg-white/90 text-[#0d0a0a] hover:bg-rose-500 hover:text-white'
+          }`}
+          title={favorited ? 'Remove from Favourites' : 'Add to Favourites'}
+        >
+          <Heart className={`h-3.5 w-3.5 transition-all ${favorited ? 'fill-white' : ''}`} />
+        </button>
 
         {/* Copy link button */}
         <button

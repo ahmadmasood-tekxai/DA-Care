@@ -8,6 +8,12 @@ import enum
 class UserRole(str, enum.Enum):
     ADMIN = "ADMIN"
     STAFF = "STAFF"
+    CUSTOMER = "CUSTOMER"
+
+
+class AuthProvider(str, enum.Enum):
+    LOCAL = "LOCAL"
+    GOOGLE = "GOOGLE"
 
 
 class OrderStatus(str, enum.Enum):

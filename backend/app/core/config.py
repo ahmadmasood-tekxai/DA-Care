@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    GOOGLE_REDIRECT_URI: str = "https://okira-backend.vercel.app/api/v1/auth/google/callback"
+
     CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
 
     STORE_WHATSAPP_NUMBER_1: str = "923247508462"

@@ -25,7 +25,6 @@ export function CartPage() {
 
   const mashreqTitle = import.meta.env.VITE_MASHREQ_TITLE || 'Muhammad Ahmad';
   const mashreqAccount = import.meta.env.VITE_MASHREQ_ACCOUNT || '089010046367';
-  const mashreqIban = import.meta.env.VITE_MASHREQ_IBAN || 'PK45MSHQ0000089010046367';
 
 
   const { items, subtotal, updateQuantity, removeItem, clearCart } = useCart();
@@ -71,7 +70,7 @@ export function CartPage() {
 
   const handleCheckout = () => {
     setFormError('');
-    
+
     const name = customerName.trim();
     if (!name || name.length < 3) {
       return setFormError('Please enter a valid name (minimum 3 characters).');
@@ -189,10 +188,10 @@ export function CartPage() {
                     <p className="font-semibold text-white text-sm sm:text-base truncate">{mashreqTitle}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">Account Number / IBAN</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">Account Number</p>
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-mono text-sm font-bold text-orange-300 break-all">{mashreqAccount}<br />{mashreqIban}</p>
-                      <button onClick={() => copyToClipboard(`${mashreqAccount}\n${mashreqIban}`)} className="shrink-0 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-orange-300/80 hover:text-orange-300 transition-colors bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg">
+                      <p className="font-mono text-sm font-bold text-orange-300 break-all">{mashreqAccount}</p>
+                      <button onClick={() => copyToClipboard(`${mashreqAccount}`)} className="shrink-0 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-orange-300/80 hover:text-orange-300 transition-colors bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg">
                         <Copy className="h-3 w-3" /> Copy
                       </button>
                     </div>

@@ -9,6 +9,7 @@
 export enum UserRole {
   ADMIN = 'ADMIN',
   STAFF = 'STAFF',
+  CUSTOMER = 'CUSTOMER',
 }
 
 export enum OrderStatus {
@@ -48,6 +49,9 @@ export interface User {
   full_name: string;
   role: UserRole;
   is_active: boolean;
+  auth_provider: string;
+  profile_image?: string | null;
+  last_login?: string | null;
   created_at: string;
 }
 

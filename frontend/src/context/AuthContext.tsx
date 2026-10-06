@@ -9,6 +9,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (payload: LoginRequest) => Promise<void>;
+  oauthLogin: (accessToken: string, user: User) => void;
   logout: () => void;
 }
 
@@ -49,6 +50,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(tokenResponse.user);
   }, []);
 
+  const oauthLogin = useCallback((accessToken: string, user: User) => {
+    localStorage.setItem(AUTH_TOKEN_KEY, accessToken);
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+    setUser(user);
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(AUTH_USER_KEY);
@@ -56,8 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, isAuthenticated: !!user, isLoading, login, logout }),
-    [user, isLoading, login, logout]
+    () => ({ user, isAuthenticated: !!user, isLoading, login, oauthLogin, logout }),
+    [user, isLoading, login, oauthLogin, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

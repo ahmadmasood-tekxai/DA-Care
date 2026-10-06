@@ -4,7 +4,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session, joinedload
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_optional_user
 from app.constants import (
     BANK_ACCOUNT_NUMBER,
     BANK_ACCOUNT_TITLE,
@@ -100,7 +100,7 @@ def get_bank_details():
 # ---------------------------------------------------------------------------
 
 @router.post("", response_model=OrderOut, status_code=status.HTTP_201_CREATED)
-def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
+def create_order(payload: OrderCreate, db: Session = Depends(get_db), current_user: Optional[User] = Depends(get_optional_user)):
     """
     Public — used by the storefront's cart checkout.
     Supports both Cash-on-Delivery and Bank Transfer payment methods.
@@ -112,6 +112,7 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
         note=payload.note or "",
         payment_method=payload.payment_method,
         payment_status=PaymentStatus.UNPAID,
+        created_by_id=current_user.id if current_user else None,
     )
     db.add(order)
     db.flush()
@@ -241,14 +242,25 @@ async def mark_transferred(
 def list_orders(
     status_filter: Optional[OrderStatus] = Query(default=None, alias="status"),
     payment_status_filter: Optional[PaymentStatus] = Query(default=None, alias="payment_status"),
+    user_id: Optional[int] = Query(default=None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     query = db.query(Order).options(joinedload(Order.items))
+    
+    # If customer, only show their own orders
+    if current_user.role.value == "CUSTOMER":
+        query = query.filter(Order.created_by_id == current_user.id)
+    else:
+        # If admin and user_id provided, filter by user
+        if user_id:
+            query = query.filter(Order.created_by_id == user_id)
+            
     if status_filter:
         query = query.filter(Order.status == status_filter)
     if payment_status_filter:
         query = query.filter(Order.payment_status == payment_status_filter)
+        
     orders = query.order_by(Order.created_at.desc()).all()
     return [_to_order_out(o) for o in orders]
 
@@ -262,8 +274,11 @@ def update_order_status(
     order_id: int,
     payload: OrderStatusUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    admin: User = Depends(get_current_user), # Use get_current_user then check role
 ):
+    if admin.role.value == "CUSTOMER":
+        raise HTTPException(status_code=403, detail="Forbidden")
+        
     order = db.query(Order).options(joinedload(Order.items)).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")

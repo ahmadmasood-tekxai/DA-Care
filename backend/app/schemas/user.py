@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
-from app.constants import UserRole
+from app.constants import UserRole, AuthProvider
 from app.schemas.common import ORMBase
 
 
@@ -21,6 +24,9 @@ class UserOut(ORMBase):
     full_name: str
     role: UserRole
     is_active: bool
+    auth_provider: AuthProvider
+    profile_image: Optional[str] = None
+    last_login: Optional[datetime] = None
     created_at: datetime
 
 

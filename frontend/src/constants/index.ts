@@ -28,6 +28,8 @@ export const WHATSAPP_NUMBER_2: string = (import.meta.env.VITE_WHATSAPP_NUMBER_2
 export const AUTH_TOKEN_KEY = 'oqira_access_token';
 export const AUTH_USER_KEY = 'oqira_user';
 export const CART_STORAGE_KEY = 'oqira_cart';
+export const GOOGLE_CLIENT_ID: string =
+  (import.meta.env.VITE_GOOGLE_CLIENT_ID as string) || '544561947301-im9semg7nqr21qq7mmma8uq0ro3fn06o.apps.googleusercontent.com';
 
 export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 100;
@@ -56,6 +58,7 @@ export function resolveIcon(name: string): LucideIcon {
 export const USER_ROLE_LABELS: Record<UserRole, string> = {
   [UserRole.ADMIN]: 'Admin',
   [UserRole.STAFF]: 'Staff',
+  [UserRole.CUSTOMER]: 'Customer',
 };
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
@@ -106,11 +109,16 @@ export const ROUTES = {
   PRODUCT_DETAIL: (slug: string = ':slug') => `/products/${slug}`,
   CATEGORY_PAGE: (slug: string = ':slug') => `/categories/${slug}`,
   CART: '/cart',
+  LOGIN: '/login',
+  SIGNUP: '/signup',
+  FAVORITES: '/favorites',
   ADMIN_LOGIN: '/admin/login',
   ADMIN_DASHBOARD: '/admin',
   ADMIN_CATEGORIES: '/admin/categories',
   ADMIN_PRODUCTS: '/admin/products',
   ADMIN_ORDERS: '/admin/orders',
+  ADMIN_USERS: '/admin/users',
+  PROFILE: '/profile',
 } as const;
 
 export const CURRENCY_SYMBOL = 'Rs.';

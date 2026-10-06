@@ -10,6 +10,10 @@ export const ordersApi = {
     const { data } = await apiClient.get<Order[]>('/orders', { params: { status, payment_status } });
     return data;
   },
+  listOrders: async (params?: { status?: OrderStatus; payment_status?: PaymentStatus; user_id?: number }): Promise<Order[]> => {
+    const { data } = await apiClient.get<Order[]>('/orders', { params });
+    return data;
+  },
   updateStatus: async (id: number, status: OrderStatus): Promise<Order> => {
     const { data } = await apiClient.patch<Order>(`/orders/${id}/status`, { status });
     return data;

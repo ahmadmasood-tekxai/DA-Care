@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Menu, ShoppingBag, X } from 'lucide-react';
+import { Heart, Menu, ShoppingBag, User, X, LogOut, ChevronDown, UserCircle } from 'lucide-react';
 import { ROUTES, STORE_NAME, STORE_TAGLINE } from '@/constants';
 import { useCart } from '@/hooks/useCart';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useAuth } from '@/hooks/useAuth';
 
 const navLinks = [
   { to: ROUTES.HOME, label: 'Home' },
@@ -63,8 +65,12 @@ function OqiraLogoMark({ size = 44 }: { size?: number }) {
 
 export function PublicHeader() {
   const { itemCount } = useCart();
+  const { favoritesCount } = useFavorites();
+  const { isAuthenticated, logout, user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 60);
@@ -119,6 +125,20 @@ export function PublicHeader() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {/* Favorites icon */}
+          <Link
+            to={ROUTES.FAVORITES}
+            className="relative flex h-10 w-10 items-center justify-center rounded-full text-[#3a2e2e] transition-all hover:bg-pink-pale hover:text-rose-500"
+            aria-label="My Favourites"
+          >
+            <Heart className={`h-5 w-5 ${favoritesCount > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
+            {favoritesCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-sm">
+                {favoritesCount}
+              </span>
+            )}
+          </Link>
+
           {/* Cart icon */}
           <Link
             to={ROUTES.CART}
@@ -140,6 +160,74 @@ export function PublicHeader() {
               Shop Now
             </button>
           </Link>
+
+          {/* Login / Profile Dropdown */}
+          {isAuthenticated ? (
+            <div className="relative hidden sm:block">
+              <button
+                onClick={() => setDropdownOpen((v) => !v)}
+                className="flex items-center gap-2 rounded-full border border-[#3a2e2e]/20 px-3 py-1.5 transition-all hover:border-[#C9A84C]/60 hover:bg-cream-2"
+              >
+                {user?.profile_image ? (
+                  <img src={user.profile_image} alt="" className="h-6 w-6 rounded-full object-cover" />
+                ) : (
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#C9A84C] text-white">
+                    <UserCircle className="h-4 w-4" />
+                  </div>
+                )}
+                <span className="max-w-[100px] truncate text-xs font-bold text-[#3a2e2e]">
+                  {user?.full_name?.split(' ')[0]}
+                </span>
+                <ChevronDown className="h-3 w-3 text-[#3a2e2e]/50" />
+              </button>
+
+              {dropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                  <div className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-black/5 bg-white shadow-xl">
+                    <div className="border-b border-gray-100 px-4 py-3">
+                      <p className="truncate text-sm font-bold text-gray-900">{user?.full_name}</p>
+                      <p className="truncate text-xs text-gray-500">{user?.email}</p>
+                    </div>
+                    <div className="py-1">
+                      <Link
+                        to={ROUTES.PROFILE}
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <User className="h-4 w-4" /> Profile & Settings
+                      </Link>
+                      {user?.role === 'ADMIN' && (
+                        <Link
+                          to={ROUTES.ADMIN_DASHBOARD}
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          <ShoppingBag className="h-4 w-4" /> Admin Panel
+                        </Link>
+                      )}
+                    </div>
+                    <div className="border-t border-gray-100 py-1">
+                      <button
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          setShowLogoutModal(true);
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-medium text-rose-600 hover:bg-rose-50"
+                      >
+                        <LogOut className="h-4 w-4" /> Sign Out
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <Link to={ROUTES.LOGIN} className="hidden sm:block">
+              <button className="flex items-center gap-1.5 rounded-full border border-[#3a2e2e]/20 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-[#3a2e2e] transition-all hover:border-[#C9A84C]/60 hover:text-[#7a4f4f]">
+                <User className="h-3.5 w-3.5" /> Sign In
+              </button>
+            </Link>
+          )}
 
           {/* Mobile hamburger */}
           <button
@@ -180,6 +268,36 @@ export function PublicHeader() {
           ))}
         </nav>
       </div>
+      {/* Logout Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)} />
+          <div className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-100 text-rose-500">
+              <LogOut className="h-6 w-6" />
+            </div>
+            <h3 className="font-display text-xl font-bold text-[#0d0a0a]">Sign Out</h3>
+            <p className="mt-2 text-sm text-gray-500">Are you sure you want to sign out of your account?</p>
+            <div className="mt-8 flex gap-3">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-bold text-gray-600 transition-colors hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowLogoutModal(false);
+                  logout();
+                }}
+                className="flex-1 rounded-xl bg-rose-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-rose-500/30 transition-all hover:bg-rose-600 hover:shadow-rose-500/40"
+              >
+                Yes, Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

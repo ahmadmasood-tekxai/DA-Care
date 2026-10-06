@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api.routes import auth, categories, dashboard, orders, products, chat
+from app.api.routes import auth, categories, dashboard, orders, products, chat, users
 from app.core.config import settings
 from app.core.database import Base, engine
 
@@ -81,3 +81,4 @@ app.include_router(products.router, prefix=API_PREFIX)
 app.include_router(orders.router, prefix=API_PREFIX)
 app.include_router(dashboard.router, prefix=API_PREFIX)
 app.include_router(chat.router, prefix=API_PREFIX)
+app.include_router(users.router, prefix=API_PREFIX)

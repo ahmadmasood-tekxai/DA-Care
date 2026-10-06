@@ -7,6 +7,7 @@ import { ProtectedRoute } from '@/components/layout/admin/ProtectedRoute';
 import { ROUTES } from '@/constants';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
+import { FavoritesProvider } from '@/context/FavoritesContext';
 
 import { ChatAssistant } from '@/components/common/ChatAssistant';
 
@@ -16,6 +17,7 @@ const AdminDashboardPage = lazy(() => import('@/pages/Admin/AdminDashboardPage')
 const AdminLoginPage = lazy(() => import('@/pages/Admin/AdminLoginPage').then(m => ({ default: m.AdminLoginPage })));
 const AdminOrdersPage = lazy(() => import('@/pages/Admin/AdminOrdersPage').then(m => ({ default: m.AdminOrdersPage })));
 const AdminProductsPage = lazy(() => import('@/pages/Admin/AdminProductsPage').then(m => ({ default: m.AdminProductsPage })));
+const AdminUsersPage = lazy(() => import('@/pages/Admin/AdminUsersPage').then(m => ({ default: m.AdminUsersPage })));
 
 // Lazy-loaded Public Pages
 const AboutPage = lazy(() => import('@/pages/Public/AboutPage').then(m => ({ default: m.AboutPage })));
@@ -24,6 +26,10 @@ const CategoryPage = lazy(() => import('@/pages/Public/CategoryPage').then(m => 
 const HomePage = lazy(() => import('@/pages/Public/HomePage').then(m => ({ default: m.HomePage })));
 const ProductDetailPage = lazy(() => import('@/pages/Public/ProductDetailPage').then(m => ({ default: m.ProductDetailPage })));
 const ProductsPage = lazy(() => import('@/pages/Public/ProductsPage').then(m => ({ default: m.ProductsPage })));
+const LoginPage = lazy(() => import('@/pages/Public/LoginPage').then(m => ({ default: m.LoginPage })));
+const SignupPage = lazy(() => import('@/pages/Public/SignupPage').then(m => ({ default: m.SignupPage })));
+const FavoritesPage = lazy(() => import('@/pages/Public/FavoritesPage').then(m => ({ default: m.FavoritesPage })));
+const ProfilePage = lazy(() => import('@/pages/Public/ProfilePage').then(m => ({ default: m.ProfilePage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -86,6 +92,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <CartProvider>
+            <FavoritesProvider>
             <BrowserRouter>
               <Suspense fallback={<PageShellSkeleton />}>
                 <Routes>
@@ -96,6 +103,10 @@ export default function App() {
                   <Route path={ROUTES.PRODUCT_DETAIL()} element={<ProductDetailPage />} />
                   <Route path={ROUTES.CATEGORY_PAGE()} element={<CategoryPage />} />
                   <Route path={ROUTES.CART} element={<CartPage />} />
+                  <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+                  <Route path={ROUTES.SIGNUP} element={<SignupPage />} />
+                  <Route path={ROUTES.FAVORITES} element={<FavoritesPage />} />
+                  <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
 
                   {/* Admin */}
                   <Route path={ROUTES.ADMIN_LOGIN} element={<AdminLoginPage />} />
@@ -131,12 +142,21 @@ export default function App() {
                       </ProtectedRoute>
                     }
                   />
+                  <Route
+                    path={ROUTES.ADMIN_USERS}
+                    element={
+                      <ProtectedRoute>
+                        <AdminUsersPage />
+                      </ProtectedRoute>
+                    }
+                  />
 
                   <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
                 </Routes>
               </Suspense>
               <ChatAssistant />
             </BrowserRouter>
+            </FavoritesProvider>
           </CartProvider>
         </AuthProvider>
       </QueryClientProvider>

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Boxes, ExternalLink, LayoutDashboard, Package, ShoppingCart, X } from 'lucide-react';
+import { Boxes, ExternalLink, LayoutDashboard, Package, ShoppingCart, Users, X } from 'lucide-react';
 import clsx from 'clsx';
 
 import { ROUTES, STORE_NAME } from '@/constants';
@@ -9,6 +9,7 @@ const navItems = [
   { to: ROUTES.ADMIN_CATEGORIES, label: 'Categories', icon: Boxes },
   { to: ROUTES.ADMIN_PRODUCTS, label: 'Products', icon: Package },
   { to: ROUTES.ADMIN_ORDERS, label: 'Orders & Revenue', icon: ShoppingCart },
+  { to: ROUTES.ADMIN_USERS, label: 'Users', icon: Users },
 ];
 
 interface AdminSidebarProps {
