@@ -79,7 +79,7 @@ export function AboutPage() {
             Quality today, trust tomorrow
           </h2>
         </div>
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto grid  max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {values.map(({ icon: Icon, title, desc }) => (
             <div key={title} className="rounded-3xl border border-navy/10 bg-white p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-pink-deep/10">
               <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-pink-pale text-pink-deep">
