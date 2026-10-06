@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
 
-    STORE_WHATSAPP_NUMBER_1: str = "923194392573"
+    STORE_WHATSAPP_NUMBER_1: str = "923247508462"
     STORE_WHATSAPP_NUMBER_2: str = "923021735137"
 
     CLOUDINARY_CLOUD_NAME: str = ""
