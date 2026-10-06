@@ -1,10 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#5C4E4E"/>
-      <stop offset="100%" stop-color="#000000"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a0f0f"/>
+      <stop offset="100%" stop-color="#0d0a0a"/>
+    </linearGradient>
+    <linearGradient id="gold-h" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0d0a0a" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#C9A84C"/>
+      <stop offset="100%" stop-color="#0d0a0a" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="border-g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#C9A84C" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#7a4f4f" stop-opacity="0.3"/>
     </linearGradient>
   </defs>
-  <rect width="32" height="32" rx="8" fill="url(#g)"/>
-  <text x="16" y="22" font-family="Georgia,serif" font-size="14" font-weight="700" fill="#D1D0D0" text-anchor="middle" letter-spacing="1">OK</text>
+  <!-- Background -->
+  <rect width="32" height="32" rx="9" fill="url(#bg)"/>
+  <!-- Border -->
+  <rect x="0.5" y="0.5" width="31" height="31" rx="8.5" stroke="url(#border-g)" stroke-width="0.8" fill="none"/>
+  <!-- Top gold line -->
+  <rect x="6" y="6.5" width="20" height="0.8" rx="0.4" fill="url(#gold-h)"/>
+  <!-- OQ Text -->
+  <text x="16" y="20.5" font-family="Georgia,'Times New Roman',serif" font-size="11" font-weight="700" fill="#E8C96D" text-anchor="middle" letter-spacing="1.5">OQ</text>
+  <!-- Bottom gold line -->
+  <rect x="6" y="25" width="20" height="0.8" rx="0.4" fill="url(#gold-h)"/>
 </svg>

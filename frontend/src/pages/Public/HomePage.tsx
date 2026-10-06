@@ -18,7 +18,13 @@ import {
   ShoppingBag,
   Smartphone,
   Baby,
-  ChevronRight
+  ChevronRight,
+  Flame,
+  ShieldCheck,
+  BadgeCheck,
+  Users,
+  Zap,
+  Clock
 } from 'lucide-react';
 
 import { categoriesApi } from '@/api/categories';
@@ -82,10 +88,10 @@ const categories_preview = [
 ];
 
 const whyUs = [
-  { icon: Sparkles, title: 'Uncompromising Quality', desc: 'We source only the finest materials, ensuring every product exceeds your expectations.' },
-  { icon: Heart, title: 'Customer First', desc: 'Your satisfaction is our priority. Experience seamless shopping with dedicated support.' },
-  { icon: Building, title: 'Secure Payments', desc: 'Shop with confidence using our secure bank transfer and cash on delivery options.' },
-  { icon: Truck, title: 'Fast Nationwide Delivery', desc: 'Carefully packaged and delivered straight to your doorstep across Pakistan.' },
+  { icon: Sparkles, title: 'Uncompromising Quality', desc: 'We source only the finest materials and ingredients — every product is rigorously vetted before reaching you.' },
+  { icon: Heart, title: 'Customer First', desc: 'Your satisfaction is our pride. Our dedicated team is ready to assist you from order to delivery.' },
+  { icon: Building, title: 'Secure Payments', desc: 'Shop with confidence — bank transfer with instant verification and cash on delivery available nationwide.' },
+  { icon: Truck, title: 'Nationwide Delivery', desc: 'Carefully packaged and delivered straight to your doorstep across all major cities of Pakistan.' },
 ];
 
 const testimonials = [
@@ -99,9 +105,9 @@ const testimonials = [
 ];
 
 const faqs = [
-  { q: 'How do I pay using Bank Transfer?', a: 'Select "Bank Transfer" at checkout. You will see our bank details. Transfer the amount, upload the receipt, and we will verify and process your order immediately.' },
-  { q: 'Is Cash on Delivery available?', a: 'Yes, Cash on Delivery is available across Pakistan for most items.' },
-  { q: 'How long does delivery take?', a: 'Standard delivery takes 3-5 working days. You will receive an email confirmation once your payment is verified and the order is dispatched.' },
+  { q: 'How do I pay using Bank Transfer?', a: 'Select "Bank Transfer" at checkout. You will receive our bank details. Transfer the amount and upload your receipt — we verify and process your order immediately.' },
+  { q: 'Is Cash on Delivery available?', a: 'Yes! Cash on Delivery (COD) is available across all major cities of Pakistan. No advance payment needed — pay when your order arrives at your door.' },
+  { q: 'How long does delivery take?', a: 'Standard delivery takes 3–5 working days across Pakistan. You will receive confirmation once your payment is verified and your order is dispatched.' },
   { q: 'What is your return policy?', a: 'We accept returns on unused apparel, bags, electronics, and jewellery within 7 days. Cosmetics and skin care items cannot be returned once opened for hygiene reasons.' },
 ];
 
@@ -138,8 +144,8 @@ export function HomePage() {
   return (
     <PublicLayout>
       <SEO
-        title="Online Shopping Pakistan — Cosmetics, Jewellery, Suits & Baby Clothes"
-        description="OQIRA — Pakistan ka No.1 premium online store. Shop cosmetics, skin care, fine jewellery, luxury suits & baby garments online. Cash on delivery + bank transfer. Poori Pakistan delivery. Aaj hi order karein!"
+        title="Online Shopping Pakistan — Cosmetics, Jewellery, Suits & Baby Clothes | OQIRA"
+        description="OQIRA — Pakistan's No.1 premium online store. Shop cosmetics, skin care, fine jewellery, luxury suits & baby garments. Cash on delivery + bank transfer. Nationwide delivery across Pakistan."
         keywords="OQIRA, online shopping Pakistan, cosmetics Pakistan, skin care online, jewellery Pakistan, baby clothes online, luxury suits Pakistan, kids garments, online store Pakistan, COD Pakistan, cash on delivery, bank transfer Pakistan, makeup online, necklace earrings Pakistan, baby dress Pakistan, premium shopping, best online shop Pakistan"
         url="https://okira.vercel.app/"
         schema={{
@@ -153,43 +159,81 @@ export function HomePage() {
       <DiscountPopup />
 
       {/* HERO SECTION WITH THREE.JS BACKGROUND */}
-      <section className="relative flex min-h-[95vh] items-center justify-center overflow-hidden bg-navy px-6 pb-16 pt-20 text-center">
+      <section className="relative flex min-h-[95vh] items-center justify-center overflow-hidden bg-[#0d0a0a] px-6 pb-16 pt-20 text-center">
         {/* Three.js Canvas */}
-        <div className="absolute inset-0 z-0 opacity-80">
+        <div className="absolute inset-0 z-0 opacity-70">
           <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
             <ambientLight intensity={0.5} />
-            <pointLight position={[10, 10, 10]} intensity={1} color="#D1D0D0" />
+            <pointLight position={[10, 10, 10]} intensity={1} color="#C9A84C" />
+            <pointLight position={[-10, -5, 5]} intensity={0.3} color="#7a4f4f" />
             <FloatingIcons />
           </Canvas>
         </div>
+        {/* Gold radial glow */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_60%,rgba(201,168,76,0.07),transparent)]" />
 
         {/* Hero Content */}
-        <div className="relative z-10 mx-auto max-w-5xl glass-dark rounded-[2.5rem] p-8 sm:p-16 text-cream border-white/20">
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-gold shadow-[0_0_15px_rgba(209,208,208,0.2)] backdrop-blur-md animate-fade-in-up">
-            <Sparkles className="h-4 w-4" /> Welcome to OQIRA
+        <div className="relative z-10 mx-auto max-w-5xl">
+          {/* Live scarcity badge */}
+          <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-[#C9A84C]/30 bg-[#C9A84C]/10 px-5 py-2 text-[11px] font-bold uppercase tracking-widest text-[#E8C96D] backdrop-blur-md animate-fade-in-up">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#C9A84C] opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#C9A84C]" />
+            </span>
+            <Flame className="h-3.5 w-3.5" /> 47+ orders today — Limited stock remaining!
           </div>
-          <h1 className="text-5xl leading-[1.1] tracking-tight sm:text-6xl lg:text-7xl font-display font-semibold text-white animate-fade-in-up drop-shadow-lg" style={{ animationDelay: '100ms' }}>
-            Elevate your lifestyle <br />
-            with <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold via-pink-pale to-gold animate-gradient bg-[length:200%_auto] italic">premium</span> essentials
+
+          <h1 className="text-4xl leading-[1.1] tracking-tight sm:text-5xl lg:text-7xl font-display font-bold text-white animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            The quality you truly deserve —{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C9A84C] via-[#E8C96D] to-[#C9A84C] animate-[gradient_3s_linear_infinite] bg-[length:200%_auto] italic">premium</span>
           </h1>
-          <p className="mx-auto mt-6 max-w-3xl text-lg font-light text-cream/80 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-            Discover our exclusive collection of flawless cosmetics, designer-inspired hand purses, exquisite jewellery, smart electronics, and comfortable baby garments. Crafted for those who demand the best.
+          <p className="mx-auto mt-6 max-w-2xl text-lg font-light text-white/65 animate-fade-in-up leading-relaxed" style={{ animationDelay: '200ms' }}>
+            Pakistan's premier destination for cosmetics, jewellery, purses, electronics & baby garments.
+            Uncompromising quality and elegance, delivered directly to your door.
           </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-            <Link to={ROUTES.PRODUCTS}>
-              <button className="rounded-full bg-white px-8 py-4 text-sm font-bold uppercase tracking-widest text-navy transition-all hover:bg-gold hover:text-navy hover:scale-105 shadow-xl shadow-black/20">
-                Explore The Collection
+
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up w-full px-4 sm:px-0" style={{ animationDelay: '300ms' }}>
+            <Link to={ROUTES.PRODUCTS} className="w-full sm:w-auto">
+              <button className="w-full relative overflow-hidden rounded-full bg-gradient-to-r from-[#C9A84C] via-[#E8C96D] to-[#C9A84C] bg-[length:200%_auto] px-10 py-4 text-sm font-extrabold uppercase tracking-widest text-[#0d0a0a] shadow-[0_8px_40px_rgba(201,168,76,0.4)] transition-all hover:shadow-[0_12px_50px_rgba(201,168,76,0.6)] hover:scale-105 animate-[gradient_3s_linear_infinite]">
+                Shop Now
+              </button>
+            </Link>
+            <Link to={ROUTES.PRODUCTS} className="w-full sm:w-auto">
+              <button className="w-full rounded-full border-2 border-white/20 px-8 py-4 text-sm font-bold text-white/80 transition-all hover:border-[#C9A84C]/60 hover:text-[#E8C96D] backdrop-blur-sm">
+                View Collection
               </button>
             </Link>
           </div>
-          <div className="mt-12 flex flex-wrap justify-center gap-8 border-t border-white/10 pt-8 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+
+          {/* Social proof mini-strip */}
+          <div className="mt-12 flex flex-wrap justify-center gap-6 border-t border-white/10 pt-8 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
             {[
+              { icon: Users, label: '5,000+ Happy Customers' },
+              { icon: ShieldCheck, label: 'COD Available' },
               { icon: Truck, label: 'Nationwide Delivery' },
-              { icon: Building, label: 'Secure Bank Transfer & COD' },
-              { icon: Heart, label: 'Premium Quality Guarantee' },
             ].map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-cream/70">
-                <Icon className="h-4 w-4 text-gold" /> {label}
+              <div key={label} className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-white/50">
+                <Icon className="h-4 w-4 text-[#C9A84C]" /> {label}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* LIVE STATS STRIP */}
+      <section className="bg-[#0d0a0a] border-y border-[#C9A84C]/15">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid grid-cols-2 divide-x divide-[#C9A84C]/10 lg:grid-cols-4">
+            {[
+              { value: '5,000+', label: 'Orders Delivered', icon: ShoppingBag, color: 'text-[#E8C96D]' },
+              { value: '4.9★', label: 'Average Rating', icon: Star, color: 'text-[#E8C96D]' },
+              { value: '100%', label: 'Authentic Products', icon: BadgeCheck, color: 'text-emerald-400' },
+              { value: '3–5 Din', label: 'Delivery Time', icon: Truck, color: 'text-[#E8C96D]' },
+            ].map(({ value, label, icon: Icon, color }) => (
+              <div key={label} className="flex flex-col items-center gap-1.5 py-6 px-4 text-center">
+                <Icon className={`h-5 w-5 mb-1 ${color}`} />
+                <p className={`font-display text-2xl font-bold ${color}`}>{value}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/35">{label}</p>
               </div>
             ))}
           </div>
@@ -267,9 +311,14 @@ export function HomePage() {
       {/* FEATURED PRODUCTS — 2 rows of 4 */}
       <section className="bg-white px-6 py-24">
         <div className="mx-auto mb-12 max-w-2xl text-center">
-          <span className="section-tag">Featured</span>
-          <h2 className="text-4xl sm:text-5xl font-display font-semibold text-gradient">Handpicked for you</h2>
-          <p className="mt-4 text-navy-soft">Our best picks — curated just for you.</p>
+          <span className="section-tag"><Flame className="h-3 w-3" /> Bestsellers</span>
+          <h2 className="text-4xl sm:text-5xl font-display font-semibold text-gradient">Our Best Sellers</h2>
+          <p className="mt-4 text-navy-soft">These premium pieces are in high demand and frequently sell out. Secure yours today.</p>
+          {/* Scarcity warning */}
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-50 px-4 py-1.5">
+            <Zap className="h-3 w-3 text-orange-500" />
+            <span className="text-[11px] font-bold text-orange-600">Very limited stock available today — don't miss out!</span>
+          </div>
         </div>
         {loadingFeatured ? (
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -309,21 +358,27 @@ export function HomePage() {
       </section>
 
       {/* WHY US */}
-      <section className="bg-navy px-6 py-24 text-cream">
-        <div className="mx-auto mb-16 max-w-2xl text-center">
-          <span className="inline-block text-xs font-bold tracking-widest uppercase text-navy bg-gold px-4 py-1.5 rounded-full mb-4">The OQIRA Standard</span>
-          <h2 className="text-4xl sm:text-5xl text-white">Why choose us</h2>
-        </div>
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {whyUs.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-gold">
-                <Icon className="h-6 w-6" />
+      <section className="relative overflow-hidden bg-[#0d0a0a] px-6 py-24 text-cream">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_100%,rgba(201,168,76,0.06),transparent)]" />
+        <div className="relative z-10">
+          <div className="mx-auto mb-16 max-w-2xl text-center">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-[#0d0a0a] bg-gradient-to-r from-[#C9A84C] to-[#E8C96D] px-5 py-2 rounded-full mb-4">
+              <ShieldCheck className="h-3.5 w-3.5" /> The OQIRA Standard
+            </span>
+            <h2 className="text-4xl sm:text-5xl text-white font-display font-bold">Why Choose OQIRA?</h2>
+            <p className="mt-4 text-white/40 text-base">Over 5,000 customers trust OQIRA for their premium lifestyle needs</p>
+          </div>
+          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {whyUs.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="group rounded-2xl border border-[#C9A84C]/15 bg-white/[.04] p-8 backdrop-blur-sm transition-all duration-300 hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/[.06] hover:-translate-y-1">
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#C9A84C]/20 to-[#C9A84C]/5 text-[#C9A84C] border border-[#C9A84C]/20">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h4 className="text-base font-bold text-white mb-2">{title}</h4>
+                <p className="text-sm text-white/45 leading-relaxed">{desc}</p>
               </div>
-              <h4 className="text-lg font-bold text-white mb-2">{title}</h4>
-              <p className="text-sm text-cream/70 leading-relaxed">{desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
@@ -339,7 +394,7 @@ export function HomePage() {
             <h2 className="text-4xl font-display font-semibold text-white sm:text-5xl mt-3">
               What our clients say
             </h2>
-            <p className="mt-4 text-cream/60 text-base font-light">Real reviews from real customers across Pakistan</p>
+            <p className="mt-4 text-cream/60 text-base font-light">Real reviews from verified customers across Pakistan</p>
           </div>
 
           {/* Carousel Track */}
@@ -452,19 +507,53 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-navy px-6 py-32 text-center text-white border-t-8 border-gold">
-        <h2 className="mx-auto max-w-2xl text-4xl font-display text-white sm:text-5xl lg:text-6xl mb-6">
-          Experience the OQIRA difference today
-        </h2>
-        <p className="mx-auto max-w-xl text-lg text-cream/70 mb-10 font-light">
-          Shop our exclusive collections of cosmetics, purses, jewellery, electronics, and baby garments.
-        </p>
-        <Link to={ROUTES.PRODUCTS}>
-          <button className="rounded-full bg-gold px-10 py-5 text-sm font-bold uppercase tracking-widest text-navy transition-all hover:bg-white hover:scale-105 shadow-lg shadow-gold/20">
-            Shop Now
-          </button>
-        </Link>
+      {/* FINAL CTA — URGENCY DRIVEN */}
+      <section className="relative overflow-hidden bg-[#0d0a0a] px-6 py-24 text-center">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_50%,rgba(201,168,76,0.08),transparent)]" />
+        {/* Gold border top */}
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#C9A84C] via-[#E8C96D] to-[#C9A84C]" />
+
+        <div className="relative z-10 mx-auto max-w-3xl">
+          {/* Urgency badge */}
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-400/10 px-5 py-2">
+            <Clock className="h-3.5 w-3.5 text-orange-400" />
+            <span className="text-[11px] font-bold uppercase tracking-widest text-orange-400">Limited Time — Special Offer Available Today</span>
+          </div>
+
+          <h2 className="font-display text-3xl font-bold text-white sm:text-5xl lg:text-6xl mb-6 leading-tight">
+            Order Today —
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C9A84C] via-[#E8C96D] to-[#C9A84C] animate-[gradient_3s_linear_infinite] bg-[length:200%_auto]">Experience Luxury Tomorrow!</span>
+          </h2>
+          <p className="mx-auto max-w-xl text-lg text-white/50 mb-3 font-light leading-relaxed">
+            Premium cosmetics, jewellery, purses, electronics & baby garments.
+            Cash on delivery available across Pakistan.
+          </p>
+          <p className="mb-10 text-sm text-white/30 flex items-center justify-center gap-1.5">
+            <Zap className="h-4 w-4 text-[#C9A84C]" /> These pieces move fast. Secure your order today before they're gone.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full px-2 sm:px-0">
+            <Link to={ROUTES.PRODUCTS} className="w-full sm:w-auto">
+              <button className="w-full flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#C9A84C] via-[#E8C96D] to-[#C9A84C] bg-[length:200%_auto] px-12 py-5 text-sm font-extrabold uppercase tracking-widest text-[#0d0a0a] shadow-[0_8px_40px_rgba(201,168,76,0.4)] transition-all hover:shadow-[0_16px_60px_rgba(201,168,76,0.6)] hover:scale-105 animate-[gradient_3s_linear_infinite]">
+                Shop Now <ShoppingBag className="h-4 w-4" />
+              </button>
+            </Link>
+            <a href="https://wa.me/923247508462" target="_blank" rel="noreferrer" className="w-full sm:w-auto">
+              <button className="w-full rounded-full border-2 border-white/20 px-10 py-5 text-sm font-bold text-white/70 transition-all hover:border-[#C9A84C]/60 hover:text-[#E8C96D] backdrop-blur-sm">
+                Order via WhatsApp
+              </button>
+            </a>
+          </div>
+
+          {/* Final trust strip */}
+          <div className="mt-10 flex flex-wrap justify-center gap-6 text-[10px] text-white/25">
+            <span className="flex items-center gap-1"><ShieldCheck className="h-3 w-3 text-emerald-400" /> Secure COD Payment</span>
+            <span className="flex items-center gap-1"><BadgeCheck className="h-3 w-3 text-[#C9A84C]" /> 100% Original Products</span>
+            <span className="flex items-center gap-1"><Users className="h-3 w-3 text-[#C9A84C]" /> 5,000+ Satisfied Customers</span>
+            <span className="flex items-center gap-1"><Truck className="h-3 w-3 text-[#C9A84C]" /> Free Returns in 7 Days</span>
+          </div>
+        </div>
       </section>
     </PublicLayout>
   );

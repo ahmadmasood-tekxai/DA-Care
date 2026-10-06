@@ -22,7 +22,7 @@ export const API_BASE_URL: string =
 export const UPLOADS_BASE_URL: string =
   (import.meta.env.VITE_UPLOADS_BASE_URL as string) || 'https://okira-backend.vercel.app';
 
-export const WHATSAPP_NUMBER_1: string = (import.meta.env.VITE_WHATSAPP_NUMBER_1 as string) || '923194392573';
+export const WHATSAPP_NUMBER_1: string = (import.meta.env.VITE_WHATSAPP_NUMBER_1 as string) || '923247508462';
 export const WHATSAPP_NUMBER_2: string = (import.meta.env.VITE_WHATSAPP_NUMBER_2 as string) || '923021735137';
 
 export const AUTH_TOKEN_KEY = 'oqira_access_token';

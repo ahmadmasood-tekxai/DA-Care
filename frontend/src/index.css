@@ -5,33 +5,159 @@
 @tailwind utilities;
 
 @layer base {
-  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
-  body { @apply bg-cream text-navy font-body; }
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    @apply bg-cream text-navy font-body;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9A84C' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
   h1, h2, h3, h4 { @apply font-display font-semibold text-navy; }
+
+  /* Premium selection */
+  ::selection {
+    background-color: rgba(201, 168, 76, 0.25);
+    color: #0d0a0a;
+  }
 }
 
 @layer components {
-  /* Premium custom scrollbar */
+  /* ─── Scrollbar ─── */
   .scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
   .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-  .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-pink-deep/30 rounded-full hover:bg-pink-deep/50 transition-colors; }
-  
-  /* Refined section tags */
+  .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-gold/40 rounded-full; }
+
+  /* ─── Section Tags ─── */
   .section-tag {
-    @apply inline-flex items-center justify-center text-[10px] font-bold tracking-[0.2em] uppercase text-white bg-navy px-5 py-2 rounded-full mb-6 shadow-md shadow-navy/20 border border-white/10;
+    @apply inline-flex items-center justify-center gap-1.5
+           text-[10px] font-bold tracking-[0.25em] uppercase
+           text-gold border border-gold/40 bg-gold/[.08]
+           px-5 py-2 rounded-full mb-6
+           shadow-sm;
   }
-  
-  /* High-end glassmorphism */
+  .section-tag-dark {
+    @apply inline-flex items-center justify-center gap-1.5
+           text-[10px] font-bold tracking-[0.25em] uppercase
+           text-navy border border-navy/20 bg-navy/[.08]
+           px-5 py-2 rounded-full mb-6;
+  }
+
+  /* ─── Glass morphism ─── */
   .glass {
-    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl shadow-navy/5;
+    @apply bg-white/75 backdrop-blur-2xl border border-white/50 shadow-2xl shadow-navy/[.08];
   }
   .glass-dark {
-    @apply bg-navy/80 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20;
+    @apply bg-navy/80 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/30;
   }
-  
-  /* Premium text gradients */
+  .glass-gold {
+    @apply bg-gold/5 backdrop-blur-xl border border-gold/20;
+  }
+
+  /* ─── Premium Text Gradients ─── */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-navy via-pink-deep to-navy bg-[length:200%_auto];
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #0d0a0a 0%, #7a4f4f 50%, #0d0a0a 100%);
+    background-size: 200% auto;
     animation: gradient 8s linear infinite;
   }
+  .text-gold-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #C9A84C 0%, #E8C96D 50%, #a07830 100%);
+    background-size: 200% auto;
+    animation: gradient 4s linear infinite;
+  }
+
+  /* ─── Premium Divider ─── */
+  .gold-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #C9A84C, transparent);
+    opacity: 0.4;
+  }
+
+  /* ─── Shimmer Effect on Cards ─── */
+  .card-premium {
+    @apply relative overflow-hidden rounded-3xl border bg-white
+           transition-all duration-500
+           hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(122,79,79,0.15)];
+  }
+  .card-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.6s ease;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .card-premium:hover::before {
+    left: 150%;
+  }
+
+  /* ─── Gold Button ─── */
+  .btn-gold {
+    @apply relative overflow-hidden rounded-full
+           bg-gradient-to-r from-[#C9A84C] via-[#E8C96D] to-[#C9A84C]
+           px-8 py-4 text-sm font-bold uppercase tracking-widest text-[#0d0a0a]
+           shadow-gold transition-all duration-300
+           hover:shadow-[0_12px_40px_rgba(201,168,76,0.45)] hover:scale-105
+           bg-[length:200%_auto];
+    animation: gradient 3s linear infinite;
+  }
+  .btn-ghost-gold {
+    @apply rounded-full border-2 border-gold/60 px-8 py-4 text-sm font-bold
+           uppercase tracking-widest text-gold bg-transparent
+           transition-all duration-300
+           hover:bg-gold hover:text-navy hover:border-gold hover:scale-105;
+  }
+
+  /* ─── Nav Active Dot ─── */
+  .nav-active {
+    @apply relative text-gold;
+  }
+  .nav-active::after {
+    content: '';
+    @apply absolute -bottom-1 left-0 right-0 h-0.5 rounded-full bg-gold;
+  }
+
+  /* ─── Premium Badge ─── */
+  .badge-gold {
+    @apply inline-flex items-center gap-1 rounded-full
+           bg-gradient-to-r from-gold/[.15] to-gold/5
+           border border-gold/30
+           px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-gold;
+  }
+
+  /* ─── Founder Card ─── */
+  .founder-avatar {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-full
+           border border-gold/40
+           font-display text-xs font-bold text-gold
+           shadow-md;
+    background: linear-gradient(135deg, #1a0f0f 0%, #2a1818 100%);
+  }
+}
+
+@keyframes gradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }

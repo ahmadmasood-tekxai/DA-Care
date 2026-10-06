@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { CheckCircle2, Copy, Image as ImageIcon, Minus, Plus, ShoppingBag, Trash2, Building, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -16,8 +16,16 @@ import { useCart } from '@/hooks/useCart';
 import { SEO } from '@/components/common/SEO';
 import { PaymentMethod } from '@/types';
 import { formatCurrency } from '@/utils/format';
+import meezanLogo from '@/assets/images/meezan-bank-logo.png';
+import mashreqLogo from '@/assets/images/mashriq-bank-logo.jfif';
 
 export function CartPage() {
+  const meezanTitle = import.meta.env.VITE_MEEZAN_TITLE || 'Muhammad Daud';
+  const meezanAccount = import.meta.env.VITE_MEEZAN_ACCOUNT || '11560114539564';
+
+  const mashreqTitle = import.meta.env.VITE_MASHREQ_TITLE || 'Muhammad Ahmad';
+  const mashreqAccount = import.meta.env.VITE_MASHREQ_ACCOUNT || '089010046367';
+  const mashreqIban = import.meta.env.VITE_MASHREQ_IBAN || 'PK45MSHQ0000089010046367';
 
 
   const { items, subtotal, updateQuantity, removeItem, clearCart } = useCart();
@@ -36,12 +44,6 @@ export function CartPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [orderConfirmed, setOrderConfirmed] = useState(false);
-
-  const { data: bankDetails } = useQuery({
-    queryKey: ['bank-details'],
-    queryFn: ordersApi.getBankDetails,
-    enabled: paymentMethod === PaymentMethod.BANK_TRANSFER,
-  });
 
   const checkoutMutation = useMutation({
     mutationFn: ordersApi.create,
@@ -69,14 +71,27 @@ export function CartPage() {
 
   const handleCheckout = () => {
     setFormError('');
-    if (!customerName.trim()) return setFormError('Please enter your name.');
-    if (!customerPhone.trim()) return setFormError('Please enter your phone number.');
-    if (!customerAddress.trim()) return setFormError('Please enter your delivery address.');
+    
+    const name = customerName.trim();
+    if (!name || name.length < 3) {
+      return setFormError('Please enter a valid name (minimum 3 characters).');
+    }
+
+    const cleanPhone = customerPhone.replace(/[\s-]/g, '');
+    const phoneRegex = /^((\+92)|(0))3[0-9]{9}$/;
+    if (!cleanPhone || !phoneRegex.test(cleanPhone)) {
+      return setFormError('Please enter a valid Pakistani phone number (e.g. 03xx-xxxxxxx or +923xx-xxxxxxx).');
+    }
+
+    const address = customerAddress.trim();
+    if (!address || address.length < 15) {
+      return setFormError('Please enter your full delivery address (minimum 15 characters).');
+    }
 
     checkoutMutation.mutate({
-      customer_name: customerName,
-      customer_phone: customerPhone,
-      customer_address: customerAddress,
+      customer_name: name,
+      customer_phone: cleanPhone,
+      customer_address: address,
       items: items.map((i) => ({ product_id: i.product.id, quantity: i.quantity })),
       payment_method: paymentMethod,
     });
@@ -107,7 +122,7 @@ export function CartPage() {
     );
   }
 
-  if (showBankTransferDetails && bankDetails) {
+  if (showBankTransferDetails) {
     return (
       <PublicLayout>
         <SEO
@@ -126,31 +141,62 @@ export function CartPage() {
               </p>
             </div>
 
-            <div className="space-y-4 rounded-xl bg-cream-2 p-5 mb-8 border border-navy/5">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-navy-soft mb-1">Account Title</p>
-                <p className="font-semibold text-lg">{bankDetails.account_title}</p>
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-navy-soft mb-1">Bank Name</p>
-                <p className="font-semibold text-lg">{bankDetails.bank_name}</p>
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-navy-soft mb-1">Account Number</p>
-                <div className="flex items-center justify-between">
-                  <p className="font-mono text-lg font-semibold">{bankDetails.account_number}</p>
-                  <button onClick={() => copyToClipboard(bankDetails.account_number)} className="text-pink-deep hover:text-navy flex items-center gap-1 text-sm font-semibold">
-                    <Copy className="h-4 w-4" /> Copy
-                  </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              {/* Meezan Bank Card */}
+              <div className="rounded-2xl bg-gradient-to-br from-[#0d0a0a] to-[#1a1414] p-5 sm:p-6 border border-[#C9A84C]/20 shadow-lg relative overflow-hidden group hover:border-[#C9A84C]/60 transition-all flex flex-col justify-between">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#C9A84C]/5 rounded-full -translate-y-16 translate-x-16 blur-2xl pointer-events-none" />
+                <div className="flex items-start justify-between mb-6 gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white p-1.5 shadow-sm">
+                      <img src={meezanLogo} alt="Meezan Bank" className="h-full w-full object-contain" />
+                    </div>
+                    <span className="font-display font-bold text-white tracking-wide text-sm sm:text-base whitespace-nowrap">Meezan Bank</span>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">Account Title</p>
+                    <p className="font-semibold text-white text-sm sm:text-base truncate">{meezanTitle}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">Account Number</p>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="font-mono text-base sm:text-lg font-bold text-[#E8C96D] break-all">{meezanAccount}</p>
+                      <button onClick={() => copyToClipboard(meezanAccount)} className="shrink-0 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#C9A84C] hover:text-white transition-colors bg-[#C9A84C]/10 hover:bg-[#C9A84C]/20 px-3 py-1.5 rounded-lg">
+                        <Copy className="h-3 w-3" /> Copy
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-navy-soft mb-1">IBAN</p>
-                <div className="flex items-center justify-between">
-                  <p className="font-mono text-lg font-semibold">{bankDetails.iban}</p>
-                  <button onClick={() => copyToClipboard(bankDetails.iban)} className="text-pink-deep hover:text-navy flex items-center gap-1 text-sm font-semibold">
-                    <Copy className="h-4 w-4" /> Copy
-                  </button>
+
+              {/* Mashreq Bank Card */}
+              <div className="rounded-2xl bg-gradient-to-br from-[#0d0a0a] to-[#1a1414] p-5 sm:p-6 border border-[#C9A84C]/20 shadow-lg relative overflow-hidden group hover:border-[#C9A84C]/60 transition-all flex flex-col justify-between">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full -translate-y-16 translate-x-16 blur-2xl pointer-events-none" />
+                <div className="flex items-start justify-between mb-6 gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white p-1.5 shadow-sm">
+                      <img src={mashreqLogo} alt="Mashreq Bank" className="h-full w-full object-contain" />
+                    </div>
+                    <span className="font-display font-bold text-white tracking-wide text-sm sm:text-base whitespace-nowrap">Mashreq Bank</span>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">Account Title</p>
+                    <p className="font-semibold text-white text-sm sm:text-base truncate">{mashreqTitle}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">Account Number / IBAN</p>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="font-mono text-sm font-bold text-orange-300 break-all">{mashreqAccount}<br />{mashreqIban}</p>
+                      <button onClick={() => copyToClipboard(`${mashreqAccount}\n${mashreqIban}`)} className="shrink-0 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-orange-300/80 hover:text-orange-300 transition-colors bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg">
+                        <Copy className="h-3 w-3" /> Copy
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

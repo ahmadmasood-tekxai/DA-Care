@@ -50,8 +50,8 @@ describe('resolveImageUrl', () => {
 
 describe('buildWhatsAppOrderLink', () => {
   it('includes product name, quantity and total in the message', () => {
-    const link = buildWhatsAppOrderLink('923194392573', [{ product: mockProduct, quantity: 2 }], 'Sara Ahmed');
-    expect(link).toContain('wa.me/923194392573');
+    const link = buildWhatsAppOrderLink('923247508462', [{ product: mockProduct, quantity: 2 }], 'Sara Ahmed');
+    expect(link).toContain('wa.me/923247508462');
     const decoded = decodeURIComponent(link);
     expect(decoded).toContain('The Little Prince Set x2');
     expect(decoded).toContain('Sara Ahmed');

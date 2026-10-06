@@ -7,12 +7,13 @@
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
+  <link rel="shortcut icon" href="/favicon.svg" />
 
   <!-- Viewport -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Theme Color (browser tab / mobile status bar) -->
-  <meta name="theme-color" content="#000000" />
+  <meta name="theme-color" content="#0d0a0a" />
 
   <!-- Google Site Verification -->
   <meta name="google-site-verification" content="sy9rErVqJBLSnpTsDrgMpkeWh8xJYxOotQ8Oq2eZM7s" />
@@ -20,16 +21,18 @@
   <!-- ═══════════════════════════════════════════════
        DEFAULT SEO — overridden per-page via <SEO /> component
   ════════════════════════════════════════════════ -->
-  <title>OQIRA — Online Shopping Pakistan | Cosmetics, Jewellery, Suits, Baby Clothes</title>
+  <title>OQIRA — Online Shopping Pakistan | Cosmetics, Jewellery, Suits &amp; Baby Clothes</title>
   <meta name="description"
-    content="OQIRA — Pakistan ka No.1 premium online store. Shop cosmetics, skin care, fine jewellery, luxury suits, baby garments online. Cash on delivery + bank transfer. Poori Pakistan delivery." />
+    content="OQIRA — Pakistan's No.1 premium online store. Shop cosmetics, skin care, fine jewellery, luxury suits &amp; baby garments. Cash on delivery + bank transfer. Nationwide delivery across Pakistan." />
   <meta name="keywords"
-    content="OQIRA, online shopping Pakistan, cosmetics Pakistan, skin care Pakistan, jewellery online Pakistan, baby clothes Pakistan, luxury suits Pakistan, baby garments, online store Pakistan, cash on delivery Pakistan, online khareedo Pakistan, OQIRA store, best online shop Pakistan, makeup Pakistan, necklace Pakistan, kids clothes Pakistan" />
-  <meta name="author" content="OQIRA" />
+    content="OQIRA, online shopping Pakistan, cosmetics Pakistan, skin care Pakistan, jewellery online Pakistan, baby clothes Pakistan, luxury suits Pakistan, baby garments, online store Pakistan, cash on delivery Pakistan, COD Pakistan, OQIRA store, best online shop Pakistan, makeup Pakistan, necklace Pakistan, kids clothes Pakistan, skin care lahore, jewellery karachi, suits islamabad" />
+  <meta name="author" content="OQIRA — Daud Ansari &amp; Ahmad Rajpoot" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta name="language" content="English" />
   <meta name="geo.region" content="PK" />
   <meta name="geo.placename" content="Pakistan" />
+  <meta name="geo.position" content="30.3753;69.3451" />
+  <meta name="ICBM" content="30.3753, 69.3451" />
 
   <!-- Canonical -->
   <link rel="canonical" href="https://okira.vercel.app/" />
@@ -40,9 +43,10 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="OQIRA" />
   <meta property="og:url" content="https://okira.vercel.app/" />
-  <meta property="og:title" content="OQIRA — Online Shopping Pakistan | Cosmetics · Jewellery · Suits · Baby Clothes" />
+  <meta property="og:title"
+    content="OQIRA — Pakistan's Premium Online Store | Cosmetics · Jewellery · Suits · Baby Clothes" />
   <meta property="og:description"
-    content="Pakistan ka trusted premium online store — skin care, jewellery, luxury suits, baby garments. COD + bank transfer. Poori Pakistan delivery. OQIRA par shop karein!" />
+    content="Pakistan's trusted premium online store — skin care, jewellery, luxury suits, baby garments. COD + bank transfer. Poori Pakistan delivery. OQIRA par shop karein!" />
   <meta property="og:locale" content="en_PK" />
   <meta property="og:image" content="https://okira.vercel.app/og-image.jpg" />
   <meta property="og:image:width" content="1200" />
@@ -56,12 +60,11 @@
   <meta name="twitter:site" content="@oqira_pk" />
   <meta name="twitter:title" content="OQIRA — Online Shopping Pakistan" />
   <meta name="twitter:description"
-    content="Cosmetics, jewellery, luxury suits & baby clothes. COD available. Fast delivery across Pakistan. Shop now at OQIRA!" />
+    content="Cosmetics, jewellery, luxury suits &amp; baby clothes. COD available. Fast delivery across Pakistan. Shop now at OQIRA!" />
   <meta name="twitter:image" content="https://okira.vercel.app/og-image.jpg" />
 
   <!-- ═══════════════════════════════════════════════
        STRUCTURED DATA — Organization + WebSite Schema
-       Enables Google rich results: brand panel, sitelinks search box
   ════════════════════════════════════════════════ -->
   <script type="application/ld+json">
   {
@@ -79,28 +82,36 @@
           "width": 512,
           "height": 512
         },
-        "description": "Pakistan's premium online store for cosmetics, fine jewellery, luxury suits, baby garments, and skin care products.",
+        "description": "Pakistan's No.1 premium online store for cosmetics, fine jewellery, luxury suits, baby garments, and skin care products. Founded by Daud Ansari and Ahmad Rajpoot.",
+        "founder": [
+          { "@type": "Person", "name": "Daud Ansari" },
+          { "@type": "Person", "name": "Ahmad Rajpoot" }
+        ],
         "areaServed": {
           "@type": "Country",
           "name": "Pakistan"
         },
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "PK"
+        },
         "contactPoint": [
           {
             "@type": "ContactPoint",
-            "telephone": "+923194392573",
+            "telephone": "+923247508462",
             "contactType": "customer service",
+            "areaServed": "PK",
             "availableLanguage": ["English", "Urdu"]
           },
           {
             "@type": "ContactPoint",
             "telephone": "+923021735137",
             "contactType": "sales",
+            "areaServed": "PK",
             "availableLanguage": ["English", "Urdu"]
           }
         ],
-        "sameAs": [
-          "https://wa.me/923194392573"
-        ]
+        "sameAs": ["https://wa.me/923247508462"]
       },
       {
         "@type": "WebSite",
@@ -108,9 +119,7 @@
         "url": "https://okira.vercel.app/",
         "name": "OQIRA",
         "description": "Pakistan ka No.1 premium online store — cosmetics, jewellery, suits, baby clothes",
-        "publisher": {
-          "@id": "https://okira.vercel.app/#organization"
-        },
+        "publisher": { "@id": "https://okira.vercel.app/#organization" },
         "potentialAction": {
           "@type": "SearchAction",
           "target": {
@@ -133,11 +142,10 @@
   <link rel="preconnect" href="https://okira-backend.vercel.app" />
   <link rel="dns-prefetch" href="https://res.cloudinary.com" />
 
-  <!-- Preload critical font weights -->
   <link rel="preload" as="style"
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" />
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" />
   <link
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap"
     rel="stylesheet" />
 </head>
 

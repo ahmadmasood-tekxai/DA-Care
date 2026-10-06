@@ -18,9 +18,9 @@ export function AboutPage() {
   return (
     <PublicLayout>
       <SEO
-        title="About OQIRA — Pakistan ka Trusted Premium Online Store"
-        description="OQIRA ke barey mein janein — Pakistan ka trusted premium online store for cosmetics, jewellery, luxury suits & baby garments. Quality commitment, COD, nationwide delivery."
-        keywords="about OQIRA, OQIRA Pakistan, trusted online store Pakistan, premium cosmetics brand, jewellery brand Pakistan, baby clothes brand, luxury suits online, OQIRA story, online shopping Pakistan"
+        title="About OQIRA — Pakistan's Trusted Premium Online Store"
+        description="Learn about OQIRA — Pakistan's trusted premium online store for cosmetics, jewellery, luxury suits & baby garments. Our commitment to quality, COD, nationwide delivery, and trusted founders."
+        keywords="about OQIRA, OQIRA Pakistan, trusted online store Pakistan, premium cosmetics brand, jewellery brand Pakistan, baby clothes brand, luxury suits online, OQIRA story, Daud Ansari, Ahmad Rajpoot, online shopping Pakistan"
         url="https://okira.vercel.app/about"
         schema={{
           "@context": "https://schema.org",
