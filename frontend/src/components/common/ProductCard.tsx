@@ -108,7 +108,7 @@ export function ProductCard({ product, categoryName }: ProductCardProps) {
         {/* Favorite button */}
         <button
           onClick={handleFavorite}
-          className={`absolute bottom-3 left-3 z-20 flex h-8 w-8 items-center justify-center rounded-full shadow-md backdrop-blur-sm transition-all hover:scale-110 opacity-0 group-hover:opacity-100 ${
+          className={`absolute bottom-3 left-3 z-20 flex h-8 w-8 items-center justify-center rounded-full shadow-md backdrop-blur-sm transition-all hover:scale-110 sm:opacity-0 opacity-100 sm:group-hover:opacity-100 ${
             favorited
               ? 'bg-rose-500 text-white opacity-100'
               : 'bg-white/90 text-[#0d0a0a] hover:bg-rose-500 hover:text-white'
