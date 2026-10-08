@@ -12,7 +12,6 @@ backend/uploads/products/*
 !backend/uploads/products/.gitkeep
 
 # Env files
-.env
 
 # Node
 node_modules/
@@ -21,3 +20,7 @@ dist/
 
 # OS
 .DS_Store
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
+config.bat
