@@ -11,7 +11,19 @@ const notifications = [
   { name: 'Maria', city: 'Faisalabad', product: 'Diamond Earrings', time: '1 min ago' },
   { name: 'Nadia', city: 'Multan', product: 'Cosmetics Bundle', time: '4 mins ago' },
   { name: 'Sara', city: 'Peshawar', product: 'Luxury Suit', time: '6 mins ago' },
-  { name: 'Zara', city: 'Sialkot', product: 'Smart Electronics', time: '9 mins ago' },
+  { name: 'Zara', city: 'Sialkot', product: 'Embroidered Lawn Suit', time: '9 mins ago' },
+  { name: 'Iqra', city: 'Gujranwala', product: 'Bridal Jewelry Set', time: '3 mins ago' },
+  { name: 'Maham', city: 'Bahawalpur', product: 'Premium Handbag', time: '8 mins ago' },
+  { name: 'Alina', city: 'Lahore', product: 'Luxury Abaya', time: '4 mins ago' },
+  { name: 'Komal', city: 'Karachi', product: 'Makeup Essentials Kit', time: '6 mins ago' },
+  { name: 'Anum', city: 'Islamabad', product: 'Premium Jewelry Set', time: '2 mins ago' },
+  { name: 'Mehwish', city: 'Rawalpindi', product: 'Kids Winter Collection', time: '10 mins ago' },
+  { name: 'Laiba', city: 'Sargodha', product: 'Pearl Earrings Set', time: '5 mins ago' },
+  { name: 'Rabia', city: 'Lahore', product: 'Luxury Khussa Pair', time: '7 mins ago' },
+  { name: 'Amna', city: 'Hyderabad', product: 'Organic Skin Care Set', time: '3 mins ago' },
+  { name: 'Eman', city: 'Quetta', product: 'Premium Hijab Collection', time: '11 mins ago' },
+  { name: 'Minsa', city: 'Abbottabad', product: 'Designer 3-Piece Suit', time: '5 mins ago' },
+  { name: 'Sumbal', city: 'Lahore', product: 'Gold Plated Jewelry Set', time: '8 mins ago' },
 ];
 
 export function SocialProofTicker() {

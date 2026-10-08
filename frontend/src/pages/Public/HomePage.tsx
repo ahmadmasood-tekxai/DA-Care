@@ -16,7 +16,6 @@ import {
   Truck,
   Building,
   ShoppingBag,
-  Smartphone,
   Baby,
   ChevronRight,
   Flame,
@@ -83,7 +82,6 @@ const categories_preview = [
   { icon: Sparkles, title: 'Premium Cosmetics', desc: 'Radiant skincare and makeup formulations for a flawless, natural glow.' },
   { icon: ShoppingBag, title: 'Luxury Hand Purses', desc: 'Elegant, designer-inspired bags that make a statement wherever you go.' },
   { icon: Diamond, title: 'Exquisite Jewellery', desc: 'Timeless ornaments crafted to perfection for your most special occasions.' },
-  { icon: Smartphone, title: 'Smart Electronics', desc: 'Cutting-edge gadgets and premium accessories to elevate your lifestyle.' },
   { icon: Baby, title: 'Baby Garments', desc: 'Soft, breathable, and beautifully designed clothing for your little ones.' },
 ];
 
@@ -97,8 +95,14 @@ const whyUs = [
 const testimonials = [
   { name: 'Ayesha M.', role: 'Verified Buyer', location: 'Lahore', product: 'Gold Jewellery Set', rating: 5, quote: 'The jewellery set I ordered exceeded my expectations. The packaging was absolutely beautiful and the quality is outstanding. Will definitely be ordering again!' },
   { name: 'Sana R.', role: 'Verified Buyer', location: 'Karachi', product: 'Luxury Hand Purse', rating: 5, quote: 'I bought a luxury hand purse and some cosmetics. Absolutely in love with the premium feel! OQIRA is my new favourite store. The delivery was super fast too.' },
-  { name: 'Zahra K.', role: 'Verified Buyer', location: 'Islamabad', product: 'Baby Garments', rating: 5, quote: 'The baby garments are so soft and beautifully stitched. My little one loves wearing them! Plus, my husband loves the electronics I got him. Highly recommended!' },
-  { name: 'Fatima N.', role: 'Verified Buyer', location: 'Rawalpindi', product: 'Skin Care Set', rating: 5, quote: 'I was skeptical at first but after receiving my skin care order, I am totally converted. The products are genuinely premium. My skin has never looked better!' },
+  {
+    name: 'Zahra K.',
+    role: 'Verified Buyer',
+    location: 'Islamabad',
+    product: 'Baby Garments',
+    rating: 5,
+    quote: 'The baby garments are so soft and beautifully stitched. My little one loves wearing them! The quality is excellent, and the delivery was smooth. Highly recommended!'
+  }, { name: 'Fatima N.', role: 'Verified Buyer', location: 'Rawalpindi', product: 'Skin Care Set', rating: 5, quote: 'I was skeptical at first but after receiving my skin care order, I am totally converted. The products are genuinely premium. My skin has never looked better!' },
   { name: 'Hira A.', role: 'Verified Buyer', location: 'Faisalabad', product: 'Luxury Suit', rating: 5, quote: 'Ordered a luxury suit for Eid and it was absolutely stunning. The fabric quality is top-notch and the stitching is perfect. Got so many compliments!' },
   { name: 'Maria T.', role: 'Verified Buyer', location: 'Peshawar', product: 'Earrings Set', rating: 5, quote: 'The customer support team is so helpful! They guided me through the bank transfer process and my earrings arrived exactly as shown. Gorgeous quality.' },
   { name: 'Nadia S.', role: 'Verified Buyer', location: 'Multan', product: 'Cosmetics Bundle', rating: 5, quote: 'OQIRA has the best cosmetics I have ever bought online. The colours are true to the photos and the packaging is so luxurious. Cash on delivery made it so easy!' },
@@ -108,8 +112,10 @@ const faqs = [
   { q: 'How do I pay using Bank Transfer?', a: 'Select "Bank Transfer" at checkout. You will receive our bank details. Transfer the amount and upload your receipt — we verify and process your order immediately.' },
   { q: 'Is Cash on Delivery available?', a: 'Yes! Cash on Delivery (COD) is available across all major cities of Pakistan. No advance payment needed — pay when your order arrives at your door.' },
   { q: 'How long does delivery take?', a: 'Standard delivery takes 3–5 working days across Pakistan. You will receive confirmation once your payment is verified and your order is dispatched.' },
-  { q: 'What is your return policy?', a: 'We accept returns on unused apparel, bags, electronics, and jewellery within 7 days. Cosmetics and skin care items cannot be returned once opened for hygiene reasons.' },
-];
+  {
+    q: 'What is your return policy?',
+    a: 'We accept returns on unused apparel, bags, and jewellery within 7 days. Cosmetics and skin care items cannot be returned once opened for hygiene reasons.'
+  },];
 
 export function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -188,7 +194,7 @@ export function HomePage() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C9A84C] via-[#E8C96D] to-[#C9A84C] animate-[gradient_3s_linear_infinite] bg-[length:200%_auto] italic">premium</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg font-light text-white/65 animate-fade-in-up leading-relaxed" style={{ animationDelay: '200ms' }}>
-            Pakistan's premier destination for cosmetics, jewellery, purses, electronics & baby garments.
+            Pakistan's premier destination for cosmetics, jewellery, luxury purses & baby garments.
             Uncompromising quality and elegance, delivered directly to your door.
           </p>
 
@@ -248,15 +254,26 @@ export function HomePage() {
           <p className="mt-4 text-navy-soft text-lg">Everything you need to look, feel, and live your absolute best.</p>
         </div>
         <div className="mx-auto flex flex-wrap justify-center gap-6 max-w-7xl">
-          {categories_preview.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="group w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] rounded-3xl border border-navy/10 bg-white p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-pink-deep/10">
-              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-cream-2 text-pink-deep transition-colors group-hover:bg-pink-deep group-hover:text-white">
-                <Icon className="h-8 w-8" />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {categories_preview.map(({ icon: Icon, title, desc }) => (
+              <div
+                key={title}
+                className="group w-full rounded-3xl border border-navy/10 bg-white p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-pink-deep/10"
+              >
+                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-cream-2 text-pink-deep transition-colors group-hover:bg-pink-deep group-hover:text-white">
+                  <Icon className="h-8 w-8" />
+                </div>
+
+                <h3 className="mb-3 text-xl font-display font-semibold text-navy">
+                  {title}
+                </h3>
+
+                <p className="text-sm leading-relaxed text-navy-soft">
+                  {desc}
+                </p>
               </div>
-              <h3 className="text-xl mb-3 font-display font-semibold text-navy">{title}</h3>
-              <p className="text-sm text-navy-soft leading-relaxed">{desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
@@ -526,7 +543,7 @@ export function HomePage() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C9A84C] via-[#E8C96D] to-[#C9A84C] animate-[gradient_3s_linear_infinite] bg-[length:200%_auto]">Experience Luxury Tomorrow!</span>
           </h2>
           <p className="mx-auto max-w-xl text-lg text-white/50 mb-3 font-light leading-relaxed">
-            Premium cosmetics, jewellery, purses, electronics & baby garments.
+            Premium cosmetics, jewellery, purses & baby garments.
             Cash on delivery available across Pakistan.
           </p>
           <p className="mb-10 text-sm text-white/30 flex items-center justify-center gap-1.5">

@@ -63,7 +63,7 @@ export function PublicFooter() {
               </div>
             </div>
             <p className="text-sm leading-relaxed text-white/55 max-w-[220px]">
-              Pakistan's trusted premium online store — cosmetics, jewellery, designer purses, smart electronics &amp; baby garments.
+              Pakistan's trusted premium online store — cosmetics, jewellery, designer purses, &amp; baby garments.
             </p>
             {/* Pakistan badge */}
             <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#C9A84C]/25 bg-[#C9A84C]/8 px-3.5 py-1.5">

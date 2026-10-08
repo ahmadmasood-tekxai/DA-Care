@@ -8,8 +8,11 @@ import { SEO } from '@/components/common/SEO';
 import { HeroBackground } from '@/components/common/HeroBackground';
 
 const values = [
-  { icon: Sparkles, title: 'Premium Sourcing', desc: 'From pure cosmetic ingredients to durable electronics, we only source the absolute best.' },
-  { icon: Heart, title: 'Hand-Picked Curation', desc: 'Every product, whether a luxury purse or baby garment, is rigorously vetted for quality.' },
+  {
+    icon: Sparkles,
+    title: 'Premium Sourcing',
+    desc: 'From premium cosmetic ingredients to quality fashion essentials, we only source the absolute best.'
+  }, { icon: Heart, title: 'Hand-Picked Curation', desc: 'Every product, whether a luxury purse or baby garment, is rigorously vetted for quality.' },
   { icon: Award, title: 'Unmatched Excellence', desc: 'We deliver award-winning standards of craftsmanship across all our lifestyle collections.' },
   { icon: ShieldCheck, title: 'Total Trust', desc: 'Secure payments, transparent policies, and nationwide cash on delivery for your peace of mind.' },
 ];
@@ -63,8 +66,7 @@ export function AboutPage() {
               We noticed a massive gap in the market for a truly premium, yet accessible online shopping experience in Pakistan. Finding high-quality products across different niches was often frustrating and inconsistent.
             </p>
             <p className="mt-4 text-lg text-navy-soft leading-relaxed">
-              Whether you're looking for that perfect statement necklace, a high-end handbag, cutting-edge electronics, or soft, breathable clothes for your little ones, we wanted to build a single destination you could trust blindly.
-            </p>
+              Whether you're looking for that perfect statement necklace, a high-end handbag, premium cosmetics, or soft, breathable clothes for your little ones, we wanted to build a single destination you could trust blindly.            </p>
             <p className="mt-4 text-lg font-medium text-navy">
               Every order ships with Cash on Delivery and secure bank transfer options, ensuring you get exactly what you expect with complete peace of mind.
             </p>
