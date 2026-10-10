@@ -74,19 +74,13 @@ docker compose up --build
 - Backend API docs (Swagger): http://localhost:8000/docs
 - Postgres runs internally as database `dababycare_db`
 
-There's no seeded admin user — register one via the API docs first:
+Public sign-up (`POST /api/v1/auth/register`) only ever creates **customer** accounts. Create the first admin with:
 
-```
-POST /api/v1/auth/register
-{
-  "username": "admin",
-  "email": "admin@dababycare.pk",
-  "password": "your-secure-password",
-  "full_name": "Store Admin"
-}
+```bash
+cd backend && python seed_admin.py     # then change the password from /account → Password
 ```
 
-Then log in at `/admin/login` with those credentials.
+Log in at `/admin/login`. Further admins/staff can be added from **Admin → Customers & Staff → Add staff**.
 
 ---
 
@@ -116,6 +110,49 @@ npm run dev
 ```
 
 App at `http://localhost:5173`.
+
+---
+
+## Customer accounts
+
+- `/signup`, `/login` — email + password, or **Continue with Google** (shown when `GOOGLE_CLIENT_ID` is set on the backend)
+- `/account` — order history with a live Placed → Confirmed → Shipped → Delivered tracker, profile, password
+- `/wishlist` — saved products (works for guests too, stored in the browser)
+- Orders placed while signed in are linked to the account; checkout is pre-filled
+- Roles: `CUSTOMER` (storefront only), `STAFF` (catalogue + orders), `ADMIN` (everything, incl. user management). Customers get `403` on every admin endpoint.
+
+**Admin → Customers & Staff** lists every account with orders count and total spent, lets you deactivate/reactivate accounts, change roles, add staff, and view a customer's purchases.
+
+---
+
+## Email notifications (Gmail SMTP)
+
+Set these in `backend/.env` locally **and** in the backend's Vercel project → Settings → Environment Variables:
+
+```
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=<store gmail address>
+SMTP_PASSWORD=<16-character Gmail App Password>
+FROM_EMAIL=<store gmail address>
+FROM_NAME=OQIRA
+ADMIN_EMAIL=<inbox that receives new-order alerts>
+SITE_URL=https://okira.vercel.app
+```
+
+The App Password comes from Google Account → Security → 2-Step Verification → App passwords. Leave `SMTP_PASSWORD` empty to disable email (messages are logged instead).
+
+| When | Customer gets | Store inbox gets |
+|---|---|---|
+| Order placed (COD) | Order received + summary | New-order alert |
+| Order placed (bank transfer) | Payment instructions with bank details | New-order alert |
+| Customer submits transfer | "Verifying your payment" | Verify-payment alert with ref + receipt |
+| Admin confirms / rejects payment | Payment confirmed / action needed (with reason) | — |
+| Status → Confirmed / Shipped / Delivered / Cancelled | Matching follow-up (delivered asks for a star rating) | — |
+| New account | Welcome email | — |
+| Stock crosses 5 / sells out | — | Low-stock alert |
+
+Admins can **Send test email** from the dashboard, and re-send the right follow-up for any order with the **Email** button on the Orders page (e.g. a payment reminder). All templates live in `backend/app/services/email_service.py` — table-based, inline-styled HTML with a plain-text alternative.
 
 ---
 
@@ -169,3 +206,5 @@ alembic upgrade head
 ```
 
 The initial migration (`alembic/versions/0001_initial_schema.py`) covers all 6 tables: `users`, `categories`, `products`, `orders`, `order_items`.
+
+After pulling the accounts/email update, run `alembic upgrade head` against the production database — `0005`–`0007` add Google sign-in fields, the `CUSTOMER` role, `orders.customer_email` and `users.phone`.

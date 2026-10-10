@@ -12,6 +12,11 @@ export enum UserRole {
   CUSTOMER = 'CUSTOMER',
 }
 
+export enum AuthProvider {
+  LOCAL = 'LOCAL',
+  GOOGLE = 'GOOGLE',
+}
+
 export enum OrderStatus {
   PENDING = 'PENDING',
   CONFIRMED = 'CONFIRMED',
@@ -47,12 +52,44 @@ export interface User {
   username: string;
   email: string;
   full_name: string;
+  phone?: string | null;
   role: UserRole;
   is_active: boolean;
-  auth_provider: string;
+  auth_provider: AuthProvider;
+  /** False for Google-only accounts that never set a password. */
+  has_password: boolean;
   profile_image?: string | null;
   last_login?: string | null;
   created_at: string;
+}
+
+/** A user row on the admin Users screen, with purchase stats. */
+export interface AdminUser extends User {
+  orders_count: number;
+  total_spent: number;
+  last_order_at?: string | null;
+}
+
+export interface RegisterInput {
+  email: string;
+  password: string;
+  full_name?: string;
+  phone?: string;
+}
+
+export interface UpdateMeInput {
+  full_name?: string;
+  phone?: string;
+  current_password?: string;
+  new_password?: string;
+}
+
+export interface StaffCreateInput {
+  username: string;
+  email: string;
+  password: string;
+  full_name?: string;
+  role: UserRole;
 }
 
 export interface LoginRequest {
@@ -161,17 +198,23 @@ export interface ProductCreateInput {
   is_active?: boolean;
 }
 
-export interface ProductUpdateInput extends Partial<ProductCreateInput> { }
+export type ProductUpdateInput = Partial<ProductCreateInput>;
 
 export interface ListProductsParams {
   category_slug?: string;
   subcategory_id?: number;
   search?: string;
   is_featured?: boolean;
+  /** Only products whose old_price is above the current price. */
+  on_sale?: boolean;
+  badge?: ProductBadge;
+  sort?: ProductSort;
   include_inactive?: boolean;
   page?: number;
   page_size?: number;
 }
+
+export type ProductSort = 'newest' | 'price_asc' | 'price_desc' | 'name' | 'discount';
 
 // ---------------------------------------------------------------------------
 // Orders
@@ -184,6 +227,7 @@ export interface OrderItemInput {
 export interface OrderCreateInput {
   customer_name: string;
   customer_phone?: string;
+  customer_email?: string;
   customer_address?: string;
   note?: string;
   items: OrderItemInput[];
@@ -202,6 +246,7 @@ export interface Order {
   id: number;
   customer_name: string;
   customer_phone: string;
+  customer_email?: string | null;
   customer_address?: string | null;
   status: OrderStatus;
   note?: string | null;
@@ -216,6 +261,8 @@ export interface Order {
   updated_at: string;
   items: OrderItem[];
   total_amount: number;
+  /** The customer account that placed the order (null for guest checkout). */
+  created_by_id?: number | null;
 }
 
 export interface BankDetailsOut {
@@ -241,7 +288,18 @@ export interface DashboardSummary {
   total_products: number;
   total_categories: number;
   low_stock_products: number;
+  total_customers: number;
+  payments_to_verify: number;
   top_products: TopProduct[];
+}
+
+export interface EmailStatus {
+  enabled: boolean;
+  host: string;
+  port: number;
+  from_email: string;
+  from_name: string;
+  admin_email: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -265,6 +323,10 @@ export interface PaginatedResponse<T> {
 
 export interface ApiErrorField {
   field: string;
+  message: string;
+}
+
+export interface MessageResponse {
   message: string;
 }
 
