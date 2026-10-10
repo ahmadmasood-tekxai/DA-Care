@@ -1,27 +1,29 @@
 import { apiClient } from '@/api/client';
-import type { LoginRequest, TokenResponse, User } from '@/types';
-
-interface RegisterPayload {
-  username: string;
-  email: string;
-  password: string;
-  full_name?: string;
-}
+import type { LoginRequest, RegisterInput, TokenResponse, UpdateMeInput, User } from '@/types';
 
 export const authApi = {
   login: async (payload: LoginRequest): Promise<TokenResponse> => {
     const { data } = await apiClient.post<TokenResponse>('/auth/login', payload);
     return data;
   },
-  register: async (payload: RegisterPayload): Promise<User> => {
-    const { data } = await apiClient.post<User>('/auth/register', payload);
+  /** Storefront sign-up — always creates a customer and returns a session. */
+  register: async (payload: RegisterInput): Promise<TokenResponse> => {
+    const { data } = await apiClient.post<TokenResponse>('/auth/register', payload);
+    return data;
+  },
+  googleVerify: async (idToken: string): Promise<TokenResponse> => {
+    const { data } = await apiClient.post<TokenResponse>('/auth/google/verify', { id_token: idToken });
+    return data;
+  },
+  providers: async (): Promise<{ google_client_id: string }> => {
+    const { data } = await apiClient.get<{ google_client_id: string }>('/auth/providers');
     return data;
   },
   getMe: async (): Promise<User> => {
     const { data } = await apiClient.get<User>('/auth/me');
     return data;
   },
-  updateMe: async (payload: { full_name?: string; password?: string }): Promise<User> => {
+  updateMe: async (payload: UpdateMeInput): Promise<User> => {
     const { data } = await apiClient.patch<User>('/auth/me', payload);
     return data;
   },

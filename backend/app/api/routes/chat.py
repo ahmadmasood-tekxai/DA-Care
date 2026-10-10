@@ -50,7 +50,7 @@ _RULES: list[tuple[list[str], str]] = [
 
     # Contact
     (["contact", "reach", "email", "phone", "help", "support"],
-     "You can reach us by email at **ahmadmasood171717@gmail.com**. Our team responds within a few hours during business hours (Mon–Sat, 9am–8pm PKT)."),
+     "You can reach us by email at **oqiraofficial@gmail.com**. Our team responds within a few hours during business hours (Mon–Sat, 9am–8pm PKT)."),
 
     # Pricing / discount
     (["price", "discount", "offer", "sale", "cost", "cheap"],

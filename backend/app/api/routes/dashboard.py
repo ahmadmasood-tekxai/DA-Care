@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session, joinedload
 
-from app.api.deps import get_current_user
-from app.constants import OrderStatus
+from app.api.deps import require_staff
+from app.constants import OrderStatus, PaymentStatus, UserRole
 from app.core.database import get_db
 from app.models.category import Category
 from app.models.order import Order
@@ -28,11 +28,13 @@ class DashboardSummary(BaseModel):
     total_products: int
     total_categories: int
     low_stock_products: int
+    total_customers: int
+    payments_to_verify: int
     top_products: list[TopProduct]
 
 
 @router.get("/summary", response_model=DashboardSummary)
-def get_dashboard_summary(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_dashboard_summary(db: Session = Depends(get_db), current_user: User = Depends(require_staff)):
     orders = (
         db.query(Order)
         .options(joinedload(Order.items))
@@ -61,6 +63,8 @@ def get_dashboard_summary(db: Session = Depends(get_db), current_user: User = De
     total_products = db.query(Product).count()
     total_categories = db.query(Category).count()
     low_stock_products = db.query(Product).filter(Product.stock <= 5, Product.is_active.is_(True)).count()
+    total_customers = db.query(User).filter(User.role == UserRole.CUSTOMER).count()
+    payments_to_verify = db.query(Order).filter(Order.payment_status == PaymentStatus.PENDING_VERIFICATION).count()
 
     return DashboardSummary(
         total_revenue=total_revenue,
@@ -69,5 +73,7 @@ def get_dashboard_summary(db: Session = Depends(get_db), current_user: User = De
         total_products=total_products,
         total_categories=total_categories,
         low_stock_products=low_stock_products,
+        total_customers=total_customers,
+        payments_to_verify=payments_to_verify,
         top_products=top_products,
     )

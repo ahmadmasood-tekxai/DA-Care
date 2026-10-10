@@ -4,11 +4,18 @@ frontend's constants/index.ts mirrors these values 1:1.
 """
 import enum
 
+from app.core.config import settings
+
 
 class UserRole(str, enum.Enum):
     ADMIN = "ADMIN"
     STAFF = "STAFF"
     CUSTOMER = "CUSTOMER"
+
+
+# Roles allowed into the admin panel. Customers sign up on the storefront and
+# must never reach catalogue/order management endpoints.
+STAFF_ROLES = frozenset({UserRole.ADMIN, UserRole.STAFF})
 
 
 class AuthProvider(str, enum.Enum):
@@ -49,9 +56,9 @@ MAX_PAGE_SIZE = 100
 LOW_STOCK_THRESHOLD_DEFAULT = 5
 
 # ---------------------------------------------------------------------------
-# Bank Details — Single source of truth. Change here to update everywhere.
+# Bank Details — single source of truth lives in .env (see core/config.py).
 # ---------------------------------------------------------------------------
-BANK_ACCOUNT_TITLE = "Muhammad Ahmad"
-BANK_NAME = "Mashriq Bank"
-BANK_ACCOUNT_NUMBER = "089010046367"
-BANK_IBAN = "PK45MSHQ0000089010046367"
+BANK_ACCOUNT_TITLE = settings.BANK_ACCOUNT_TITLE
+BANK_NAME = settings.BANK_NAME
+BANK_ACCOUNT_NUMBER = settings.BANK_ACCOUNT_NUMBER
+BANK_IBAN = settings.BANK_IBAN

@@ -1,163 +1,159 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   html {
-    scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
   }
   body {
-    @apply bg-cream text-navy font-body;
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9A84C' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    @apply bg-cream font-body text-navy;
   }
-  h1, h2, h3, h4 { @apply font-display font-semibold text-navy; }
-
-  /* Premium selection */
+  h1, h2, h3, h4 {
+    @apply font-display font-semibold text-navy;
+    text-wrap: balance;
+  }
+  /* Playfair defaults to old-style figures; prices, counts and order numbers read better lining. */
+  .font-display {
+    font-variant-numeric: lining-nums;
+  }
   ::selection {
     background-color: rgba(201, 168, 76, 0.25);
     color: #0d0a0a;
   }
+  :focus-visible {
+    @apply outline-none ring-2 ring-gold ring-offset-2 ring-offset-cream;
+  }
+  img {
+    -webkit-user-drag: none;
+  }
 }
 
 @layer components {
-  /* ─── Scrollbar ─── */
-  .scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
-  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-  .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-gold/40 rounded-full; }
+  /* ─── Layout ─── */
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .section {
+    @apply py-14 sm:py-20;
+  }
 
-  /* ─── Section Tags ─── */
+  /* ─── Typography ─── */
+  .eyebrow {
+    @apply inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-gold-dark;
+  }
+  .eyebrow-light {
+    @apply inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-gold-light;
+  }
+  .heading-xl {
+    @apply font-display text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl;
+  }
+  .heading-lg {
+    @apply font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl;
+  }
+  .heading-md {
+    @apply font-display text-2xl font-semibold leading-tight sm:text-3xl;
+  }
+
+  /* Legacy pill tag — kept for admin/back-office screens. */
   .section-tag {
-    @apply inline-flex items-center justify-center gap-1.5
-           text-[10px] font-bold tracking-[0.25em] uppercase
-           text-gold border border-gold/40 bg-gold/[.08]
-           px-5 py-2 rounded-full mb-6
-           shadow-sm;
-  }
-  .section-tag-dark {
-    @apply inline-flex items-center justify-center gap-1.5
-           text-[10px] font-bold tracking-[0.25em] uppercase
-           text-navy border border-navy/20 bg-navy/[.08]
-           px-5 py-2 rounded-full mb-6;
+    @apply mb-4 inline-flex items-center justify-center gap-1.5 rounded-full border border-gold/40 bg-gold/[.08] px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.25em] text-gold-dark;
   }
 
-  /* ─── Glass morphism ─── */
+  /* ─── Buttons ─── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full px-6 py-3 text-sm font-semibold tracking-wide transition-all duration-200 ease-out-expo active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-sm {
+    @apply px-4 py-2 text-xs;
+  }
+  .btn-lg {
+    @apply px-8 py-4 text-sm;
+  }
+  .btn-primary {
+    @apply bg-navy text-white shadow-soft hover:bg-navy-3 hover:shadow-card;
+  }
+  .btn-gold {
+    @apply bg-gold text-navy shadow-gold-sm hover:bg-gold-light hover:shadow-gold;
+  }
+  .btn-outline {
+    @apply border border-navy/15 bg-white text-navy hover:border-navy/40 hover:bg-cream-2;
+  }
+  .btn-outline-light {
+    @apply border border-white/25 text-white hover:border-gold-light hover:bg-white/5 hover:text-gold-light;
+  }
+  .btn-whatsapp {
+    @apply bg-[#25D366] text-white shadow-soft hover:bg-[#1ebe5a];
+  }
+  .icon-btn {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-full text-navy-soft transition-colors hover:bg-cream-2 hover:text-navy;
+  }
+
+  /* ─── Surfaces ─── */
+  .card {
+    @apply rounded-2xl border border-navy/[.07] bg-white shadow-soft;
+  }
   .glass {
-    @apply bg-white/75 backdrop-blur-2xl border border-white/50 shadow-2xl shadow-navy/[.08];
+    @apply border border-white/50 bg-white/80 shadow-lift backdrop-blur-2xl;
   }
+  /* Floating info cards over dark imagery (hero, banners). */
   .glass-dark {
-    @apply bg-navy/80 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/30;
+    @apply border border-white/10 bg-navy/70 shadow-lift backdrop-blur-xl;
   }
-  .glass-gold {
-    @apply bg-gold/5 backdrop-blur-xl border border-gold/20;
+  .field {
+    @apply w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm text-navy placeholder:text-navy-soft/50 transition-colors focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25;
   }
-
-  /* ─── Premium Text Gradients ─── */
-  .text-gradient {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #0d0a0a 0%, #7a4f4f 50%, #0d0a0a 100%);
-    background-size: 200% auto;
-    animation: gradient 8s linear infinite;
-  }
-  .text-gold-gradient {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #C9A84C 0%, #E8C96D 50%, #a07830 100%);
-    background-size: 200% auto;
-    animation: gradient 4s linear infinite;
-  }
-
-  /* ─── Premium Divider ─── */
   .gold-divider {
     height: 1px;
     background: linear-gradient(90deg, transparent, #C9A84C, transparent);
     opacity: 0.4;
   }
-
-  /* ─── Shimmer Effect on Cards ─── */
-  .card-premium {
-    @apply relative overflow-hidden rounded-3xl border bg-white
-           transition-all duration-500
-           hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(122,79,79,0.15)];
+  .skeleton {
+    @apply relative overflow-hidden rounded-lg bg-cream-3;
   }
-  .card-premium::before {
+  .skeleton::after {
     content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 60%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-    transition: left 0.6s ease;
-    z-index: 1;
-    pointer-events: none;
-  }
-  .card-premium:hover::before {
-    left: 150%;
+    @apply absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/50 to-transparent;
   }
 
-  /* ─── Gold Button ─── */
-  .btn-gold {
-    @apply relative overflow-hidden rounded-full
-           bg-gradient-to-r from-[#C9A84C] via-[#E8C96D] to-[#C9A84C]
-           px-8 py-4 text-sm font-bold uppercase tracking-widest text-[#0d0a0a]
-           shadow-gold transition-all duration-300
-           hover:shadow-[0_12px_40px_rgba(201,168,76,0.45)] hover:scale-105
-           bg-[length:200%_auto];
-    animation: gradient 3s linear infinite;
+  /* ─── Scroll ─── */
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { @apply rounded-full bg-gold/40; }
+  .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+
+  /* Native, swipeable carousel track */
+  .snap-track {
+    @apply no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth;
   }
-  .btn-ghost-gold {
-    @apply rounded-full border-2 border-gold/60 px-8 py-4 text-sm font-bold
-           uppercase tracking-widest text-gold bg-transparent
-           transition-all duration-300
-           hover:bg-gold hover:text-navy hover:border-gold hover:scale-105;
+  .snap-track > * {
+    @apply snap-start;
   }
 
-  /* ─── Nav Active Dot ─── */
-  .nav-active {
-    @apply relative text-gold;
+  /* Endless ticker — content is rendered twice and shifted by half. */
+  .marquee {
+    @apply flex w-max animate-marquee;
   }
-  .nav-active::after {
-    content: '';
-    @apply absolute -bottom-1 left-0 right-0 h-0.5 rounded-full bg-gold;
-  }
-
-  /* ─── Premium Badge ─── */
-  .badge-gold {
-    @apply inline-flex items-center gap-1 rounded-full
-           bg-gradient-to-r from-gold/[.15] to-gold/5
-           border border-gold/30
-           px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-gold;
-  }
-
-  /* ─── Founder Card ─── */
-  .founder-avatar {
-    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-full
-           border border-gold/40
-           font-display text-xs font-bold text-gold
-           shadow-md;
-    background: linear-gradient(135deg, #1a0f0f 0%, #2a1818 100%);
+  .marquee:hover {
+    animation-play-state: paused;
   }
 }
 
-@keyframes gradient {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
 }
 
-@keyframes fade-in-up {
-  0% { opacity: 0; transform: translateY(16px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+/* Respect users who ask for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
