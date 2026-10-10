@@ -1,300 +1,357 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, NavLink } from 'react-router-dom';
-import { Heart, Menu, ShoppingBag, User, X, LogOut, ChevronDown, UserCircle } from 'lucide-react';
-import { ROUTES, STORE_NAME, STORE_TAGLINE } from '@/constants';
-import { useCart } from '@/hooks/useCart';
-import { useFavorites } from '@/hooks/useFavorites';
-import { useAuth } from '@/hooks/useAuth';
+import { Link, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { ChevronDown, Heart, LogOut, Menu, MessageCircle, Package, Search, ShoppingBag, UserRound, X } from 'lucide-react';
+import clsx from 'clsx';
 
-const navLinks = [
-  { to: ROUTES.HOME, label: 'Home' },
-  { to: ROUTES.ABOUT, label: 'About' },
-  { to: ROUTES.PRODUCTS, label: 'Products' },
+import { AccountMenu, Avatar } from '@/components/layout/public/AccountMenu';
+import { Logo } from '@/components/layout/public/Logo';
+import { ROUTES, WHATSAPP_NUMBER_1, resolveIcon } from '@/constants';
+import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '@/hooks/useCart';
+import { useCategories } from '@/hooks/useCatalog';
+import { useOverlay } from '@/hooks/useOverlay';
+import { useWishlist } from '@/hooks/useWishlist';
+import { buildWhatsAppLink } from '@/utils/format';
+import type { CategoryWithCount } from '@/types';
+
+const NAV_LINKS = [
+  { to: ROUTES.HOME, label: 'Home', end: true },
+  { to: ROUTES.PRODUCTS, label: 'Shop All', end: true },
+  { to: `${ROUTES.PRODUCTS}?deals=1`, label: 'Deals', end: false },
+  { to: ROUTES.ABOUT, label: 'About', end: true },
 ];
 
-/** Premium OQIRA Logo Mark — matches favicon, scales cleanly */
-function OqiraLogoMark({ size = 44 }: { size?: number }) {
+function CategoryThumb({ category, size = 'h-9 w-9' }: { category: CategoryWithCount; size?: string }) {
+  const Icon = resolveIcon(category.icon);
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 44 44"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      style={{ flexShrink: 0 }}
-    >
-      <defs>
-        <linearGradient id="hdr-bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#1a0f0f" />
-          <stop offset="100%" stopColor="#0d0a0a" />
-        </linearGradient>
-        <linearGradient id="hdr-gold" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="transparent" />
-          <stop offset="50%" stopColor="#C9A84C" />
-          <stop offset="100%" stopColor="transparent" />
-        </linearGradient>
-        <linearGradient id="hdr-border" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#C9A84C" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="#7a4f4f" stopOpacity="0.3" />
-        </linearGradient>
-      </defs>
-      {/* Background rounded square */}
-      <rect width="44" height="44" rx="12" fill="url(#hdr-bg)" />
-      {/* Border */}
-      <rect x="0.5" y="0.5" width="43" height="43" rx="11.5" stroke="url(#hdr-border)" strokeWidth="1" />
-      {/* Top gold accent line */}
-      <rect x="8" y="8" width="28" height="1" rx="0.5" fill="url(#hdr-gold)" />
-      {/* OQ Text */}
-      <text
-        x="22"
-        y="27.5"
-        fontFamily="Georgia, 'Times New Roman', serif"
-        fontSize="14"
-        fontWeight="700"
-        fill="#E8C96D"
-        textAnchor="middle"
-        letterSpacing="2"
-      >
-        OQ
-      </text>
-      {/* Bottom gold accent line */}
-      <rect x="8" y="35" width="28" height="1" rx="0.5" fill="url(#hdr-gold)" />
-    </svg>
+    <span className={clsx('flex shrink-0 items-center justify-center overflow-hidden rounded-xl bg-cream-2 text-pink-deep', size)}>
+      {category.image_url ? (
+        <img src={category.image_url} alt="" loading="lazy" className="h-full w-full object-cover" />
+      ) : (
+        <Icon className="h-4 w-4" />
+      )}
+    </span>
+  );
+}
+
+function SearchForm({ autoFocus, onDone, className }: { autoFocus?: boolean; onDone?: () => void; className?: string }) {
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const urlQuery = params.get('search') ?? '';
+  const [value, setValue] = useState(urlQuery);
+  const inputId = useId();
+
+  // Mirror the URL so clearing a search elsewhere clears the box too.
+  useEffect(() => setValue(urlQuery), [urlQuery]);
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    const q = value.trim();
+    navigate(q ? `${ROUTES.PRODUCTS}?search=${encodeURIComponent(q)}` : ROUTES.PRODUCTS);
+    onDone?.();
+  };
+
+  return (
+    <form role="search" onSubmit={submit} className={clsx('relative', className)}>
+      <label htmlFor={inputId} className="sr-only">Search products</label>
+      <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-soft/60" />
+      <input
+        id={inputId}
+        type="search"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Search products…"
+        autoFocus={autoFocus}
+        enterKeyHint="search"
+        className="h-10 w-full rounded-full border border-navy/10 bg-cream/70 pl-10 pr-4 text-sm text-navy placeholder:text-navy-soft/50 transition-colors focus:border-gold focus:bg-white focus:outline-none focus:ring-2 focus:ring-gold/20"
+      />
+    </form>
   );
 }
 
 export function PublicHeader() {
-  const { itemCount } = useCart();
-  const { favoritesCount } = useFavorites();
-  const { isAuthenticated, logout, user } = useAuth();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const { itemCount, openCart } = useCart();
+  const { count: wishlistCount } = useWishlist();
+  const { user, logout } = useAuth();
+  const { data: categories } = useCategories();
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [catsOpen, setCatsOpen] = useState(false);
+  const catsRef = useRef<HTMLDivElement>(null);
+
+  useOverlay(menuOpen, () => setMenuOpen(false));
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 60);
-    window.addEventListener('scroll', handler, { passive: true });
-    return () => window.removeEventListener('scroll', handler);
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Close every popover on navigation.
+  useEffect(() => {
+    setMenuOpen(false);
+    setSearchOpen(false);
+    setCatsOpen(false);
+  }, [location.pathname, location.search]);
+
+  // Close the categories menu on outside click / Escape.
+  useEffect(() => {
+    if (!catsOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (!catsRef.current?.contains(e.target as Node)) setCatsOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setCatsOpen(false);
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [catsOpen]);
+
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    clsx(
+      'relative py-2 text-sm font-medium transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:origin-left after:rounded-full after:bg-gold after:transition-transform',
+      isActive ? 'text-navy after:scale-x-100' : 'text-navy-soft/80 after:scale-x-0 hover:text-navy hover:after:scale-x-100'
+    );
+
+  const isDealsActive = location.pathname === ROUTES.PRODUCTS && new URLSearchParams(location.search).has('deals');
 
   return (
     <header
-      className={`w-full transition-all duration-500 ${
-        scrolled
-          ? 'border-b border-black/8 bg-white/95 backdrop-blur-2xl shadow-[0_4px_24px_rgba(13,10,10,0.08)]'
-          : 'border-b border-black/5 bg-white/80 backdrop-blur-xl'
-      }`}
+      className={clsx(
+        'border-b bg-white/90 backdrop-blur-xl transition-shadow duration-300 supports-[backdrop-filter]:bg-white/80',
+        scrolled ? 'border-navy/10 shadow-soft' : 'border-transparent'
+      )}
     >
-      {/* Gold top accent bar */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-[#C9A84C]/60 to-transparent" />
+      <div className="container-page flex h-16 items-center gap-3 lg:h-[72px] lg:gap-8">
+        <button className="icon-btn -ml-2 lg:hidden" onClick={() => setMenuOpen(true)} aria-label="Open menu" aria-expanded={menuOpen}>
+          <Menu className="h-5 w-5" />
+        </button>
 
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
-        {/* Logo */}
-        <Link to={ROUTES.HOME} className="flex items-center gap-3 group" aria-label="OQIRA Home">
-          <OqiraLogoMark size={44} />
-          <div className="leading-tight select-none">
-            <p className="font-display text-[19px] font-bold tracking-[0.05em] text-[#0d0a0a] group-hover:text-[#7a4f4f] transition-colors duration-300">
-              {STORE_NAME}
-            </p>
-            <p className="mt-0.5 text-[8.5px] font-bold uppercase tracking-[0.22em] text-[#C9A84C]">
-              {STORE_TAGLINE}
-            </p>
-          </div>
-        </Link>
+        <Logo className="max-lg:flex-1 max-lg:justify-center lg:shrink-0" />
 
-        {/* Desktop Nav */}
-        <nav className="hidden items-center gap-8 md:flex" role="navigation">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end
-              className={({ isActive }) =>
-                `text-sm font-semibold tracking-wide transition-all duration-200 ${
-                  isActive
-                    ? 'text-[#7a4f4f] relative after:absolute after:-bottom-1 after:left-0 after:right-0 after:h-0.5 after:rounded-full after:bg-[#C9A84C]'
-                    : 'text-[#3a2e2e]/70 hover:text-[#7a4f4f]'
-                }`
-              }
-            >
-              {link.label}
+        {/* Desktop navigation */}
+        <nav aria-label="Main" className="hidden items-center gap-7 lg:flex">
+          {NAV_LINKS.slice(0, 2).map((l) => (
+            <NavLink key={l.label} to={l.to} end={l.end} className={navLinkClass}>
+              {l.label}
             </NavLink>
           ))}
-        </nav>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2">
-          {/* Favorites icon */}
-          <Link
-            to={ROUTES.FAVORITES}
-            className="relative flex h-10 w-10 items-center justify-center rounded-full text-[#3a2e2e] transition-all hover:bg-pink-pale hover:text-rose-500"
-            aria-label="My Favourites"
-          >
-            <Heart className={`h-5 w-5 ${favoritesCount > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
-            {favoritesCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-sm">
-                {favoritesCount}
-              </span>
-            )}
-          </Link>
-
-          {/* Cart icon */}
-          <Link
-            to={ROUTES.CART}
-            className="relative flex h-10 w-10 items-center justify-center rounded-full text-[#3a2e2e] transition-all hover:bg-pink-pale hover:text-[#7a4f4f]"
-            aria-label="View cart"
-          >
-            <ShoppingBag className="h-5 w-5" />
-            {itemCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-gradient-to-br from-[#C9A84C] to-[#a07830] text-[9px] font-bold text-[#0d0a0a] shadow-sm">
-                {itemCount}
-              </span>
-            )}
-          </Link>
-
-          {/* Shop Now CTA */}
-          <Link to={ROUTES.CART} className="hidden sm:block">
-            <button className="btn-gold flex items-center gap-2 !py-2.5 !px-5 !text-[11px]">
-              <ShoppingBag className="h-3.5 w-3.5" />
-              Shop Now
-            </button>
-          </Link>
-
-          {/* Login / Profile Dropdown */}
-          {isAuthenticated ? (
-            <div className="relative hidden sm:block">
+          {categories && categories.length > 0 && (
+            <div ref={catsRef} className="relative">
               <button
-                onClick={() => setDropdownOpen((v) => !v)}
-                className="flex items-center gap-2 rounded-full border border-[#3a2e2e]/20 px-3 py-1.5 transition-all hover:border-[#C9A84C]/60 hover:bg-cream-2"
-              >
-                {user?.profile_image ? (
-                  <img src={user.profile_image} alt="" className="h-6 w-6 rounded-full object-cover" />
-                ) : (
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#C9A84C] text-white">
-                    <UserCircle className="h-4 w-4" />
-                  </div>
+                type="button"
+                onClick={() => setCatsOpen((v) => !v)}
+                aria-expanded={catsOpen}
+                aria-haspopup="true"
+                className={clsx(
+                  'flex items-center gap-1 py-2 text-sm font-medium transition-colors',
+                  catsOpen || location.pathname.startsWith('/categories/') ? 'text-navy' : 'text-navy-soft/80 hover:text-navy'
                 )}
-                <span className="max-w-[100px] truncate text-xs font-bold text-[#3a2e2e]">
-                  {user?.full_name?.split(' ')[0]}
-                </span>
-                <ChevronDown className="h-3 w-3 text-[#3a2e2e]/50" />
+              >
+                Categories <ChevronDown className={clsx('h-4 w-4 transition-transform', catsOpen && 'rotate-180')} />
               </button>
-
-              {dropdownOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
-                  <div className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-black/5 bg-white shadow-xl">
-                    <div className="border-b border-gray-100 px-4 py-3">
-                      <p className="truncate text-sm font-bold text-gray-900">{user?.full_name}</p>
-                      <p className="truncate text-xs text-gray-500">{user?.email}</p>
-                    </div>
-                    <div className="py-1">
-                      <Link
-                        to={ROUTES.PROFILE}
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      >
-                        <User className="h-4 w-4" /> Profile & Settings
-                      </Link>
-                      {user?.role === 'ADMIN' && (
+              {catsOpen && (
+                <div className="absolute left-1/2 top-full z-50 mt-3 w-[min(560px,80vw)] -translate-x-1/2 animate-scale-in rounded-2xl border border-navy/10 bg-white p-3 shadow-lift">
+                  <ul className="grid grid-cols-2 gap-x-2 gap-y-3">
+                    {categories.map((cat) => (
+                      <li key={cat.id} className={clsx(categories.length === 1 && 'col-span-2')}>
                         <Link
-                          to={ROUTES.ADMIN_DASHBOARD}
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          to={ROUTES.CATEGORY_PAGE(cat.slug)}
+                          className="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-cream"
                         >
-                          <ShoppingBag className="h-4 w-4" /> Admin Panel
+                          <CategoryThumb category={cat} />
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-semibold text-navy">{cat.name}</span>
+                            <span className="block text-xs text-navy-soft/70">{cat.product_count} products</span>
+                          </span>
                         </Link>
-                      )}
-                    </div>
-                    <div className="border-t border-gray-100 py-1">
-                      <button
-                        onClick={() => {
-                          setDropdownOpen(false);
-                          setShowLogoutModal(true);
-                        }}
-                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-medium text-rose-600 hover:bg-rose-50"
-                      >
-                        <LogOut className="h-4 w-4" /> Sign Out
-                      </button>
-                    </div>
-                  </div>
-                </>
+                        {cat.subcategories?.length > 0 && (
+                          <ul className={clsx('mt-1 grid gap-0.5 pl-14', categories.length === 1 && 'grid-cols-2')}>
+                            {cat.subcategories.map((sub) => (
+                              <li key={sub.id}>
+                                <Link
+                                  to={`${ROUTES.CATEGORY_PAGE(cat.slug)}?sub=${sub.id}`}
+                                  className="block truncate rounded-lg px-2 py-1.5 text-[13px] text-navy-soft transition-colors hover:bg-cream hover:text-navy"
+                                >
+                                  {sub.name}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    to={ROUTES.PRODUCTS}
+                    className="mt-2 flex items-center justify-center rounded-xl bg-cream py-2.5 text-xs font-bold uppercase tracking-wider text-navy transition-colors hover:bg-cream-2"
+                  >
+                    Browse all products
+                  </Link>
+                </div>
               )}
             </div>
-          ) : (
-            <Link to={ROUTES.LOGIN} className="hidden sm:block">
-              <button className="flex items-center gap-1.5 rounded-full border border-[#3a2e2e]/20 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-[#3a2e2e] transition-all hover:border-[#C9A84C]/60 hover:text-[#7a4f4f]">
-                <User className="h-3.5 w-3.5" /> Sign In
-              </button>
-            </Link>
           )}
 
-          {/* Mobile hamburger */}
+          <NavLink to={NAV_LINKS[2].to} className={() => navLinkClass({ isActive: isDealsActive })}>
+            <span className="text-sale">Deals</span>
+          </NavLink>
+          <NavLink to={ROUTES.ABOUT} end className={navLinkClass}>
+            About
+          </NavLink>
+        </nav>
+
+        <div className="flex items-center gap-1 lg:ml-auto lg:gap-3">
+          <SearchForm className="hidden w-56 xl:block xl:w-72" />
           <button
-            className="flex h-10 w-10 items-center justify-center rounded-full text-[#3a2e2e] transition-all hover:bg-pink-pale md:hidden"
-            onClick={() => setMobileOpen((v) => !v)}
-            aria-label="Toggle menu"
-            aria-expanded={mobileOpen}
+            className="icon-btn xl:hidden"
+            onClick={() => setSearchOpen((v) => !v)}
+            aria-label={searchOpen ? 'Close search' : 'Search'}
+            aria-expanded={searchOpen}
           >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {searchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
+          </button>
+          <Link to={ROUTES.WISHLIST} className="icon-btn relative max-sm:hidden" aria-label={`Wishlist, ${wishlistCount} items`}>
+            <Heart className={clsx('h-5 w-5', wishlistCount > 0 && 'fill-rose-500 text-rose-500')} />
+            {wishlistCount > 0 && (
+              <span className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-navy px-1 text-[10px] font-bold text-white ring-2 ring-white">
+                {wishlistCount > 99 ? '99+' : wishlistCount}
+              </span>
+            )}
+          </Link>
+          <AccountMenu />
+          <button onClick={openCart} className="icon-btn relative -mr-2 lg:mr-0" aria-label={`Open cart, ${itemCount} items`}>
+            <ShoppingBag className="h-5 w-5" />
+            {itemCount > 0 && (
+              <span className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-navy ring-2 ring-white">
+                {itemCount > 99 ? '99+' : itemCount}
+              </span>
+            )}
           </button>
         </div>
       </div>
 
-      {/* Mobile Nav */}
-      <div
-        className={`overflow-hidden transition-all duration-300 md:hidden ${
-          mobileOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
-        }`}
-      >
-        <div className="gold-divider mx-6" />
-        <nav className="flex flex-col gap-0.5 bg-white/95 px-4 py-3">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                `rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                  isActive
-                    ? 'bg-[#C9A84C]/10 text-[#7a4f4f] border-l-2 border-[#C9A84C]'
-                    : 'text-[#3a2e2e] hover:bg-cream-2 hover:text-[#7a4f4f]'
-                }`
-              }
-            >
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
-      </div>
-      {/* Logout Modal */}
-      {showLogoutModal && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)} />
-          <div className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-100 text-rose-500">
-              <LogOut className="h-6 w-6" />
+      {/* Search row (mobile / tablet) */}
+      {searchOpen && (
+        <div className="container-page animate-fade-in pb-3 xl:hidden">
+          <SearchForm autoFocus onDone={() => setSearchOpen(false)} />
+        </div>
+      )}
+
+      {/* Mobile drawer — portalled: the header's backdrop-filter would otherwise trap `fixed` children */}
+      {menuOpen && createPortal(
+        <div className="fixed inset-0 z-[80] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
+          <div className="absolute inset-0 animate-fade-in bg-navy/50 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
+          <div className="absolute inset-y-0 left-0 flex w-[86%] max-w-sm animate-slide-in-left flex-col bg-white shadow-lift">
+            <div className="flex h-16 items-center justify-between border-b border-navy/10 px-4">
+              <Logo />
+              <button className="icon-btn" onClick={() => setMenuOpen(false)} aria-label="Close menu">
+                <X className="h-5 w-5" />
+              </button>
             </div>
-            <h3 className="font-display text-xl font-bold text-[#0d0a0a]">Sign Out</h3>
-            <p className="mt-2 text-sm text-gray-500">Are you sure you want to sign out of your account?</p>
-            <div className="mt-8 flex gap-3">
-              <button
-                onClick={() => setShowLogoutModal(false)}
-                className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-bold text-gray-600 transition-colors hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setShowLogoutModal(false);
-                  logout();
-                }}
-                className="flex-1 rounded-xl bg-rose-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-rose-500/30 transition-all hover:bg-rose-600 hover:shadow-rose-500/40"
-              >
-                Yes, Sign Out
-              </button>
+
+            <nav aria-label="Mobile" className="flex-1 overflow-y-auto px-3 py-4">
+              {user ? (
+                <div className="mb-4 rounded-2xl bg-cream p-3">
+                  <div className="flex items-center gap-3 px-1">
+                    <Avatar user={user} size="h-10 w-10 text-sm" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-navy">{user.full_name || user.username}</p>
+                      <p className="truncate text-xs text-navy-soft">{user.email}</p>
+                    </div>
+                    <button onClick={logout} className="icon-btn h-9 w-9 text-rose-600 hover:bg-rose-50" aria-label="Sign out">
+                      <LogOut className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <Link to={ROUTES.ACCOUNT} className="flex items-center justify-center gap-2 rounded-xl bg-white py-2.5 text-sm font-medium text-navy">
+                      <Package className="h-4 w-4" /> Orders
+                    </Link>
+                    <Link to={ROUTES.WISHLIST} className="flex items-center justify-center gap-2 rounded-xl bg-white py-2.5 text-sm font-medium text-navy">
+                      <Heart className="h-4 w-4" /> Wishlist{wishlistCount > 0 ? ` (${wishlistCount})` : ''}
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="mb-4 rounded-2xl bg-navy p-4 text-white">
+                  <p className="flex items-center gap-2 font-display text-lg"><UserRound className="h-5 w-5 text-gold" /> Your account</p>
+                  <p className="mt-1 text-xs text-white/60">Track orders, save favourites and check out faster.</p>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <Link to={ROUTES.LOGIN} className="btn btn-gold btn-sm">Sign in</Link>
+                    <Link to={ROUTES.SIGNUP} className="btn btn-outline-light btn-sm">Join free</Link>
+                  </div>
+                </div>
+              )}
+              <ul className="space-y-0.5">
+                {NAV_LINKS.map((l) => (
+                  <li key={l.label}>
+                    <NavLink
+                      to={l.to}
+                      end={l.end}
+                      className={({ isActive }) =>
+                        clsx(
+                          'flex items-center rounded-xl px-3 py-3 text-[15px] font-medium transition-colors',
+                          (l.label === 'Deals' ? isDealsActive : isActive) ? 'bg-cream text-navy' : 'text-navy-soft hover:bg-cream',
+                          l.label === 'Deals' && 'text-sale'
+                        )
+                      }
+                    >
+                      {l.label}
+                    </NavLink>
+                  </li>
+                ))}
+                {!user && (
+                  <li>
+                    <NavLink to={ROUTES.WISHLIST} className={({ isActive }) => clsx('flex items-center gap-2 rounded-xl px-3 py-3 text-[15px] font-medium transition-colors', isActive ? 'bg-cream text-navy' : 'text-navy-soft hover:bg-cream')}>
+                      Wishlist{wishlistCount > 0 && <span className="rounded-full bg-cream-3 px-2 text-xs font-bold text-navy">{wishlistCount}</span>}
+                    </NavLink>
+                  </li>
+                )}
+              </ul>
+
+              {categories && categories.length > 0 && (
+                <>
+                  <p className="eyebrow mb-2 mt-6 px-3">Categories</p>
+                  <ul className="space-y-0.5">
+                    {categories.map((cat) => (
+                      <li key={cat.id}>
+                        <Link to={ROUTES.CATEGORY_PAGE(cat.slug)} className="flex items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-cream">
+                          <CategoryThumb category={cat} size="h-8 w-8" />
+                          <span className="flex-1 text-sm font-medium text-navy">{cat.name}</span>
+                          <span className="text-xs text-navy-soft/60">{cat.product_count}</span>
+                        </Link>
+                        {cat.subcategories?.length > 0 && (
+                          <ul className="mb-1 ml-7 border-l border-navy/10 pl-4">
+                            {cat.subcategories.map((sub) => (
+                              <li key={sub.id}>
+                                <Link
+                                  to={`${ROUTES.CATEGORY_PAGE(cat.slug)}?sub=${sub.id}`}
+                                  className="block rounded-lg px-2 py-2 text-sm text-navy-soft transition-colors hover:bg-cream hover:text-navy"
+                                >
+                                  {sub.name}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </nav>
+
+            <div className="pb-safe border-t border-navy/10 p-4">
+              <a href={buildWhatsAppLink(WHATSAPP_NUMBER_1)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp w-full">
+                <MessageCircle className="h-4 w-4" /> Order on WhatsApp
+              </a>
             </div>
           </div>
         </div>,

@@ -3,113 +3,64 @@
 
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-  <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="apple-touch-icon" href="/favicon.svg" />
-  <link rel="shortcut icon" href="/favicon.svg" />
-
-  <!-- Viewport -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Theme Color (browser tab / mobile status bar) -->
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
   <meta name="theme-color" content="#0d0a0a" />
 
-  <!-- Google Site Verification -->
   <meta name="google-site-verification" content="sy9rErVqJBLSnpTsDrgMpkeWh8xJYxOotQ8Oq2eZM7s" />
 
-  <!-- ═══════════════════════════════════════════════
-       DEFAULT SEO — overridden per-page via <SEO /> component
-  ════════════════════════════════════════════════ -->
-  <title>OQIRA — Online Shopping Pakistan | Cosmetics, Jewellery, Suits &amp; Baby Clothes</title>
+  <!-- Default SEO — each page overrides these via <SEO /> (react-helmet-async) -->
+  <title>OQIRA — Online Shopping in Pakistan | Cosmetics, Jewellery &amp; Baby Clothes</title>
   <meta name="description"
-    content="OQIRA — Pakistan's No.1 premium online store. Shop cosmetics, skin care, fine jewellery, luxury suits &amp; baby garments. Cash on delivery + bank transfer. Nationwide delivery across Pakistan." />
-  <meta name="keywords"
-    content="OQIRA, online shopping Pakistan, cosmetics Pakistan, skin care Pakistan, jewellery online Pakistan, baby clothes Pakistan, luxury suits Pakistan, baby garments, online store Pakistan, cash on delivery Pakistan, COD Pakistan, OQIRA store, best online shop Pakistan, makeup Pakistan, necklace Pakistan, kids clothes Pakistan, skin care lahore, jewellery karachi, suits islamabad" />
-  <meta name="author" content="OQIRA — Daud Ansari &amp; Ahmad Rajpoot" />
+    content="Pakistan's premium online store for cosmetics, skin care, jewellery, apparel and baby essentials — cash on delivery nationwide." />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-  <meta name="language" content="English" />
-  <meta name="geo.region" content="PK" />
-  <meta name="geo.placename" content="Pakistan" />
-  <meta name="geo.position" content="30.3753;69.3451" />
-  <meta name="ICBM" content="30.3753, 69.3451" />
-
-  <!-- Canonical -->
   <link rel="canonical" href="https://okira.vercel.app/" />
 
-  <!-- ═══════════════════════════════════════════════
-       OPEN GRAPH (Facebook, WhatsApp, LinkedIn previews)
-  ════════════════════════════════════════════════ -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="OQIRA" />
-  <meta property="og:url" content="https://okira.vercel.app/" />
-  <meta property="og:title"
-    content="OQIRA — Pakistan's Premium Online Store | Cosmetics · Jewellery · Suits · Baby Clothes" />
-  <meta property="og:description"
-    content="Pakistan's trusted premium online store — skin care, jewellery, luxury suits, baby garments. COD + bank transfer. Poori Pakistan delivery. OQIRA par shop karein!" />
   <meta property="og:locale" content="en_PK" />
-  <meta property="og:image" content="https://okira.vercel.app/og-image.jpg" />
+  <meta property="og:url" content="https://okira.vercel.app/" />
+  <meta property="og:title" content="OQIRA — Online Shopping in Pakistan" />
+  <meta property="og:description"
+    content="Premium cosmetics, jewellery, apparel and baby essentials. Free delivery and cash on delivery across Pakistan." />
+  <meta property="og:image" content="https://okira.vercel.app/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="OQIRA — Premium Online Store Pakistan" />
+  <meta property="og:image:alt" content="OQIRA — premium online store in Pakistan" />
 
-  <!-- ═══════════════════════════════════════════════
-       TWITTER / X CARD
-  ════════════════════════════════════════════════ -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:site" content="@oqira_pk" />
-  <meta name="twitter:title" content="OQIRA — Online Shopping Pakistan" />
+  <meta name="twitter:title" content="OQIRA — Online Shopping in Pakistan" />
   <meta name="twitter:description"
-    content="Cosmetics, jewellery, luxury suits &amp; baby clothes. COD available. Fast delivery across Pakistan. Shop now at OQIRA!" />
-  <meta name="twitter:image" content="https://okira.vercel.app/og-image.jpg" />
+    content="Premium cosmetics, jewellery, apparel and baby essentials. Cash on delivery across Pakistan." />
+  <meta name="twitter:image" content="https://okira.vercel.app/og-image.png" />
 
-  <!-- ═══════════════════════════════════════════════
-       STRUCTURED DATA — Organization + WebSite Schema
-  ════════════════════════════════════════════════ -->
+  <!-- Organization + WebSite structured data (static so crawlers see it without JS) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "Organization",
+        "@type": "OnlineStore",
         "@id": "https://okira.vercel.app/#organization",
         "name": "OQIRA",
-        "alternateName": ["OQIRA Pakistan", "OQIRA Online Store"],
         "url": "https://okira.vercel.app/",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://okira.vercel.app/favicon.svg",
-          "width": 512,
-          "height": 512
-        },
-        "description": "Pakistan's No.1 premium online store for cosmetics, fine jewellery, luxury suits, baby garments, and skin care products. Founded by Daud Ansari and Ahmad Rajpoot.",
+        "logo": "https://okira.vercel.app/icon-512.png",
+        "image": "https://okira.vercel.app/og-image.png",
+        "description": "Pakistan's premium online store for cosmetics, skin care, jewellery, apparel and baby essentials.",
         "founder": [
           { "@type": "Person", "name": "Daud Ansari" },
           { "@type": "Person", "name": "Ahmad Rajpoot" }
         ],
-        "areaServed": {
-          "@type": "Country",
-          "name": "Pakistan"
-        },
-        "address": {
-          "@type": "PostalAddress",
-          "addressCountry": "PK"
-        },
+        "areaServed": { "@type": "Country", "name": "Pakistan" },
+        "address": { "@type": "PostalAddress", "addressCountry": "PK" },
+        "paymentAccepted": ["Cash", "Bank Transfer"],
+        "currenciesAccepted": "PKR",
         "contactPoint": [
-          {
-            "@type": "ContactPoint",
-            "telephone": "+923247508462",
-            "contactType": "customer service",
-            "areaServed": "PK",
-            "availableLanguage": ["English", "Urdu"]
-          },
-          {
-            "@type": "ContactPoint",
-            "telephone": "+923021735137",
-            "contactType": "sales",
-            "areaServed": "PK",
-            "availableLanguage": ["English", "Urdu"]
-          }
+          { "@type": "ContactPoint", "telephone": "+923247508462", "contactType": "customer service", "areaServed": "PK", "availableLanguage": ["English", "Urdu"] },
+          { "@type": "ContactPoint", "telephone": "+923021735137", "contactType": "sales", "areaServed": "PK", "availableLanguage": ["English", "Urdu"] }
         ],
         "sameAs": ["https://wa.me/923247508462"]
       },
@@ -118,39 +69,43 @@
         "@id": "https://okira.vercel.app/#website",
         "url": "https://okira.vercel.app/",
         "name": "OQIRA",
-        "description": "Pakistan ka No.1 premium online store — cosmetics, jewellery, suits, baby clothes",
         "publisher": { "@id": "https://okira.vercel.app/#organization" },
+        "inLanguage": "en-PK",
         "potentialAction": {
           "@type": "SearchAction",
-          "target": {
-            "@type": "EntryPoint",
-            "urlTemplate": "https://okira.vercel.app/products?search={search_term_string}"
-          },
+          "target": { "@type": "EntryPoint", "urlTemplate": "https://okira.vercel.app/products?search={search_term_string}" },
           "query-input": "required name=search_term_string"
-        },
-        "inLanguage": "en-PK"
+        }
       }
     ]
   }
   </script>
 
-  <!-- ═══════════════════════════════════════════════
-       PERFORMANCE — Font preload + preconnect
-  ════════════════════════════════════════════════ -->
+  <!-- Performance: connect early to the API, image CDN and font hosts -->
+  <link rel="preconnect" href="https://okira-backend.vercel.app" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://okira-backend.vercel.app" />
-  <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" />
 
-  <link rel="preload" as="style"
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet" />
+  <style>
+    /* Paint the brand colours before the JS bundle arrives (no white flash). */
+    html, body { background: #fdf8f5; margin: 0; }
+    #root:empty::before {
+      content: ""; display: block; height: 36px; background: #0d0a0a;
+    }
+  </style>
 </head>
 
 <body>
   <div id="root"></div>
+  <noscript>
+    <p style="font-family:system-ui,sans-serif;padding:2rem;text-align:center;color:#0d0a0a">
+      OQIRA needs JavaScript to run. Please enable it, or order on WhatsApp:
+      <a href="https://wa.me/923247508462">+92 324 7508462</a>.
+    </p>
+  </noscript>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

@@ -1,223 +1,155 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail, User, ArrowRight } from 'lucide-react';
-import { ROUTES, STORE_NAME, STORE_TAGLINE } from '@/constants';
-import { SEO } from '@/components/common/SEO';
-import { authApi } from '@/api/auth';
-import { GoogleSignInButton } from '@/components/common/GoogleSignInButton';
+import { useState, type FormEvent } from 'react';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowRight, Check, Eye, EyeOff, Loader2 } from 'lucide-react';
+import clsx from 'clsx';
 
-/** OQIRA Logo — light version */
-function OqiraLogo() {
-  return (
-    <svg width="48" height="48" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="slogo-bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#1a0f0f" />
-          <stop offset="100%" stopColor="#0d0a0a" />
-        </linearGradient>
-        <linearGradient id="slogo-gold" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="transparent" />
-          <stop offset="50%" stopColor="#C9A84C" />
-          <stop offset="100%" stopColor="transparent" />
-        </linearGradient>
-      </defs>
-      <rect width="44" height="44" rx="12" fill="url(#slogo-bg)" />
-      <rect x="0.5" y="0.5" width="43" height="43" rx="11.5" stroke="#C9A84C" strokeOpacity="0.5" strokeWidth="1" />
-      <rect x="8" y="8" width="28" height="1" rx="0.5" fill="url(#slogo-gold)" />
-      <text x="22" y="27.5" fontFamily="Georgia, serif" fontSize="14" fontWeight="700" fill="#E8C96D" textAnchor="middle" letterSpacing="2">OQ</text>
-      <rect x="8" y="35" width="28" height="1" rx="0.5" fill="url(#slogo-gold)" />
-    </svg>
-  );
+import { getApiErrorMessage } from '@/api/client';
+import { AuthField, AuthShell } from '@/components/auth/AuthShell';
+import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
+import { ROUTES, STORE_NAME } from '@/constants';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
+import type { User } from '@/types';
+import { safeNext } from '@/utils/format';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+type Field = 'name' | 'email' | 'password';
+
+function validate(v: Record<Field, string>): Partial<Record<Field, string>> {
+  const errors: Partial<Record<Field, string>> = {};
+  if (v.name.trim().length < 2) errors.name = 'Please enter your name.';
+  if (!EMAIL_RE.test(v.email.trim())) errors.email = 'Enter a valid email address.';
+  if (v.password.length < 8) errors.password = 'Use at least 8 characters.';
+  return errors;
 }
 
+/** 0–4 — length, mixed case, digits, symbols. */
+function strength(pw: string): number {
+  if (!pw) return 0;
+  let score = pw.length >= 8 ? 1 : 0;
+  if (pw.length >= 12) score++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+  if (/\d/.test(pw) && /[^A-Za-z0-9]/.test(pw)) score++;
+  else if (/\d/.test(pw)) score += 0.5;
+  return Math.min(4, Math.floor(score));
+}
+
+const STRENGTH_LABELS = ['Too short', 'Fair', 'Good', 'Strong', 'Excellent'];
+const STRENGTH_COLORS = ['bg-rose-400', 'bg-amber-400', 'bg-gold', 'bg-emerald-500', 'bg-emerald-600'];
+
 export function SignupPage() {
+  const { register, isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [params] = useSearchParams();
+  const next = safeNext(params.get('next'), ROUTES.ACCOUNT);
+
+  const [values, setValues] = useState<Record<Field, string>>({ name: '', email: '', password: '' });
+  const [touched, setTouched] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  if (isAuthenticated && !submitting) return <Navigate to={next} replace />;
+
+  const errors = touched ? validate(values) : {};
+  const score = strength(values.password);
+  const set = (field: Field) => (e: React.ChangeEvent<HTMLInputElement>) => setValues((v) => ({ ...v, [field]: e.target.value }));
+
+  const done = (user: User, isNew = true) => {
+    const first = user.full_name?.split(' ')[0];
+    toast({
+      title: isNew ? `Welcome to ${STORE_NAME}${first ? `, ${first}` : ''}!` : 'Signed in',
+      description: isNew ? 'Your account is ready — we sent you a welcome email.' : undefined,
+    });
+    navigate(next, { replace: true });
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError('');
-    if (!name.trim() || name.trim().length < 3) {
-      setError('Name must be at least 3 characters.');
+    setTouched(true);
+    setServerError('');
+    const found = validate(values);
+    if (Object.keys(found).length) {
+      document.getElementById(`signup-${Object.keys(found)[0]}`)?.focus();
       return;
     }
-    if (!username.trim() || username.trim().length < 3) {
-      setError('Username must be at least 3 characters.');
-      return;
-    }
-    if (!email.includes('@')) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return;
-    }
-
-    setIsLoading(true);
+    setSubmitting(true);
     try {
-      await authApi.register({ username: username.trim(), email, password, full_name: name.trim() });
-      navigate(ROUTES.LOGIN);
-    } catch (err: any) {
-      const detail = err?.response?.data?.detail;
-      setError(typeof detail === 'string' ? detail : 'Registration failed. Try a different email or username.');
-    } finally {
-      setIsLoading(false);
+      done(await register({ full_name: values.name.trim(), email: values.email.trim(), password: values.password }));
+    } catch (err) {
+      setServerError(getApiErrorMessage(err));
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex">
-      <SEO title="Create Account — OQIRA" description="Create your OQIRA account to save favourites and track orders." />
-
-      {/* Left decorative panel */}
-      <div className="hidden lg:flex w-1/2 relative bg-[#0d0a0a] flex-col items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(201,168,76,0.12),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(122,79,79,0.10),transparent_60%)]" />
-        <div className="absolute inset-0 opacity-5"
-          style={{ backgroundImage: 'repeating-linear-gradient(45deg,#C9A84C 0,#C9A84C 1px,transparent 0,transparent 50%)', backgroundSize: '30px 30px' }}
-        />
-        <div className="relative z-10 flex flex-col items-center gap-6 px-12 text-center">
-          <OqiraLogo />
-          <h1 className="font-display text-4xl font-bold text-white tracking-widest">{STORE_NAME}</h1>
-          <p className="text-sm font-medium uppercase tracking-[0.3em] text-[#C9A84C]/80">{STORE_TAGLINE}</p>
-          <div className="mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[#C9A84C]/50 to-transparent" />
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/40">
-            Join thousands of happy customers and get exclusive access to new arrivals &amp; offers.
-          </p>
+    <AuthShell
+      seoTitle="Create your account"
+      title="Create your account"
+      subtitle={<>Join {STORE_NAME} for order tracking, a personal wishlist and faster checkout.</>}
+    >
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
+        <AuthField id="signup-name" label="Full name" autoComplete="name" autoFocus value={values.name} onChange={set('name')} placeholder="e.g. Sara Ahmed" error={errors.name} />
+        <AuthField id="signup-email" label="Email" type="email" inputMode="email" autoComplete="email" value={values.email} onChange={set('email')} placeholder="you@example.com" error={errors.email} />
+        <div>
+          <AuthField
+            id="signup-password"
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="new-password"
+            value={values.password}
+            onChange={set('password')}
+            placeholder="At least 8 characters"
+            error={errors.password}
+            trailing={
+              <button type="button" onClick={() => setShowPassword((v) => !v)} className="icon-btn h-9 w-9" aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            }
+          />
+          {values.password && (
+            <div className="mt-2.5 flex items-center gap-3" aria-live="polite">
+              <div className="flex flex-1 gap-1">
+                {[0, 1, 2, 3].map((i) => (
+                  <span key={i} className={clsx('h-1 flex-1 rounded-full transition-colors', i < Math.max(1, score) ? STRENGTH_COLORS[score] : 'bg-navy/10')} />
+                ))}
+              </div>
+              <span className="w-20 text-right text-xs font-medium text-navy-soft">{STRENGTH_LABELS[score]}</span>
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* Right: form panel */}
-      <div className="flex flex-1 flex-col items-center justify-center bg-white px-6 py-12">
-        <div className="w-full max-w-sm">
-          {/* Mobile logo */}
-          <div className="mb-8 flex flex-col items-center gap-3 lg:hidden">
-            <OqiraLogo />
-            <p className="font-display text-xl font-bold text-[#0d0a0a] tracking-widest">{STORE_NAME}</p>
-          </div>
-
-          <h2 className="text-2xl font-bold text-gray-900">Create an account</h2>
-          <p className="mt-1 text-sm text-gray-500">Save favourites &amp; track your orders</p>
-
-          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-            {/* Full Name */}
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">Full Name</label>
-              <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Sara Ahmed"
-                  minLength={3}
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#C9A84C] focus:bg-white focus:ring-2 focus:ring-[#C9A84C]/20"
-                  autoComplete="name"
-                />
-              </div>
-            </div>
-
-            {/* Username */}
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">Username</label>
-              <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-400">@</span>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ''))}
-                  placeholder="sara_ahmed"
-                  minLength={3}
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-8 pr-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#C9A84C] focus:bg-white focus:ring-2 focus:ring-[#C9A84C]/20"
-                  autoComplete="username"
-                />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#C9A84C] focus:bg-white focus:ring-2 focus:ring-[#C9A84C]/20"
-                  autoComplete="email"
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Min. 6 characters"
-                  minLength={6}
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-12 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-[#C9A84C] focus:bg-white focus:ring-2 focus:ring-[#C9A84C]/20"
-                  autoComplete="new-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            {error && (
-              <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">
-                {error}
-              </p>
+        {serverError && (
+          <p role="alert" className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            {serverError}{' '}
+            {serverError.toLowerCase().includes('already exists') && (
+              <Link to={ROUTES.LOGIN} className="font-semibold underline">Sign in instead</Link>
             )}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0d0a0a] py-3.5 text-sm font-bold text-white shadow-lg transition-all hover:bg-[#1a1010] hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Creating account…' : <>Create Account <ArrowRight className="h-4 w-4" /></>}
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="my-6 flex items-center gap-4">
-            <div className="h-px flex-1 bg-gray-200" />
-            <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">Or</span>
-            <div className="h-px flex-1 bg-gray-200" />
-          </div>
-
-          {/* Google - uses GIS popup, no redirect_uri needed */}
-          <GoogleSignInButton width={384} />
-
-          <p className="mt-8 text-center text-sm text-gray-500">
-            Already have an account?{' '}
-            <Link to={ROUTES.LOGIN} className="font-semibold text-[#C9A84C] hover:text-[#a07830] transition-colors">
-              Sign in
-            </Link>
           </p>
+        )}
 
-          <p className="mt-4 text-center">
-            <Link to={ROUTES.HOME} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">← Back to store</Link>
-          </p>
-        </div>
-      </div>
-    </div>
+        <button type="submit" disabled={submitting} className="btn btn-primary btn-lg w-full">
+          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          {submitting ? 'Creating account…' : <>Create account <ArrowRight className="h-4 w-4" /></>}
+        </button>
+
+        <ul className="grid gap-1.5 text-xs text-navy-soft sm:grid-cols-2">
+          {['Free to join', 'Order updates by email', 'Save your favourites', 'Faster checkout'].map((perk) => (
+            <li key={perk} className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600" /> {perk}</li>
+          ))}
+        </ul>
+      </form>
+
+      <GoogleSignInButton text="signup_with" onSuccess={(u) => done(u, Date.now() - new Date(u.created_at).getTime() < 60_000)} />
+
+      <p className="mt-8 text-center text-sm text-navy-soft">
+        Already have an account?{' '}
+        <Link to={`${ROUTES.LOGIN}${params.get('next') ? `?next=${encodeURIComponent(next)}` : ''}`} className="font-semibold text-navy underline-offset-4 hover:underline">
+          Sign in
+        </Link>
+      </p>
+    </AuthShell>
   );
 }

@@ -1,10 +1,11 @@
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session, joinedload
 
-from app.api.deps import get_current_user, get_optional_user
+from app.api.deps import get_current_user, get_optional_user, require_staff
 from app.constants import (
     BANK_ACCOUNT_NUMBER,
     BANK_ACCOUNT_TITLE,
@@ -18,17 +19,17 @@ from app.core.database import get_db
 from app.models.order import Order, OrderItem
 from app.models.product import Product
 from app.models.user import User
+from app.schemas.common import Message
 from app.schemas.order import (
     BankDetailsOut,
-    BankTransferConfirm,
     OrderCreate,
     OrderOut,
     OrderStatusUpdate,
     PaymentVerificationAction,
 )
 from app.services import email_service
+from app.services.email_service import OrderEmail
 from app.services.upload_service import save_upload
-from datetime import datetime, timezone
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -43,6 +44,7 @@ def _to_order_out(order: Order) -> OrderOut:
         id=order.id,
         customer_name=order.customer_name,
         customer_phone=order.customer_phone,
+        customer_email=order.customer_email,
         customer_address=order.customer_address,
         status=order.status,
         note=order.note,
@@ -66,18 +68,15 @@ def _to_order_out(order: Order) -> OrderOut:
             for i in order.items
         ],
         total_amount=total,
+        created_by_id=order.created_by_id,
     )
 
 
-def _build_items_payload(order: Order) -> list:
-    return [
-        {
-            "name": i.product_name_snapshot,
-            "qty": i.quantity,
-            "price": f"{Decimal(i.unit_price) * i.quantity:.2f}",
-        }
-        for i in order.items
-    ]
+def _get_order(db: Session, order_id: int) -> Order:
+    order = db.query(Order).options(joinedload(Order.items)).filter(Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+    return order
 
 
 # ---------------------------------------------------------------------------
@@ -100,14 +99,21 @@ def get_bank_details():
 # ---------------------------------------------------------------------------
 
 @router.post("", response_model=OrderOut, status_code=status.HTTP_201_CREATED)
-def create_order(payload: OrderCreate, db: Session = Depends(get_db), current_user: Optional[User] = Depends(get_optional_user)):
+def create_order(
+    payload: OrderCreate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_user),
+):
     """
-    Public — used by the storefront's cart checkout.
+    Public — used by the storefront's cart checkout (guest or signed in).
     Supports both Cash-on-Delivery and Bank Transfer payment methods.
+    Emails the customer a confirmation and the store an order alert.
     """
     order = Order(
         customer_name=payload.customer_name,
         customer_phone=payload.customer_phone,
+        customer_email=payload.customer_email or (current_user.email if current_user else None),
         customer_address=payload.customer_address or "",
         note=payload.note or "",
         payment_method=payload.payment_method,
@@ -117,6 +123,7 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db), current_us
     db.add(order)
     db.flush()
 
+    low_stock: list[tuple[str, int]] = []
     for line in payload.items:
         product = db.query(Product).filter(Product.id == line.product_id).first()
         if not product:
@@ -124,26 +131,18 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db), current_us
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Product id {line.product_id} not found",
             )
-        
+
         if product.stock < line.quantity:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Not enough stock for '{product.name}'. Only {product.stock} available.",
             )
-            
-        # Decrease stock and explicitly mark the product as modified
+
+        previous_stock = product.stock
         product.stock = product.stock - line.quantity
         db.add(product)  # ensure SQLAlchemy tracks the change
-        
-        # Trigger low stock email if it hits 5 or below
-        if product.stock <= 5:
-            email_service.fire_and_forget(
-                email_service.send_low_stock_email(
-                    product_name=product.name,
-                    remaining_stock=product.stock,
-                    product_id=product.id
-                )
-            )
+        if email_service.should_alert_low_stock(previous_stock, product.stock):
+            low_stock.append((product.name, product.stock))
 
         db.add(
             OrderItem(
@@ -155,26 +154,36 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db), current_us
             )
         )
 
+    # Keep the customer's phone on their account so the next checkout is pre-filled.
+    if current_user and not current_user.phone and payload.customer_phone:
+        current_user.phone = payload.customer_phone
+
     db.commit()
-    db.refresh(order)
-    order = db.query(Order).options(joinedload(Order.items)).filter(Order.id == order.id).first()
+    order = _get_order(db, order.id)
 
-    total = sum((Decimal(item.unit_price) * item.quantity for item in order.items), Decimal("0"))
-    items_payload = _build_items_payload(order)
-
-    if payload.payment_method == PaymentMethod.CASH_ON_DELIVERY:
-        email_service.fire_and_forget(
-            email_service.send_cod_order_email(
-                order_id=order.id,
-                customer_name=order.customer_name,
-                customer_phone=order.customer_phone,
-                customer_address=order.customer_address,
-                items=items_payload,
-                total=total,
-            )
-        )
+    background_tasks.add_task(email_service.notify_order_placed, OrderEmail.from_order(order))
+    for name, remaining in low_stock:
+        background_tasks.add_task(email_service.send_low_stock_alert, name, remaining)
 
     return _to_order_out(order)
+
+
+# ---------------------------------------------------------------------------
+# Customer: own order history
+# ---------------------------------------------------------------------------
+
+@router.get("/mine", response_model=List[OrderOut])
+def list_my_orders(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Orders placed while signed in. Guest orders aren't matched by email —
+    sign-up doesn't verify addresses, so that would leak other people's orders."""
+    orders = (
+        db.query(Order)
+        .options(joinedload(Order.items))
+        .filter(Order.created_by_id == current_user.id)
+        .order_by(Order.created_at.desc())
+        .all()
+    )
+    return [_to_order_out(o) for o in orders]
 
 
 # ---------------------------------------------------------------------------
@@ -184,6 +193,7 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db), current_us
 @router.post("/{order_id}/mark-transferred", response_model=OrderOut)
 async def mark_transferred(
     order_id: int,
+    background_tasks: BackgroundTasks,
     transaction_ref: Optional[str] = Form(default=None),
     receipt: Optional[UploadFile] = File(default=None),
     db: Session = Depends(get_db),
@@ -193,14 +203,7 @@ async def mark_transferred(
     Optionally attaches a receipt image and/or transaction reference.
     Moves payment_status to PENDING_VERIFICATION.
     """
-    order = (
-        db.query(Order)
-        .options(joinedload(Order.items))
-        .filter(Order.id == order_id)
-        .first()
-    )
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+    order = _get_order(db, order_id)
     if order.payment_method != PaymentMethod.BANK_TRANSFER:
         raise HTTPException(status_code=400, detail="This order is not a bank transfer order")
     if order.payment_status == PaymentStatus.PAID:
@@ -213,24 +216,12 @@ async def mark_transferred(
     order.payment_status = PaymentStatus.PENDING_VERIFICATION
     order.transaction_ref = transaction_ref
     order.receipt_image_url = receipt_url
+    order.rejection_reason = None
     order.transferred_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(order)
 
-    total = sum((Decimal(i.unit_price) * i.quantity for i in order.items), Decimal("0"))
-    email_service.fire_and_forget(
-        email_service.send_bank_transfer_pending_email(
-            order_id=order.id,
-            customer_name=order.customer_name,
-            customer_phone=order.customer_phone,
-            customer_address=order.customer_address or "",
-            items=_build_items_payload(order),
-            total=total,
-            transaction_ref=transaction_ref,
-            receipt_image_url=receipt_url,
-        )
-    )
-
+    background_tasks.add_task(email_service.notify_transfer_submitted, OrderEmail.from_order(order))
     return _to_order_out(order)
 
 
@@ -242,9 +233,9 @@ async def mark_transferred(
 def list_orders(
     status_filter: Optional[OrderStatus] = Query(default=None, alias="status"),
     payment_status_filter: Optional[PaymentStatus] = Query(default=None, alias="payment_status"),
-    user_id: Optional[int] = Query(default=None),
+    user_id: Optional[int] = Query(default=None, description="Only orders placed by this customer account"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     query = db.query(Order).options(joinedload(Order.items))
     
@@ -260,7 +251,8 @@ def list_orders(
         query = query.filter(Order.status == status_filter)
     if payment_status_filter:
         query = query.filter(Order.payment_status == payment_status_filter)
-        
+    if user_id:
+        query = query.filter(Order.created_by_id == user_id)
     orders = query.order_by(Order.created_at.desc()).all()
     return [_to_order_out(o) for o in orders]
 
@@ -273,18 +265,16 @@ def list_orders(
 def update_order_status(
     order_id: int,
     payload: OrderStatusUpdate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_user), # Use get_current_user then check role
+    current_user: User = Depends(require_staff),
 ):
-    if admin.role.value == "CUSTOMER":
-        raise HTTPException(status_code=403, detail="Forbidden")
-        
-    order = db.query(Order).options(joinedload(Order.items)).filter(Order.id == order_id).first()
-    if not order:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+    order = _get_order(db, order_id)
 
     old_status = order.status
     new_status = payload.status
+    if old_status == new_status:
+        return _to_order_out(order)
 
     # Stock adjustment logic:
     # If order is being CANCELLED → restore stock for each item
@@ -313,8 +303,9 @@ def update_order_status(
     order.status = new_status
     db.commit()
     db.refresh(order)
-    return _to_order_out(order)
 
+    background_tasks.add_task(email_service.notify_status_changed, OrderEmail.from_order(order))
+    return _to_order_out(order)
 
 
 # ---------------------------------------------------------------------------
@@ -325,22 +316,17 @@ def update_order_status(
 def verify_payment(
     order_id: int,
     payload: PaymentVerificationAction,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     """
     Admin confirms or rejects a pending bank transfer.
     - confirm → payment_status = PAID, order status = CONFIRMED
     - reject  → payment_status = UNPAID, rejection_reason set
+    The customer is emailed either way.
     """
-    order = (
-        db.query(Order)
-        .options(joinedload(Order.items))
-        .filter(Order.id == order_id)
-        .first()
-    )
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+    order = _get_order(db, order_id)
     if order.payment_status != PaymentStatus.PENDING_VERIFICATION:
         raise HTTPException(status_code=400, detail="Order is not pending verification")
 
@@ -351,8 +337,34 @@ def verify_payment(
         order.rejection_reason = None
     else:
         order.payment_status = PaymentStatus.UNPAID
-        order.rejection_reason = payload.rejection_reason
+        order.rejection_reason = payload.rejection_reason or "The transfer could not be matched with our bank statement."
 
     db.commit()
     db.refresh(order)
+
+    background_tasks.add_task(email_service.notify_payment_verified, OrderEmail.from_order(order))
     return _to_order_out(order)
+
+
+# ---------------------------------------------------------------------------
+# Admin: Send the customer a follow-up for the order's current state
+# ---------------------------------------------------------------------------
+
+@router.post("/{order_id}/follow-up", response_model=Message)
+def send_follow_up(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff),
+):
+    """Re-sends the email for where the order stands now — a payment reminder
+    for unpaid transfers, otherwise the latest status update."""
+    order = _get_order(db, order_id)
+    if not order.customer_email:
+        raise HTTPException(status_code=400, detail="This order has no customer email address")
+    try:
+        sent = email_service.send_order_follow_up(OrderEmail.from_order(order))
+    except Exception as exc:  # surface SMTP problems to the admin
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Email could not be sent: {exc}")
+    if not sent:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Email is not configured on the server")
+    return Message(message=f"Follow-up sent to {order.customer_email}")

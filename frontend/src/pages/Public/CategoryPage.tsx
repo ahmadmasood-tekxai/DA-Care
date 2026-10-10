@@ -1,194 +1,144 @@
-import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, LayoutGrid, Search, SlidersHorizontal, X } from 'lucide-react';
+import { useEffect, useState, type FormEvent } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { ChevronDown, Search, X } from 'lucide-react';
+import clsx from 'clsx';
 
 import { categoriesApi } from '@/api/categories';
+import { Breadcrumbs } from '@/components/common/Breadcrumbs';
 import { EmptyState } from '@/components/common/EmptyState';
-import { Pagination } from '@/components/common/Pagination';
-import { ProductCard } from '@/components/common/ProductCard';
-import { PublicLayout } from '@/components/layout/public/PublicLayout';
 import { HeroBackground } from '@/components/common/HeroBackground';
-import { SEO } from '@/components/common/SEO';
-import { resolveIcon, ROUTES } from '@/constants';
+import { Pagination } from '@/components/common/Pagination';
+import { ProductCard, ProductCardSkeleton } from '@/components/common/ProductCard';
+import { SEO, breadcrumbSchema } from '@/components/common/SEO';
+import { PublicLayout } from '@/components/layout/public/PublicLayout';
+import { ROUTES, SORT_OPTIONS, STORE_NAME } from '@/constants';
+import { NotFoundPage } from '@/pages/Public/NotFoundPage';
+import type { ProductSort } from '@/types';
 
 const PAGE_SIZE = 12;
+const isSort = (v: string | null): v is ProductSort => SORT_OPTIONS.some((o) => o.value === v);
 
 export function CategoryPage() {
-  const { slug } = useParams<{ slug: string }>();
-  const [activeSubcategoryId, setActiveSubcategoryId] = useState<number | null>(null);
-  const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState('');
-  const [page, setPage] = useState(1);
+  const { slug = '' } = useParams<{ slug: string }>();
+  const [params, setParams] = useSearchParams();
+  const activeSub = params.get('sub') ? Number(params.get('sub')) : null;
+  const search = params.get('search') ?? '';
+  const sortParam = params.get('sort');
+  const sort: ProductSort = isSort(sortParam) ? sortParam : 'newest';
+  const page = Math.max(1, Number(params.get('page')) || 1);
 
-  const { data: category, isLoading: isCategoryLoading } = useQuery({
-    queryKey: ['category', slug],
-    queryFn: () => categoriesApi.getBySlug(slug!),
+  const [query, setQuery] = useState(search);
+  useEffect(() => setQuery(search), [search]);
+
+  const { data: category, isLoading: loadingCategory, isError } = useQuery({
+    queryKey: ['categories', 'detail', slug],
+    queryFn: () => categoriesApi.getBySlug(slug),
     enabled: !!slug,
+    retry: false,
+    staleTime: 5 * 60_000,
   });
 
-  const { data: products, isLoading: isProductsLoading } = useQuery({
-    queryKey: ['category-products', slug, activeSubcategoryId, search, page],
+  const { data: products, isLoading, isFetching } = useQuery({
+    queryKey: ['products', 'category', slug, activeSub, search, sort, page],
     queryFn: () =>
-      categoriesApi.getCategoryProducts(slug!, {
-        subcategory_id: activeSubcategoryId ?? undefined,
+      categoriesApi.getCategoryProducts(slug, {
+        subcategory_id: activeSub ?? undefined,
         search: search || undefined,
+        sort,
         page,
         page_size: PAGE_SIZE,
       }),
-    enabled: !!slug,
+    enabled: !!slug && !isError,
+    placeholderData: keepPreviousData,
   });
 
-  function handleSubcategoryClick(id: number | null) {
-    setActiveSubcategoryId(id);
-    setPage(1);
-    setSearch('');
-    setSearchInput('');
+  const update = (changes: Record<string, string | null>, resetPage = true) => {
+    const next = new URLSearchParams(params);
+    Object.entries(changes).forEach(([k, v]) => (v === null || v === '' ? next.delete(k) : next.set(k, v)));
+    if (resetPage) next.delete('page');
+    setParams(next);
+  };
+
+  if (isError) {
+    return <NotFoundPage title="Category not found" message="This category may have been renamed or removed." />;
   }
 
-  function handleSearchSubmit(e: React.FormEvent) {
+  const subcategories = category?.subcategories ?? [];
+  const activeSubcategory = subcategories.find((s) => s.id === activeSub);
+  const total = products?.total ?? 0;
+
+  const submitSearch = (e: FormEvent) => {
     e.preventDefault();
-    setSearch(searchInput);
-    setPage(1);
-  }
-
-  function handleClearSearch() {
-    setSearch('');
-    setSearchInput('');
-    setPage(1);
-  }
-
-  function handlePageChange(newPage: number) {
-    setPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  const hasSubcategories = (category?.subcategories?.length ?? 0) > 0;
-  const activeSubcategory = category?.subcategories?.find(s => s.id === activeSubcategoryId);
-  const CategoryIcon = resolveIcon(category?.icon ?? 'Shirt');
-  const totalPages = products?.total_pages ?? 1;
-
-  const pageTitle = activeSubcategory
-    ? `${activeSubcategory.name} — ${category?.name}`
-    : category?.name ?? 'Category';
+    update({ search: query.trim() || null });
+  };
 
   return (
     <PublicLayout>
       <SEO
-        title={`${pageTitle} — Shop Online | OQIRA`}
+        title={category ? `${category.name} — Buy Online in Pakistan` : 'Category'}
         description={
-          category?.description
-            ? category.description
-            : `Shop ${category?.name ?? ''} at OQIRA — premium quality, fast delivery, COD available across Pakistan.`
+          category?.description ||
+          `Shop ${category?.name ?? 'our collection'} online at ${STORE_NAME} — premium quality, free delivery and cash on delivery across Pakistan.`
         }
-        keywords={`OQIRA, ${category?.name ?? ''}, ${activeSubcategory?.name ?? ''}, online shopping Pakistan, buy online Pakistan, COD Pakistan`}
-        url={`https://okira.vercel.app/categories/${slug}`}
+        canonical={ROUTES.CATEGORY_PAGE(slug)}
+        image={category?.image_url ?? undefined}
+        noIndex={!!search}
+        schema={category ? breadcrumbSchema([['Home', '/'], ['Products', ROUTES.PRODUCTS], [category.name, ROUTES.CATEGORY_PAGE(slug)]]) : undefined}
       />
 
-      {/* ─── Hero Banner ─── */}
-      <section className="relative overflow-hidden bg-navy px-6 pb-16 pt-28 text-center">
+      {/* Banner — uses the category image when one is uploaded */}
+      <section className="relative overflow-hidden bg-navy">
+        {category?.image_url && (
+          <img src={category.image_url} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-r from-navy via-navy/85 to-navy/40" />
         <HeroBackground />
-        <div className="pointer-events-none absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_50%_0%,_#D1D0D0_0%,_transparent_60%)]" />
-
-        <div className="relative z-10">
-          {/* Breadcrumb */}
-          <div className="mb-4 flex items-center justify-center gap-2 text-xs text-cream/50">
-            <Link to={ROUTES.HOME} className="hover:text-cream transition-colors">Home</Link>
-            <span>/</span>
-            <Link to={ROUTES.PRODUCTS} className="hover:text-cream transition-colors">Products</Link>
-            <span>/</span>
-            <span className="text-cream/80">{category?.name ?? '...'}</span>
-            {activeSubcategory && (
-              <>
-                <span>/</span>
-                <span className="text-gold">{activeSubcategory.name}</span>
-              </>
-            )}
-          </div>
-
-          {/* Icon + Title */}
-          <div className="mb-3 flex justify-center">
-            {category?.image_url ? (
-              <img
-                src={category.image_url}
-                alt={category.name}
-                className="h-16 w-16 rounded-2xl object-cover border-2 border-white/20 shadow-xl"
-              />
-            ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 border border-white/15 shadow-xl">
-                <CategoryIcon className="h-8 w-8 text-white" />
-              </div>
-            )}
-          </div>
-
-          <span className="section-tag animate-fade-in-up">
-            {activeSubcategory ? activeSubcategory.name : 'Category'}
-          </span>
-          <h1 className="mt-2 text-4xl font-display font-semibold tracking-tight text-white sm:text-5xl animate-fade-in-up" style={{ animationDelay: '80ms' }}>
-            {activeSubcategory ? activeSubcategory.name : (category?.name ?? (isCategoryLoading ? '...' : 'Category'))}
-          </h1>
-          {category?.description && !activeSubcategory && (
-            <p className="mx-auto mt-4 max-w-md text-sm font-light text-cream/70 animate-fade-in-up" style={{ animationDelay: '160ms' }}>
-              {category.description}
-            </p>
-          )}
-          {products && (
-            <span className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-5 py-2 text-xs font-bold uppercase tracking-widest text-gold backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '240ms' }}>
-              {products.total} product{products.total !== 1 ? 's' : ''}
-            </span>
+        <div className="container-page relative py-10 sm:py-16">
+          <Breadcrumbs
+            tone="light"
+            className="mb-4"
+            items={[
+              { label: 'Home', to: ROUTES.HOME },
+              { label: 'Products', to: ROUTES.PRODUCTS },
+              { label: category?.name ?? '…', to: activeSubcategory ? ROUTES.CATEGORY_PAGE(slug) : undefined },
+              ...(activeSubcategory ? [{ label: activeSubcategory.name }] : []),
+            ]}
+          />
+          {loadingCategory ? (
+            <div className="h-12 w-64 animate-pulse rounded-xl bg-white/10" />
+          ) : (
+            <>
+              <p className="eyebrow-light mb-2">{activeSubcategory ? category?.name : 'Collection'}</p>
+              <h1 className="font-display text-4xl font-semibold leading-tight tracking-tight text-white sm:text-6xl">
+                {activeSubcategory?.name ?? category?.name}
+              </h1>
+              {category?.description && !activeSubcategory && (
+                <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/65 sm:text-base">{category.description}</p>
+              )}
+            </>
           )}
         </div>
       </section>
 
-      {/* ─── Subcategory Filter Tabs ─── */}
-      {hasSubcategories && (
-        <div className="sticky top-[64px] z-30 border-b border-navy/10 bg-white/95 backdrop-blur-md shadow-sm">
-          <div className="mx-auto max-w-6xl px-6">
-            {/* Label row */}
-            <div className="flex items-center gap-2 pt-3 pb-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-navy/30">Subcategories</span>
-            </div>
-            <div className="flex items-center gap-2 overflow-x-auto pb-3 scrollbar-none">
-              {/* "All" tab */}
-              <button
-                onClick={() => handleSubcategoryClick(null)}
-                className={`relative flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 ${activeSubcategoryId === null
-                  ? 'bg-navy text-white shadow-md shadow-navy/25 scale-[1.02]'
-                  : 'bg-navy/5 text-navy-soft hover:bg-navy/10 hover:text-navy'
-                  }`}
-              >
-                <LayoutGrid className="h-3.5 w-3.5" />
-                All {category?.name}
-                {products && activeSubcategoryId === null && (
-                  <span className="ml-0.5 rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-extrabold">
-                    {products.total}
-                  </span>
-                )}
-              </button>
-
-              {category?.subcategories?.map((sub) => {
-                const SubIcon = resolveIcon(sub.icon);
-                const isActive = activeSubcategoryId === sub.id;
+      {/* Subcategory chips — sits below the sticky header (64px / 72px) */}
+      {subcategories.length > 0 && (
+        <div className="sticky top-16 z-30 border-b border-navy/10 bg-white/95 backdrop-blur-md lg:top-[72px]">
+          <div className="container-page">
+            <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 py-3">
+              {[{ id: null as number | null, name: `All ${category?.name ?? ''}` }, ...subcategories].map((sub) => {
+                const active = activeSub === sub.id;
                 return (
                   <button
-                    key={sub.id}
-                    onClick={() => handleSubcategoryClick(sub.id)}
-                    className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 ${isActive
-                      ? 'bg-pink-deep text-white shadow-md shadow-pink-deep/25 scale-[1.02]'
-                      : 'bg-pink-pale/30 text-pink-deep/80 border border-pink-deep/10 hover:bg-pink-pale hover:text-pink-deep hover:border-pink-deep/30'
-                      }`}
+                    key={sub.id ?? 'all'}
+                    onClick={() => update({ sub: sub.id === null ? null : String(sub.id) })}
+                    aria-pressed={active}
+                    className={clsx(
+                      'shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors',
+                      active ? 'border-navy bg-navy text-white' : 'border-navy/15 bg-white text-navy-soft hover:border-navy/40 hover:text-navy'
+                    )}
                   >
-                    {sub.image_url ? (
-                      <img src={sub.image_url} alt={sub.name} className="h-3.5 w-3.5 rounded-full object-cover" />
-                    ) : (
-                      <SubIcon className="h-3.5 w-3.5" />
-                    )}
                     {sub.name}
-                    {isActive && products && (
-                      <span className="ml-0.5 rounded-full bg-white/25 px-1.5 py-0.5 text-[9px] font-extrabold">
-                        {products.total}
-                      </span>
-                    )}
                   </button>
                 );
               })}
@@ -197,134 +147,85 @@ export function CategoryPage() {
         </div>
       )}
 
-      {/* ─── Products Section ─── */}
-      <section className="px-6 py-12">
-        <div className="mx-auto max-w-6xl">
-
-          {/* Search + Filter bar */}
-          <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-soft" />
-                <input
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder={`Search in ${activeSubcategory?.name ?? category?.name ?? 'category'}…`}
-                  className="w-full rounded-full border border-navy/15 bg-white py-2.5 pl-10 pr-10 text-sm focus:border-pink-deep focus:outline-none focus:ring-2 focus:ring-pink-deep/30 sm:w-64"
-                />
-                {searchInput && (
-                  <button
-                    type="button"
-                    onClick={handleClearSearch}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-navy-soft hover:text-navy"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
+      <section className="container-page py-8 sm:py-10">
+        {/* Toolbar */}
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <form onSubmit={submitSearch} role="search" className="relative sm:w-80">
+            <label htmlFor="category-search" className="sr-only">Search in {category?.name}</label>
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-soft/50" />
+            <input
+              id="category-search"
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={`Search in ${activeSubcategory?.name ?? category?.name ?? 'this category'}…`}
+              enterKeyHint="search"
+              className="field h-10 rounded-full py-0 pl-10 pr-10"
+            />
+            {search && (
               <button
-                type="submit"
-                className="flex items-center gap-1.5 rounded-full bg-navy px-4 py-2.5 text-xs font-bold text-white transition-colors hover:bg-pink-deep"
+                type="button"
+                onClick={() => update({ search: null })}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-navy-soft hover:bg-cream-2"
+                aria-label="Clear search"
               >
-                <SlidersHorizontal className="h-3.5 w-3.5" />
-                Search
+                <X className="h-3.5 w-3.5" />
               </button>
-            </form>
-
-            {/* Active filter indicator */}
-            {(search || activeSubcategoryId) && (
-              <div className="flex flex-wrap items-center gap-2">
-                {search && (
-                  <span className="flex items-center gap-1.5 rounded-full bg-navy/10 px-3 py-1.5 text-xs font-semibold text-navy">
-                    "{search}"
-                    <button onClick={handleClearSearch} className="text-navy-soft hover:text-rose-600">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                )}
-                {activeSubcategory && (() => {
-                  const SubIcon = resolveIcon(activeSubcategory.icon);
-                  return (
-                    <span className="flex items-center gap-1.5 rounded-full bg-pink-pale px-3 py-1.5 text-xs font-semibold text-pink-deep">
-                      {activeSubcategory.image_url ? (
-                        <img src={activeSubcategory.image_url} alt={activeSubcategory.name} className="h-3 w-3 rounded-full object-cover" />
-                      ) : (
-                        <SubIcon className="h-3 w-3" />
-                      )}
-                      {activeSubcategory.name}
-                      <button onClick={() => handleSubcategoryClick(null)} className="hover:text-rose-600">
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  );
-                })()}
-              </div>
             )}
+          </form>
 
-            {/* Results count */}
-            {!isProductsLoading && products && products.total > 0 && (
-              <p className="text-xs text-navy-soft sm:text-right">
-                <span className="font-semibold text-navy">
-                  {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, products.total)}
-                </span>{' '}
-                of <span className="font-semibold text-navy">{products.total}</span> products
-              </p>
-            )}
+          <div className="flex items-center justify-between gap-3 sm:ml-auto">
+            <p className="text-sm text-navy-soft" aria-live="polite">
+              {isLoading ? 'Loading…' : <><span className="font-semibold text-navy">{total}</span> {total === 1 ? 'product' : 'products'}</>}
+            </p>
+            <div className="relative">
+              <label htmlFor="category-sort" className="sr-only">Sort by</label>
+              <select
+                id="category-sort"
+                value={sort}
+                onChange={(e) => update({ sort: e.target.value === 'newest' ? null : e.target.value })}
+                className="h-10 cursor-pointer appearance-none rounded-full border border-navy/15 bg-white pl-4 pr-9 text-sm font-medium text-navy hover:border-navy/30 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+              >
+                {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-soft" />
+            </div>
           </div>
+        </div>
 
-          {/* Product Grid */}
-          {isProductsLoading ? (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-                <div key={i} className="animate-pulse overflow-hidden rounded-3xl border border-navy/10 bg-white">
-                  <div className="aspect-square w-full bg-slate-200" />
-                  <div className="p-5 space-y-3">
-                    <div className="h-5 w-3/4 rounded bg-slate-200" />
-                    <div className="h-4 w-full rounded bg-slate-200" />
-                    <div className="mt-4 flex items-center justify-between">
-                      <div className="h-6 w-1/3 rounded bg-slate-200" />
-                      <div className="h-9 w-20 rounded-full bg-slate-200" />
-                    </div>
-                  </div>
-                </div>
+        {isLoading ? (
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)}
+          </div>
+        ) : products && products.items.length > 0 ? (
+          <>
+            <div className={clsx('grid grid-cols-2 gap-3 transition-opacity sm:gap-5 md:grid-cols-3 lg:grid-cols-4', isFetching && 'opacity-60')}>
+              {products.items.map((product, i) => (
+                <ProductCard key={product.id} product={product} priority={i < 2} categoryName={activeSubcategory?.name ?? category?.name} />
               ))}
             </div>
-          ) : products && products.items.length > 0 ? (
-            <>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {products.items.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    categoryName={activeSubcategory?.name ?? category?.name}
-                  />
-                ))}
-              </div>
-
-              <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
-            </>
-          ) : (
-            <EmptyState
-              title={search ? 'No products match your search' : 'No products here yet'}
-              description={
-                search
-                  ? `Try a different keyword or clear the search.`
-                  : activeSubcategory
-                    ? `No products in "${activeSubcategory.name}" yet.`
-                    : `No products in "${category?.name}" yet.`
-              }
-              action={(search || activeSubcategoryId) ? (
-                <button
-                  onClick={() => { handleClearSearch(); setActiveSubcategoryId(null); }}
-                  className="mt-4 rounded-full bg-navy px-6 py-2.5 text-sm font-bold text-white hover:bg-pink-deep transition-colors"
-                >
-                  <ArrowLeft className="mr-1.5 inline h-4 w-4" />
-                  View all products
-                </button>
-              ) : undefined}
+            <Pagination
+              page={page}
+              totalPages={products.total_pages}
+              onPageChange={(p) => {
+                update({ page: p > 1 ? String(p) : null }, false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
-          )}
-        </div>
+          </>
+        ) : (
+          <EmptyState
+            title={search ? 'No matching products' : 'Nothing here yet'}
+            description={search ? `Nothing in this category matches “${search}”.` : 'New pieces are added regularly — check back soon.'}
+            action={
+              search || activeSub ? (
+                <button onClick={() => update({ search: null, sub: null })} className="btn btn-primary btn-sm mt-2">
+                  View all {category?.name}
+                </button>
+              ) : undefined
+            }
+          />
+        )}
       </section>
     </PublicLayout>
   );
