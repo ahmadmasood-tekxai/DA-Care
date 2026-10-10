@@ -17,7 +17,7 @@ const VALUES = [
 
 const FOUNDERS = [
   { name: 'Daud Ansari', role: 'Co-Founder & CEO', initials: 'DA' },
-  { name: 'Ahmad Rajpoot', role: 'Co-Founder & COO', initials: 'AR' },
+  { name: 'Ahmad Rajpoot', role: 'Co-Founder & CEO', initials: 'AR' },
 ];
 
 export function AboutPage() {

@@ -1,0 +1,18 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "global",
+    "main",
+    "update-theme"
+  ],
+  "parent": {
+    "global": "main",
+    "main": null,
+    "update-theme": "main"
+  },
+  "order": [
+    "main",
+    "global",
+    "update-theme"
+  ]
+}

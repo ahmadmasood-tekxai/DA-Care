@@ -16,7 +16,7 @@ const PROMISES = [
 
 const FOUNDERS = [
   { name: 'Daud Ansari', role: 'Co-Founder & CEO' },
-  { name: 'Ahmad Rajpoot', role: 'Co-Founder & COO' },
+  { name: 'Ahmad Rajpoot', role: 'Co-Founder & CEO' },
 ];
 
 const formatPhone = (n: string) => `+${n.slice(0, 2)} ${n.slice(2, 5)} ${n.slice(5)}`;
@@ -36,7 +36,7 @@ export function PublicFooter() {
 
       {/* Promise strip */}
       <div className="relative border-b border-white/10">
-        <ul className="container-page grid grid-cols-2 gap-x-4 gap-y-6 py-8 lg:grid-cols-4">
+        <ul className="container-page grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6 py-8 lg:grid-cols-4">
           {PROMISES.map(({ icon: Icon, title, text }) => (
             <li key={title} className="flex items-start gap-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gold/30 bg-gold/10 text-gold">
