@@ -27,7 +27,7 @@ def upgrade() -> None:
         batch_op.add_column(sa.Column('google_id', sa.String(length=128), nullable=True))
         batch_op.add_column(sa.Column('profile_image', sa.String(length=512), nullable=True))
         batch_op.add_column(sa.Column('last_login', sa.DateTime(timezone=True), nullable=True))
-        
+
         batch_op.create_index(batch_op.f('ix_users_google_id'), ['google_id'], unique=True)
 
 

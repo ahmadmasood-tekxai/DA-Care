@@ -1,8 +1,8 @@
-def _setup_product(client, auth_headers, price=2499):
+def _setup_product(client, auth_headers, price=2499, stock=20):
     cat = client.post("/api/v1/categories", json={"name": "Test Category"}, headers=auth_headers).json()
     product = client.post(
         "/api/v1/products",
-        json={"category_id": cat["id"], "name": "Test Product", "price": price, "stock": 20},
+        json={"category_id": cat["id"], "name": "Test Product", "price": price, "stock": stock},
         headers=auth_headers,
     ).json()
     return product
@@ -55,7 +55,7 @@ def test_dashboard_revenue_excludes_cancelled_orders(client, auth_headers):
 
 
 def test_dashboard_top_products_ranked_by_revenue(client, auth_headers):
-    cheap = _setup_product(client, auth_headers, price=100)
+    cheap = _setup_product(client, auth_headers, price=100, stock=60)
     client.post(
         "/api/v1/orders",
         json={"customer_name": "Zainab", "items": [{"product_id": cheap["id"], "quantity": 50}]},

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, CheckCircle, ExternalLink, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, ExternalLink, Mail, Send, UserRound, XCircle } from 'lucide-react';
 
 import { getApiErrorMessage } from '@/api/client';
 import { ordersApi } from '@/api/orders';
@@ -10,6 +10,7 @@ import { Input } from '@/components/common/Input';
 import { Modal } from '@/components/common/Modal';
 import { Table, type TableColumn } from '@/components/common/Table';
 import { AdminLayout } from '@/components/layout/admin/AdminLayout';
+import { useToast } from '@/hooks/useToast';
 import {
   ORDER_STATUS_COLORS,
   ORDER_STATUS_LABELS,
@@ -128,6 +129,7 @@ function PaymentVerifyModal({
 // ---------------------------------------------------------------------------
 export function AdminOrdersPage() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [verifyModal, setVerifyModal] = useState<VerifyModalState | null>(null);
 
   const { data: orders, isLoading } = useQuery({
@@ -138,11 +140,22 @@ export function AdminOrdersPage() {
   const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: number; status: OrderStatus }) =>
       ordersApi.updateStatus(id, status),
-    onSuccess: () => {
+    onSuccess: (order) => {
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-summary'] });
+      toast({
+        title: `Order #${order.id} → ${ORDER_STATUS_LABELS[order.status]}`,
+        description: order.customer_email ? `Update emailed to ${order.customer_email}` : 'No customer email on this order',
+        variant: 'info',
+      });
     },
-    onError: (err) => alert(getApiErrorMessage(err)),
+    onError: (err) => toast({ title: 'Status not changed', description: getApiErrorMessage(err), variant: 'error' }),
+  });
+
+  const followUpMutation = useMutation({
+    mutationFn: (id: number) => ordersApi.sendFollowUp(id),
+    onSuccess: (r) => toast({ title: 'Follow-up sent', description: r.message }),
+    onError: (err) => toast({ title: 'Email not sent', description: getApiErrorMessage(err), variant: 'error', durationMs: 7000 }),
   });
 
   const verifyMutation = useMutation({
@@ -153,7 +166,7 @@ export function AdminOrdersPage() {
       queryClient.invalidateQueries({ queryKey: ['dashboard-summary'] });
       setVerifyModal(null);
     },
-    onError: (err) => alert(getApiErrorMessage(err)),
+    onError: (err) => toast({ title: 'Payment not updated', description: getApiErrorMessage(err), variant: 'error' }),
   });
 
   const columns: TableColumn<Order>[] = [
@@ -163,8 +176,16 @@ export function AdminOrdersPage() {
       header: 'Customer',
       render: (o) => (
         <div>
-          <p className="font-bold text-navy">{o.customer_name}</p>
+          <p className="flex items-center gap-1.5 font-bold text-navy">
+            {o.customer_name}
+            {o.created_by_id && <UserRound className="h-3.5 w-3.5 text-gold-dark" aria-label="Signed-in customer" />}
+          </p>
           <p className="text-xs text-navy-soft">{o.customer_phone}</p>
+          {o.customer_email && (
+            <a href={`mailto:${o.customer_email}`} className="flex items-center gap-1 text-xs text-navy-soft hover:text-navy">
+              <Mail className="h-3 w-3" /> {o.customer_email}
+            </a>
+          )}
         </div>
       ),
     },
@@ -254,11 +275,27 @@ export function AdminOrdersPage() {
         </select>
       ),
     },
+    {
+      key: 'follow-up',
+      header: 'Follow-up',
+      align: 'center',
+      render: (o) => (
+        <button
+          onClick={() => followUpMutation.mutate(o.id)}
+          disabled={!o.customer_email || (followUpMutation.isPending && followUpMutation.variables === o.id)}
+          title={o.customer_email ? 'Email the customer an update for this order' : 'No email address on this order'}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-navy/15 px-2.5 py-1.5 text-xs font-bold text-navy transition-colors hover:border-gold hover:bg-cream disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <Send className="h-3.5 w-3.5" />
+          {followUpMutation.isPending && followUpMutation.variables === o.id ? 'Sending…' : 'Email'}
+        </button>
+      ),
+    },
   ];
 
   const totalRevenue = (orders ?? [])
     .filter((o) => o.status !== OrderStatus.CANCELLED)
-    .reduce((sum, o) => sum + o.total_amount, 0);
+    .reduce((sum, o) => sum + Number(o.total_amount), 0); // decimals arrive as strings
 
   return (
     <AdminLayout pageTitle="Orders & Revenue">

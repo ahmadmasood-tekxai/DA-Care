@@ -1,10 +1,69 @@
-import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, Boxes, Package, ShoppingCart, TrendingUp, Wallet } from 'lucide-react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { AlertTriangle, BadgeCheck, Boxes, Mail, MailWarning, Package, Send, ShoppingCart, TrendingUp, Users, Wallet } from 'lucide-react';
 
+import { getApiErrorMessage } from '@/api/client';
 import { dashboardApi } from '@/api/dashboard';
+import { emailApi } from '@/api/users';
 import { Card } from '@/components/common/Card';
 import { AdminLayout } from '@/components/layout/admin/AdminLayout';
+import { ROUTES } from '@/constants';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
+import { UserRole } from '@/types';
 import { formatCurrency } from '@/utils/format';
+
+const AUTOMATED_EMAILS = [
+  'Order received + payment instructions',
+  'Transfer received → confirmed / rejected',
+  'Confirmed, shipped & delivered follow-ups',
+  'Delivered email asks for a star rating',
+  'Welcome email for new accounts',
+  'Store alerts: new orders, payments, low stock',
+];
+
+/** Shows whether SMTP is configured and lets an admin send a test message. */
+function EmailCard() {
+  const { toast } = useToast();
+  const { data, isLoading, isError } = useQuery({ queryKey: ['email-status'], queryFn: emailApi.status });
+  const test = useMutation({
+    mutationFn: () => emailApi.sendTest(),
+    onSuccess: (r) => toast({ title: 'Test email sent', description: r.message }),
+    onError: (err) => toast({ title: 'Email failed', description: getApiErrorMessage(err), variant: 'error', durationMs: 8000 }),
+  });
+
+  const enabled = !!data?.enabled;
+  return (
+    <Card
+      title="Email notifications"
+      subtitle={isLoading ? 'Checking…' : enabled ? `Sending as ${data?.from_name} <${data?.from_email}>` : 'Not configured on the server'}
+      action={
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${
+            enabled ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+          }`}
+        >
+          {enabled ? <BadgeCheck className="h-3.5 w-3.5" /> : <MailWarning className="h-3.5 w-3.5" />}
+          {isLoading ? '…' : enabled ? 'Active' : isError ? 'Unknown' : 'Off'}
+        </span>
+      }
+    >
+      <ul className="grid gap-2 text-sm text-navy-soft sm:grid-cols-2">
+        {AUTOMATED_EMAILS.map((t) => (
+          <li key={t} className="flex items-start gap-2"><Mail className="mt-0.5 h-3.5 w-3.5 shrink-0 text-pink-deep" /> {t}</li>
+        ))}
+      </ul>
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+        <p className="text-xs text-navy-soft">
+          {enabled ? <>Store alerts go to <strong className="text-navy">{data?.admin_email}</strong>.</> : 'Set SMTP_USERNAME and SMTP_PASSWORD in the backend environment.'}
+        </p>
+        <button onClick={() => test.mutate()} disabled={!enabled || test.isPending} className="btn btn-primary btn-sm rounded-xl">
+          <Send className="h-3.5 w-3.5" /> {test.isPending ? 'Sending…' : 'Send test email'}
+        </button>
+      </div>
+    </Card>
+  );
+}
 
 function StatCard({
   label,
@@ -75,6 +134,7 @@ function TopProductsSkeleton() {
 
 export function AdminDashboardPage() {
   const { data, isLoading } = useQuery({ queryKey: ['dashboard-summary'], queryFn: dashboardApi.getSummary });
+  const { user } = useAuth();
 
   return (
     <AdminLayout pageTitle="Dashboard">
@@ -83,7 +143,7 @@ export function AdminDashboardPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading || !data ? (
             <>
-              {Array.from({ length: 6 }).map((_, i) => <StatCardSkeleton key={i} />)}
+              {Array.from({ length: 9 }).map((_, i) => <StatCardSkeleton key={i} />)}
             </>
           ) : (
             <>
@@ -93,9 +153,27 @@ export function AdminDashboardPage() {
               <StatCard label="Total Products" value={String(data.total_products)} icon={Package} tone="navy" />
               <StatCard label="Categories" value={String(data.total_categories)} icon={Boxes} tone="navy" />
               <StatCard label="Low Stock Items" value={String(data.low_stock_products)} icon={AlertTriangle} tone="amber" />
+              <StatCard label="Customers" value={String(data.total_customers)} icon={Users} tone="pink" />
+              <StatCard label="Payments to Verify" value={String(data.payments_to_verify)} icon={BadgeCheck} tone={data.payments_to_verify ? 'amber' : 'emerald'} />
+              <StatCard label="Avg. Order Value" value={formatCurrency(data.total_orders ? data.total_revenue / data.total_orders : 0)} icon={TrendingUp} tone="emerald" />
             </>
           )}
         </div>
+
+        {data && data.payments_to_verify > 0 && (
+          <Link
+            to={ROUTES.ADMIN_ORDERS}
+            className="flex items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800 transition-colors hover:bg-amber-100"
+          >
+            <span className="flex items-center gap-3">
+              <AlertTriangle className="h-5 w-5 shrink-0" />
+              <span><strong>{data.payments_to_verify} bank transfer{data.payments_to_verify === 1 ? '' : 's'}</strong> waiting for verification — customers are notified as soon as you confirm.</span>
+            </span>
+            <span className="shrink-0 font-semibold">Review →</span>
+          </Link>
+        )}
+
+        {user?.role === UserRole.ADMIN && <EmailCard />}
 
         {/* Top products */}
         <Card title="Top Selling Products" subtitle="Ranked by total revenue generated">

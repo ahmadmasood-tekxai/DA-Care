@@ -5,7 +5,7 @@
  */
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
-import { API_BASE_URL, AUTH_TOKEN_KEY } from '@/constants';
+import { API_BASE_URL, AUTH_TOKEN_KEY, AUTH_USER_KEY, ROUTES } from '@/constants';
 import type { ApiErrorResponse } from '@/types';
 
 export const apiClient = axios.create({
@@ -37,14 +37,23 @@ export function getApiErrorMessage(error: unknown): string {
   return 'Something went wrong. Please try again.';
 }
 
+/** Signed-in areas and the login page each one falls back to. */
+const SIGNED_IN_AREAS = [
+  { prefix: '/admin', login: ROUTES.ADMIN_LOGIN },
+  { prefix: ROUTES.ACCOUNT, login: ROUTES.LOGIN },
+];
+
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    if (error.response?.status === 401) {
+    // An expired session inside a signed-in area sends the user to the right login.
+    // Public storefront requests never need auth, so they're left alone.
+    const { pathname } = window.location;
+    const area = SIGNED_IN_AREAS.find((a) => pathname.startsWith(a.prefix));
+    if (error.response?.status === 401 && area) {
       localStorage.removeItem(AUTH_TOKEN_KEY);
-      if (!window.location.pathname.startsWith('/login')) {
-        window.location.href = '/login';
-      }
+      localStorage.removeItem(AUTH_USER_KEY);
+      if (pathname !== area.login) window.location.href = `${area.login}?next=${encodeURIComponent(pathname)}`;
     }
     return Promise.reject(error);
   }

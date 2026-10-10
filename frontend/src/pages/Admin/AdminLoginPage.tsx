@@ -1,74 +1,87 @@
 import { useState, type FormEvent } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { Lock, User } from 'lucide-react';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Eye, EyeOff, Loader2, LockKeyhole } from 'lucide-react';
 
 import { getApiErrorMessage } from '@/api/client';
-import { Button } from '@/components/common/Button';
-import { Input } from '@/components/common/Input';
-import { ROUTES, STORE_NAME } from '@/constants';
+import { AuthField, AuthShell } from '@/components/auth/AuthShell';
+import { ROUTES, STORE_NAME, isStaffRole } from '@/constants';
 import { useAuth } from '@/hooks/useAuth';
+import { safeNext } from '@/utils/format';
 
 export function AdminLoginPage() {
-  const { login, isAuthenticated } = useAuth();
+  const { login, logout, isAuthenticated, isStaff } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const next = safeNext(params.get('next'), ROUTES.ADMIN_DASHBOARD);
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (isAuthenticated) return <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />;
+  if (isAuthenticated && isStaff && !isSubmitting) return <Navigate to={next} replace />;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
     try {
-      await login({ username, password });
-      navigate(ROUTES.ADMIN_DASHBOARD, { replace: true });
+      const user = await login({ username: username.trim(), password });
+      if (!isStaffRole(user.role)) {
+        logout();
+        setError("This account doesn't have admin access. Shoppers can sign in from the store.");
+        setIsSubmitting(false);
+        return;
+      }
+      navigate(next.startsWith('/admin') ? next : ROUTES.ADMIN_DASHBOARD, { replace: true });
     } catch (err) {
       setError(getApiErrorMessage(err));
-    } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-navy via-navy-soft to-pink-deep px-4">
-      <div className="w-full max-w-sm rounded-3xl bg-white p-8 shadow-2xl">
-        <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-deep to-navy text-lg font-bold text-white">
-            DB
-          </div>
-          <h1 className="font-display text-xl font-semibold text-navy">{STORE_NAME} Admin</h1>
-          <p className="mt-1 text-sm text-navy-soft">Sign in to manage your store</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Username"
-            name="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            leftIcon={<User className="h-4 w-4" />}
-            required
-            autoFocus
-          />
-          <Input
-            label="Password"
-            name="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            leftIcon={<Lock className="h-4 w-4" />}
-            required
-          />
-          {error && <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600">{error}</p>}
-          <Button type="submit" fullWidth isLoading={isSubmitting} pill={false} className="rounded-xl">
-            Sign In
-          </Button>
-        </form>
-      </div>
-    </div>
+    <AuthShell
+      variant="admin"
+      seoTitle="Admin sign in"
+      title={`${STORE_NAME} Admin`}
+      subtitle="Sign in to manage your store."
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <AuthField
+          id="admin-username"
+          label="Username or email"
+          autoComplete="username"
+          autoFocus
+          required
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <AuthField
+          id="admin-password"
+          label="Password"
+          type={showPassword ? 'text' : 'password'}
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          trailing={
+            <button type="button" onClick={() => setShowPassword((v) => !v)} className="icon-btn h-9 w-9" aria-label={showPassword ? 'Hide password' : 'Show password'}>
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          }
+        />
+        {error && <p role="alert" className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}
+        <button type="submit" disabled={isSubmitting} className="btn btn-primary btn-lg w-full">
+          {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <LockKeyhole className="h-4 w-4" />}
+          {isSubmitting ? 'Signing in…' : 'Sign in securely'}
+        </button>
+      </form>
+      <p className="mt-8 text-center text-sm text-navy-soft">
+        Shopping with us?{' '}
+        <Link to={ROUTES.LOGIN} className="font-semibold text-navy underline-offset-4 hover:underline">Customer sign in</Link>
+      </p>
+    </AuthShell>
   );
 }

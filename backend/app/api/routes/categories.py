@@ -3,7 +3,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File
 from sqlalchemy.orm import Session, joinedload
 
-from app.api.deps import get_current_user
+from app.api.deps import require_staff
 from app.core.database import get_db
 from app.models.category import Category
 from app.models.product import Product
@@ -12,6 +12,7 @@ from app.schemas.category import CategoryCreate, CategoryOut, CategoryUpdate, Ca
 from app.schemas.product import ProductOut
 from app.schemas.common import PaginatedResponse
 from app.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from app.services.product_query import SORT_PATTERN, apply_search, apply_sort
 from app.services.slug_service import generate_unique_slug
 from app.services.cloudinary_service import upload_image_to_cloudinary
 
@@ -67,6 +68,7 @@ def get_category_products(
     slug: str,
     search: Optional[str] = Query(default=None),
     subcategory_id: Optional[int] = Query(default=None),
+    sort: str = Query(default="newest", pattern=SORT_PATTERN),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
     db: Session = Depends(get_db),
@@ -97,13 +99,11 @@ def get_category_products(
             Product.is_active.is_(True)
         )
 
-    if search:
-        like = f"%{search}%"
-        query = query.filter(Product.name.ilike(like))
+    query = apply_search(query, search)
 
     total = query.count()
     items = (
-        query.order_by(Product.created_at.desc())
+        apply_sort(query, sort)
         .offset((page - 1) * page_size)
         .limit(page_size)
         .all()
@@ -113,7 +113,7 @@ def get_category_products(
 
 
 @router.post("", response_model=CategoryOut, status_code=status.HTTP_201_CREATED)
-def create_category(payload: CategoryCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def create_category(payload: CategoryCreate, db: Session = Depends(get_db), current_user: User = Depends(require_staff)):
     # If parent_id is given, validate it
     if payload.parent_id:
         parent = db.query(Category).filter(Category.id == payload.parent_id).first()
@@ -137,7 +137,7 @@ def create_category(payload: CategoryCreate, db: Session = Depends(get_db), curr
 
 @router.patch("/{category_id}", response_model=CategoryOut)
 def update_category(
-    category_id: int, payload: CategoryUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+    category_id: int, payload: CategoryUpdate, db: Session = Depends(get_db), current_user: User = Depends(require_staff)
 ):
     category = db.query(Category).filter(Category.id == category_id).first()
     if not category:
@@ -155,7 +155,7 @@ def update_category(
 
 
 @router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_category(category_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_category(category_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_staff)):
     category = db.query(Category).filter(Category.id == category_id).first()
     if not category:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
@@ -167,7 +167,7 @@ async def upload_category_image(
     category_id: int,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     category = db.query(Category).filter(Category.id == category_id).first()
     if not category:

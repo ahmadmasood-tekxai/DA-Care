@@ -3,14 +3,15 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session, joinedload
 
-from app.api.deps import get_current_user
-from app.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from app.api.deps import require_staff
+from app.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, ProductBadge
 from app.core.database import get_db
 from app.models.category import Category
 from app.models.product import Product, ProductImage
 from app.models.user import User
 from app.schemas.common import PaginatedResponse
 from app.schemas.product import ProductCreate, ProductDetailOut, ProductOut, ProductUpdate
+from app.services.product_query import SORT_PATTERN, apply_search, apply_sort
 from app.services.slug_service import generate_unique_slug
 from app.services.cloudinary_service import delete_image_from_cloudinary, upload_image_to_cloudinary, upload_multiple_images_to_cloudinary
 
@@ -23,6 +24,9 @@ def list_products(
     subcategory_id: Optional[int] = Query(default=None),
     search: Optional[str] = Query(default=None),
     is_featured: Optional[bool] = Query(default=None),
+    on_sale: Optional[bool] = Query(default=None, description="Only products with an old_price above the current price"),
+    badge: Optional[ProductBadge] = Query(default=None),
+    sort: str = Query(default="newest", pattern=SORT_PATTERN),
     include_inactive: bool = Query(default=False, description="Admin-only view of inactive products"),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
@@ -36,15 +40,17 @@ def list_products(
         query = query.join(Category, Product.category_id == Category.id).filter(Category.slug == category_slug)
     if subcategory_id:
         query = query.filter(Product.subcategory_id == subcategory_id)
-    if search:
-        like = f"%{search}%"
-        query = query.filter(Product.name.ilike(like))
+    query = apply_search(query, search)
     if is_featured is not None:
         query = query.filter(Product.is_featured.is_(is_featured))
+    if on_sale:
+        query = query.filter(Product.old_price.is_not(None), Product.old_price > Product.price)
+    if badge:
+        query = query.filter(Product.badge == badge)
 
     total = query.count()
     items = (
-        query.order_by(Product.created_at.desc())
+        apply_sort(query, sort)
         .offset((page - 1) * page_size)
         .limit(page_size)
         .all()
@@ -70,7 +76,7 @@ def get_product(slug: str, db: Session = Depends(get_db)):
 
 
 @router.post("", response_model=ProductOut, status_code=status.HTTP_201_CREATED)
-def create_product(payload: ProductCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def create_product(payload: ProductCreate, db: Session = Depends(get_db), current_user: User = Depends(require_staff)):
     category = db.query(Category).filter(Category.id == payload.category_id).first()
     if not category:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
@@ -100,7 +106,7 @@ def create_product(payload: ProductCreate, db: Session = Depends(get_db), curren
 
 @router.patch("/{product_id}", response_model=ProductOut)
 def update_product(
-    product_id: int, payload: ProductUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+    product_id: int, payload: ProductUpdate, db: Session = Depends(get_db), current_user: User = Depends(require_staff)
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
@@ -131,7 +137,7 @@ async def upload_product_image(
     product_id: int,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     """Uploads/replaces a product's primary image via Cloudinary."""
     product = db.query(Product).filter(Product.id == product_id).first()
@@ -158,7 +164,7 @@ async def upload_product_images(
     product_id: int,
     files: List[UploadFile] = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     """Uploads multiple gallery images to Cloudinary for a product."""
     product = db.query(Product).filter(Product.id == product_id).first()
@@ -181,7 +187,7 @@ def delete_product_image(
     product_id: int,
     image_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     """Deletes a single gallery image from a product (removes from Cloudinary + DB)."""
     image = db.query(ProductImage).filter(
@@ -201,7 +207,7 @@ def delete_product_image(
 
 
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_product(product_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_product(product_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_staff)):
     product = db.query(Product).options(joinedload(Product.images)).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")

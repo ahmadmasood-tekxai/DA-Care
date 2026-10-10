@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 
+import { SEO } from '@/components/common/SEO';
 import { AdminHeader } from '@/components/layout/admin/AdminHeader';
 import { AdminSidebar } from '@/components/layout/admin/AdminSidebar';
 
@@ -9,6 +10,7 @@ export function AdminLayout({ pageTitle, children }: { pageTitle: string; childr
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-cream-2">
+      <SEO title={`${pageTitle} · Admin`} noIndex />
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <AdminHeader pageTitle={pageTitle} onMenuClick={() => setSidebarOpen(true)} />

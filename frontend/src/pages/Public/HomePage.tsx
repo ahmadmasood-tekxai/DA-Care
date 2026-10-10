@@ -1,577 +1,413 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Sparkles as ThreeSparkles, Stars } from '@react-three/drei';
-import * as THREE from 'three';
 import {
-  ArrowLeft,
   ArrowRight,
+  BadgeCheck,
   ChevronDown,
-  Diamond,
+  Flame,
+  Gem,
   Heart,
+  MessageCircle,
   Quote,
+  ShieldCheck,
   Sparkles,
   Star,
+  Tag,
   Truck,
-  Building,
-  ShoppingBag,
-  Baby,
-  ChevronRight,
-  Flame,
-  ShieldCheck,
-  BadgeCheck,
   Users,
-  Zap,
-  Clock
 } from 'lucide-react';
 
-import { categoriesApi } from '@/api/categories';
-import { productsApi } from '@/api/products';
-import { Button } from '@/components/common/Button';
-
-import { ProductCard } from '@/components/common/ProductCard';
-import { DiscountPopup } from '@/components/common/DiscountPopup';
-import { PublicLayout } from '@/components/layout/public/PublicLayout';
-import { ROUTES, resolveIcon } from '@/constants';
+import { Carousel } from '@/components/common/Carousel';
+import { DealsPopup } from '@/components/common/DealsPopup';
+import { HeroBackground } from '@/components/common/HeroBackground';
+import { ProductRail } from '@/components/common/ProductRail';
 import { SEO } from '@/components/common/SEO';
+import { HeroCarousel } from '@/components/home/HeroCarousel';
+import { MarqueeBand } from '@/components/home/MarqueeBand';
+import { MemberCta } from '@/components/home/MemberCta';
+import { PromoBanners } from '@/components/home/PromoBanners';
+import { PublicLayout } from '@/components/layout/public/PublicLayout';
+import { ROUTES, STORE_DESCRIPTION, STORE_NAME, WHATSAPP_NUMBER_1, resolveIcon } from '@/constants';
+import { STOREFRONT_QUERIES, useCategories, useProducts } from '@/hooks/useCatalog';
+import { ProductImage } from '@/components/common/ProductImage';
+import type { Product } from '@/types';
+import { buildWhatsAppLink, getProductImages } from '@/utils/format';
 
 // ---------------------------------------------------------------------------
-// Three.js Animated Background Component
+// Static content
 // ---------------------------------------------------------------------------
-function FloatingIcons() {
-  const group = useRef<THREE.Group>(null);
+const STATS = [
+  { icon: Users, value: '5,000+', label: 'Happy customers' },
+  { icon: Star, value: '4.9 / 5', label: 'Average rating' },
+  { icon: BadgeCheck, value: '100%', label: 'Authentic products' },
+  { icon: Truck, value: '3–5 days', label: 'Nationwide delivery' },
+];
 
-  useFrame((state) => {
-    if (group.current) {
-      group.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.1;
-      group.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.2;
+const WHY_US = [
+  { icon: Gem, title: 'Uncompromising quality', desc: 'Every product is vetted for materials, finish and authenticity before it reaches you.' },
+  { icon: Heart, title: 'Customer first', desc: 'A real team on WhatsApp — from choosing the right piece to tracking your parcel.' },
+  { icon: ShieldCheck, title: 'Pay your way', desc: 'Cash on delivery nationwide, or bank transfer with quick verification.' },
+  { icon: Truck, title: 'Delivered with care', desc: 'Gift-ready packaging, delivered to your door in 3–5 working days.' },
+];
+
+const TESTIMONIALS = [
+  { name: 'Ayesha M.', location: 'Lahore', product: 'Gold Jewellery Set', quote: 'The jewellery set exceeded my expectations. Beautiful packaging and outstanding quality — I will definitely order again!' },
+  { name: 'Sana R.', location: 'Karachi', product: 'Luxury Hand Purse', quote: 'Absolutely in love with the premium feel of my purse and cosmetics. Delivery was super fast too.' },
+  { name: 'Zahra K.', location: 'Islamabad', product: 'Baby Garments', quote: 'The baby garments are so soft and beautifully stitched. My little one loves wearing them!' },
+  { name: 'Fatima N.', location: 'Rawalpindi', product: 'Skin Care Set', quote: 'I was skeptical at first, but the products are genuinely premium. My skin has never looked better.' },
+  { name: 'Hira A.', location: 'Faisalabad', product: 'Luxury Suit', quote: 'Ordered a suit for Eid — the fabric is top-notch and the stitching is perfect. So many compliments!' },
+  { name: 'Maria T.', location: 'Peshawar', product: 'Earrings Set', quote: 'Support guided me through the bank transfer, and my earrings arrived exactly as shown. Gorgeous.' },
+];
+
+const FAQS = [
+  { q: 'How do I pay using bank transfer?', a: 'Choose "Bank Transfer" at checkout and you will see our account details. Transfer the amount, then upload your receipt — we verify it and process your order right away.' },
+  { q: 'Is cash on delivery available?', a: 'Yes. Cash on delivery is available across Pakistan — no advance payment needed, you pay when your order arrives.' },
+  { q: 'How long does delivery take?', a: 'Delivery takes 3–5 working days nationwide. You will hear from us once your order is confirmed and dispatched.' },
+  { q: 'What is your return policy?', a: 'Unused apparel, bags and jewellery can be exchanged within 7 days of delivery. Opened cosmetics and skin care cannot be returned for hygiene reasons.' },
+  { q: 'Can I order on WhatsApp?', a: 'Of course. Every product page has an "Order on WhatsApp" button, or message us directly and our team will place the order for you.' },
+];
+
+// ---------------------------------------------------------------------------
+// Sections
+// ---------------------------------------------------------------------------
+function StatsBar() {
+  return (
+    <section aria-label="Why customers trust us" className="border-b border-navy/[.07] bg-white">
+      <ul className="container-page grid grid-cols-2 divide-navy/[.07] lg:grid-cols-4 lg:divide-x">
+        {STATS.map(({ icon: Icon, value, label }) => (
+          <li key={label} className="flex items-center justify-center gap-3 px-2 py-5 sm:py-6">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cream-2 text-pink-deep">
+              <Icon className="h-[18px] w-[18px]" />
+            </span>
+            <span>
+              <span className="block font-display text-lg font-semibold leading-none text-navy sm:text-xl">{value}</span>
+              <span className="mt-1 block text-[11px] font-medium uppercase tracking-wider text-navy-soft/70">{label}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+interface Tile {
+  key: string;
+  name: string;
+  to: string;
+  image?: string | null;
+  icon: string;
+  meta?: string;
+}
+
+/**
+ * Category tiles. With only a few top-level categories, their subcategories are
+ * shown too so the row stays useful; tiles without an uploaded image borrow a
+ * photo from a product already loaded on the page.
+ */
+function CategoriesSection({ productPool }: { productPool: Product[] }) {
+  const { data: categories, isLoading } = useCategories();
+  if (!isLoading && !categories?.length) return null;
+
+  const photoFor = (match: (p: Product) => boolean) => {
+    const p = productPool.find(match);
+    return p ? getProductImages(p)[0] : null;
+  };
+
+  const tiles: Tile[] = [];
+  const expand = (categories?.length ?? 0) < 4;
+  for (const cat of categories ?? []) {
+    tiles.push({
+      key: `c${cat.id}`,
+      name: expand ? `All ${cat.name}` : cat.name,
+      to: ROUTES.CATEGORY_PAGE(cat.slug),
+      image: cat.image_url || photoFor((p) => p.category_id === cat.id),
+      icon: cat.icon,
+      meta: `${cat.product_count} items`,
+    });
+    if (expand) {
+      for (const sub of cat.subcategories ?? []) {
+        tiles.push({
+          key: `s${sub.id}`,
+          name: sub.name,
+          to: `${ROUTES.CATEGORY_PAGE(cat.slug)}?sub=${sub.id}`,
+          image: sub.image_url || photoFor((p) => p.subcategory_id === sub.id),
+          icon: sub.icon,
+        });
+      }
     }
-  });
+  }
+
+  const slide = 'w-[42%] sm:w-[28%] md:w-[22%] lg:w-[15.8%]';
 
   return (
-    <group ref={group}>
-      <Float speed={2} rotationIntensity={1} floatIntensity={2} position={[-3, 1, -2]}>
-        <mesh>
-          <octahedronGeometry args={[0.5]} />
-          <meshStandardMaterial color="#988686" wireframe opacity={0.3} transparent />
-        </mesh>
-      </Float>
-      <Float speed={1.5} rotationIntensity={1.5} floatIntensity={1.5} position={[3, -1, -3]}>
-        <mesh>
-          <dodecahedronGeometry args={[0.6]} />
-          <meshStandardMaterial color="#D1D0D0" wireframe opacity={0.4} transparent />
-        </mesh>
-      </Float>
-      <Float speed={2.5} rotationIntensity={0.5} floatIntensity={2.5} position={[0, -2, -4]}>
-        <mesh>
-          <icosahedronGeometry args={[0.8]} />
-          <meshStandardMaterial color="#5C4E4E" wireframe opacity={0.2} transparent />
-        </mesh>
-      </Float>
-      <ThreeSparkles count={100} scale={12} size={2} speed={0.4} opacity={0.2} color="#D1D0D0" />
-      <Stars radius={10} depth={50} count={2000} factor={4} saturation={0} fade speed={1} />
-    </group>
+    <section className="section bg-cream">
+      <div className="container-page">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow mb-2">Shop by category</p>
+            <h2 className="heading-lg">Find what you love</h2>
+          </div>
+          <Link to={ROUTES.PRODUCTS} className="group hidden items-center gap-1.5 text-sm font-semibold text-navy hover:text-pink-deep sm:inline-flex">
+            All products <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+
+        {isLoading ? (
+          <div className="flex gap-4 overflow-hidden">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className={`shrink-0 ${slide}`}>
+                <div className="skeleton aspect-[4/5] rounded-2xl" />
+                <div className="skeleton mx-auto mt-3 h-3 w-2/3" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <Carousel ariaLabel="Categories" slideClassName={slide}>
+            {tiles.map((tile) => {
+              const Icon = resolveIcon(tile.icon);
+              return (
+                <Link key={tile.key} to={tile.to} className="group block text-center">
+                  <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-gradient-to-br from-cream-2 to-cream-3 ring-1 ring-navy/[.06] transition-all duration-300 group-hover:shadow-card group-hover:ring-gold/40">
+                    {tile.image ? (
+                      <ProductImage
+                        imageUrl={tile.image}
+                        alt=""
+                        width={400}
+                        sizes="(min-width: 1024px) 16vw, 42vw"
+                        className="transition-transform duration-700 ease-out-expo group-hover:scale-105"
+                      />
+                    ) : (
+                      <span className="flex h-full items-center justify-center text-pink-deep/70">
+                        <Icon className="h-10 w-10" strokeWidth={1.25} />
+                      </span>
+                    )}
+                    <span className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-navy/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                  </div>
+                  <h3 className="mt-3 font-body text-sm font-semibold text-navy group-hover:text-pink-deep">{tile.name}</h3>
+                  {tile.meta && <p className="text-xs text-navy-soft/70">{tile.meta}</p>}
+                </Link>
+              );
+            })}
+          </Carousel>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function WhyUsSection() {
+  return (
+    <section className="relative overflow-hidden bg-navy py-16 text-white sm:py-24">
+      <HeroBackground />
+      <div className="container-page relative grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+        <div>
+          <p className="eyebrow-light mb-3"><ShieldCheck className="h-3.5 w-3.5" /> The {STORE_NAME} standard</p>
+          <h2 className="font-display text-3xl font-semibold leading-tight text-white sm:text-5xl">
+            Premium shopping, <span className="italic text-gold-light">without the guesswork</span>
+          </h2>
+          <p className="mt-5 max-w-md leading-relaxed text-white/60">
+            We started {STORE_NAME} so that quality never has to be a gamble. Every order is checked, packed with care and
+            backed by people you can actually talk to.
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link to={ROUTES.ABOUT} className="btn btn-outline-light">Our story</Link>
+            <a href={buildWhatsAppLink(WHATSAPP_NUMBER_1)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
+              <MessageCircle className="h-4 w-4" /> Talk to us
+            </a>
+          </div>
+        </div>
+        <ul className="grid gap-4 sm:grid-cols-2">
+          {WHY_US.map(({ icon: Icon, title, desc }) => (
+            <li key={title} className="rounded-2xl border border-white/10 bg-white/[.04] p-6 backdrop-blur-sm transition-colors hover:border-gold/30 hover:bg-white/[.06]">
+              <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-gold/25 bg-gold/10 text-gold">
+                <Icon className="h-5 w-5" />
+              </span>
+              <h3 className="font-body text-base font-semibold text-white">{title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-white/55">{desc}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function TestimonialsSection() {
+  return (
+    <section className="section bg-white">
+      <div className="container-page">
+        <div className="mx-auto mb-10 max-w-xl text-center">
+          <p className="eyebrow mb-2">Customer love</p>
+          <h2 className="heading-lg">What our customers say</h2>
+          <p className="mt-3 flex items-center justify-center gap-2 text-sm text-navy-soft">
+            <span className="flex">
+              {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-gold text-gold" />)}
+            </span>
+            Rated 4.9 out of 5 by customers across Pakistan
+          </p>
+        </div>
+        <Carousel ariaLabel="Customer reviews" slideClassName="w-[88%] sm:w-[48%] lg:w-[32%]" autoPlayMs={6000} showDots>
+          {TESTIMONIALS.map((t) => (
+            <figure key={t.name} className="flex h-full flex-col rounded-2xl border border-navy/[.07] bg-cream/60 p-6 sm:p-7">
+              <Quote className="h-8 w-8 text-gold/50" strokeWidth={1.5} />
+              <blockquote className="mt-4 flex-1 font-display text-lg leading-relaxed text-navy">“{t.quote}”</blockquote>
+              <figcaption className="mt-6 flex items-center gap-3 border-t border-navy/[.07] pt-5">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-navy font-display text-sm font-semibold text-gold-light">
+                  {t.name.split(' ').map((n) => n[0]).join('')}
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold text-navy">{t.name}</span>
+                  <span className="block text-xs text-navy-soft/70">{t.location} · {t.product}</span>
+                </span>
+              </figcaption>
+            </figure>
+          ))}
+        </Carousel>
+      </div>
+    </section>
+  );
+}
+
+function FaqSection() {
+  return (
+    <section id="faq" className="section scroll-mt-24 bg-cream">
+      <div className="container-page grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+        <div>
+          <p className="eyebrow mb-2">Need to know</p>
+          <h2 className="heading-lg">Frequently asked questions</h2>
+          <p className="mt-4 max-w-sm text-navy-soft">Can't find your answer? Our team usually replies on WhatsApp within minutes.</p>
+          <a href={buildWhatsAppLink(WHATSAPP_NUMBER_1)} target="_blank" rel="noopener noreferrer" className="btn btn-primary mt-6">
+            <MessageCircle className="h-4 w-4" /> Ask on WhatsApp
+          </a>
+        </div>
+        <div className="divide-y divide-navy/10 border-y border-navy/10">
+          {FAQS.map((faq, i) => (
+            <details key={faq.q} className="group" open={i === 0}>
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-left font-display text-lg font-semibold text-navy transition-colors hover:text-pink-deep [&::-webkit-details-marker]:hidden">
+                {faq.q}
+                <ChevronDown className="h-5 w-5 shrink-0 text-pink-deep transition-transform duration-300 group-open:rotate-180" />
+              </summary>
+              <p className="pb-5 pr-8 text-[15px] leading-relaxed text-navy-soft">{faq.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ClosingCta() {
+  return (
+    <section className="bg-cream pb-16 sm:pb-24">
+      <div className="container-page">
+        <div className="relative overflow-hidden rounded-[2rem] bg-navy px-6 py-12 text-center sm:px-12 sm:py-16">
+          <HeroBackground />
+          <div className="relative mx-auto max-w-2xl">
+            <p className="eyebrow-light justify-center"><Sparkles className="h-3.5 w-3.5" /> New arrivals every week</p>
+            <h2 className="mt-3 font-display text-3xl font-semibold leading-tight text-white sm:text-5xl">
+              Treat yourself to something <span className="italic text-gold-light">beautiful</span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-lg text-white/60">
+              Free delivery, cash on delivery and 7-day exchange on every order across Pakistan.
+            </p>
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+              <Link to={ROUTES.PRODUCTS} className="btn btn-gold btn-lg">
+                Start shopping <ArrowRight className="h-4 w-4" />
+              </Link>
+              <a href={buildWhatsAppLink(WHATSAPP_NUMBER_1)} target="_blank" rel="noopener noreferrer" className="btn btn-outline-light btn-lg">
+                Order via WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Page Data - Optimized for Target Niches
+// Page
 // ---------------------------------------------------------------------------
-const categories_preview = [
-  { icon: Sparkles, title: 'Premium Cosmetics', desc: 'Radiant skincare and makeup formulations for a flawless, natural glow.' },
-  { icon: ShoppingBag, title: 'Luxury Hand Purses', desc: 'Elegant, designer-inspired bags that make a statement wherever you go.' },
-  { icon: Diamond, title: 'Exquisite Jewellery', desc: 'Timeless ornaments crafted to perfection for your most special occasions.' },
-  { icon: Baby, title: 'Baby Garments', desc: 'Soft, breathable, and beautifully designed clothing for your little ones.' },
-];
-
-const whyUs = [
-  { icon: Sparkles, title: 'Uncompromising Quality', desc: 'We source only the finest materials and ingredients — every product is rigorously vetted before reaching you.' },
-  { icon: Heart, title: 'Customer First', desc: 'Your satisfaction is our pride. Our dedicated team is ready to assist you from order to delivery.' },
-  { icon: Building, title: 'Secure Payments', desc: 'Shop with confidence — bank transfer with instant verification and cash on delivery available nationwide.' },
-  { icon: Truck, title: 'Nationwide Delivery', desc: 'Carefully packaged and delivered straight to your doorstep across all major cities of Pakistan.' },
-];
-
-const testimonials = [
-  { name: 'Ayesha M.', role: 'Verified Buyer', location: 'Lahore', product: 'Gold Jewellery Set', rating: 5, quote: 'The jewellery set I ordered exceeded my expectations. The packaging was absolutely beautiful and the quality is outstanding. Will definitely be ordering again!' },
-  { name: 'Sana R.', role: 'Verified Buyer', location: 'Karachi', product: 'Luxury Hand Purse', rating: 5, quote: 'I bought a luxury hand purse and some cosmetics. Absolutely in love with the premium feel! OQIRA is my new favourite store. The delivery was super fast too.' },
-  {
-    name: 'Zahra K.',
-    role: 'Verified Buyer',
-    location: 'Islamabad',
-    product: 'Baby Garments',
-    rating: 5,
-    quote: 'The baby garments are so soft and beautifully stitched. My little one loves wearing them! The quality is excellent, and the delivery was smooth. Highly recommended!'
-  }, { name: 'Fatima N.', role: 'Verified Buyer', location: 'Rawalpindi', product: 'Skin Care Set', rating: 5, quote: 'I was skeptical at first but after receiving my skin care order, I am totally converted. The products are genuinely premium. My skin has never looked better!' },
-  { name: 'Hira A.', role: 'Verified Buyer', location: 'Faisalabad', product: 'Luxury Suit', rating: 5, quote: 'Ordered a luxury suit for Eid and it was absolutely stunning. The fabric quality is top-notch and the stitching is perfect. Got so many compliments!' },
-  { name: 'Maria T.', role: 'Verified Buyer', location: 'Peshawar', product: 'Earrings Set', rating: 5, quote: 'The customer support team is so helpful! They guided me through the bank transfer process and my earrings arrived exactly as shown. Gorgeous quality.' },
-  { name: 'Nadia S.', role: 'Verified Buyer', location: 'Multan', product: 'Cosmetics Bundle', rating: 5, quote: 'OQIRA has the best cosmetics I have ever bought online. The colours are true to the photos and the packaging is so luxurious. Cash on delivery made it so easy!' },
-];
-
-const faqs = [
-  { q: 'How do I pay using Bank Transfer?', a: 'Select "Bank Transfer" at checkout. You will receive our bank details. Transfer the amount and upload your receipt — we verify and process your order immediately.' },
-  { q: 'Is Cash on Delivery available?', a: 'Yes! Cash on Delivery (COD) is available across all major cities of Pakistan. No advance payment needed — pay when your order arrives at your door.' },
-  { q: 'How long does delivery take?', a: 'Standard delivery takes 3–5 working days across Pakistan. You will receive confirmation once your payment is verified and your order is dispatched.' },
-  {
-    q: 'What is your return policy?',
-    a: 'We accept returns on unused apparel, bags, and jewellery within 7 days. Cosmetics and skin care items cannot be returned once opened for hygiene reasons.'
-  },];
-
 export function HomePage() {
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { data: categories } = useCategories();
+  const deals = useProducts(STOREFRONT_QUERIES.deals);
+  const bestsellers = useProducts(STOREFRONT_QUERIES.bestsellers);
+  const newArrivals = useProducts(STOREFRONT_QUERIES.newArrivals);
 
-  const nextTestimonial = useCallback(() => {
-    setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
-  }, []);
-
-  const prevTestimonial = useCallback(() => {
-    setActiveTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-  }, []);
-
-  // Auto-play every 4 seconds
-  useEffect(() => {
-    timerRef.current = setInterval(nextTestimonial, 4000);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [nextTestimonial]);
-
-  const resetTimer = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(nextTestimonial, 4000);
-  }, [nextTestimonial]);
-
-  const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: categoriesApi.list });
-  const { data: featured, isLoading: loadingFeatured } = useQuery({
-    queryKey: ['products', 'featured'],
-    queryFn: () => productsApi.list({ is_featured: true, page_size: 8 }),
-  });
+  const onSale = deals.data?.items.filter((p) => p.old_price && p.old_price > p.price);
+  const productPool = [...(bestsellers.data?.items ?? []), ...(newArrivals.data?.items ?? []), ...(deals.data?.items ?? [])];
 
   return (
     <PublicLayout>
       <SEO
-        title="Online Shopping Pakistan — Cosmetics, Jewellery, Suits & Baby Clothes | OQIRA"
-        description="OQIRA — Pakistan's No.1 premium online store. Shop cosmetics, skin care, fine jewellery, luxury suits & baby garments. Cash on delivery + bank transfer. Nationwide delivery across Pakistan."
-        keywords="OQIRA, online shopping Pakistan, cosmetics Pakistan, skin care online, jewellery Pakistan, baby clothes online, luxury suits Pakistan, kids garments, online store Pakistan, COD Pakistan, cash on delivery, bank transfer Pakistan, makeup online, necklace earrings Pakistan, baby dress Pakistan, premium shopping, best online shop Pakistan"
-        url="https://okira.vercel.app/"
+        title={`${STORE_NAME} — Online Shopping in Pakistan | Cosmetics, Jewellery & Baby Clothes`}
+        description={STORE_DESCRIPTION}
+        keywords="online shopping Pakistan, cosmetics Pakistan, skin care Pakistan, jewellery Pakistan, baby clothes Pakistan, cash on delivery Pakistan"
+        canonical="/"
         schema={{
-          "@context": "https://schema.org",
-          "@type": "BreadcrumbList",
-          "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://okira.vercel.app/" }
-          ]
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: FAQS.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
         }}
       />
-      <DiscountPopup />
+      <DealsPopup />
 
-      {/* HERO SECTION WITH THREE.JS BACKGROUND */}
-      <section className="relative flex min-h-[95vh] items-center justify-center overflow-hidden bg-[#0d0a0a] px-6 pb-16 pt-20 text-center">
-        {/* Three.js Canvas */}
-        <div className="absolute inset-0 z-0 opacity-70">
-          <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
-            <ambientLight intensity={0.5} />
-            <pointLight position={[10, 10, 10]} intensity={1} color="#C9A84C" />
-            <pointLight position={[-10, -5, 5]} intensity={0.3} color="#7a4f4f" />
-            <FloatingIcons />
-          </Canvas>
-        </div>
-        {/* Gold radial glow */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_60%,rgba(201,168,76,0.07),transparent)]" />
+      <HeroCarousel products={bestsellers.data?.items ?? []} />
+      <StatsBar />
+      <CategoriesSection productPool={productPool} />
+      <PromoBanners deals={onSale} bestsellers={bestsellers.data?.items} newArrivals={newArrivals.data?.items} />
 
-        {/* Hero Content */}
-        <div className="relative z-10 mx-auto max-w-5xl">
-          {/* Live scarcity badge */}
-          <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-[#C9A84C]/30 bg-[#C9A84C]/10 px-5 py-2 text-[11px] font-bold uppercase tracking-widest text-[#E8C96D] backdrop-blur-md animate-fade-in-up">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#C9A84C] opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#C9A84C]" />
-            </span>
-            <Flame className="h-3.5 w-3.5" /> 47+ orders today — Limited stock remaining!
-          </div>
-
-          <h1 className="text-4xl leading-[1.1] tracking-tight sm:text-5xl lg:text-7xl font-display font-bold text-white animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            The quality you truly deserve —{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C9A84C] via-[#E8C96D] to-[#C9A84C] animate-[gradient_3s_linear_infinite] bg-[length:200%_auto] italic">premium</span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg font-light text-white/65 animate-fade-in-up leading-relaxed" style={{ animationDelay: '200ms' }}>
-            Pakistan's premier destination for cosmetics, jewellery, luxury purses & baby garments.
-            Uncompromising quality and elegance, delivered directly to your door.
-          </p>
-
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up w-full px-4 sm:px-0" style={{ animationDelay: '300ms' }}>
-            <Link to={ROUTES.PRODUCTS} className="w-full sm:w-auto">
-              <button className="w-full relative overflow-hidden rounded-full bg-gradient-to-r from-[#C9A84C] via-[#E8C96D] to-[#C9A84C] bg-[length:200%_auto] px-10 py-4 text-sm font-extrabold uppercase tracking-widest text-[#0d0a0a] shadow-[0_8px_40px_rgba(201,168,76,0.4)] transition-all hover:shadow-[0_12px_50px_rgba(201,168,76,0.6)] hover:scale-105 animate-[gradient_3s_linear_infinite]">
-                Shop Now
-              </button>
-            </Link>
-            <Link to={ROUTES.PRODUCTS} className="w-full sm:w-auto">
-              <button className="w-full rounded-full border-2 border-white/20 px-8 py-4 text-sm font-bold text-white/80 transition-all hover:border-[#C9A84C]/60 hover:text-[#E8C96D] backdrop-blur-sm">
-                View Collection
-              </button>
-            </Link>
-          </div>
-
-          {/* Social proof mini-strip */}
-          <div className="mt-12 flex flex-wrap justify-center gap-6 border-t border-white/10 pt-8 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-            {[
-              { icon: Users, label: '5,000+ Happy Customers' },
-              { icon: ShieldCheck, label: 'COD Available' },
-              { icon: Truck, label: 'Nationwide Delivery' },
-            ].map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-white/50">
-                <Icon className="h-4 w-4 text-[#C9A84C]" /> {label}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* LIVE STATS STRIP */}
-      <section className="bg-[#0d0a0a] border-y border-[#C9A84C]/15">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid grid-cols-2 divide-x divide-[#C9A84C]/10 lg:grid-cols-4">
-            {[
-              { value: '5,000+', label: 'Orders Delivered', icon: ShoppingBag, color: 'text-[#E8C96D]' },
-              { value: '4.9★', label: 'Average Rating', icon: Star, color: 'text-[#E8C96D]' },
-              { value: '100%', label: 'Authentic Products', icon: BadgeCheck, color: 'text-emerald-400' },
-              { value: '3–5 Day', label: 'Delivery Time', icon: Truck, color: 'text-[#E8C96D]' },
-            ].map(({ value, label, icon: Icon, color }) => (
-              <div key={label} className="flex flex-col items-center gap-1.5 py-6 px-4 text-center">
-                <Icon className={`h-5 w-5 mb-1 ${color}`} />
-                <p className={`font-display text-2xl font-bold ${color}`}>{value}</p>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/35">{label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CATEGORIES PREVIEW - NICHE HIGHLIGHTS */}
-      <section className="bg-cream px-6 py-24">
-        <div className="mx-auto mb-16 max-w-2xl text-center">
-          <span className="section-tag">Our Signatures</span>
-          <h2 className="text-4xl sm:text-5xl font-display font-semibold text-gradient">Curated for excellence</h2>
-          <p className="mt-4 text-navy-soft text-lg">Everything you need to look, feel, and live your absolute best.</p>
-        </div>
-        <div className="mx-auto flex flex-wrap justify-center gap-6 max-w-7xl">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {categories_preview.map(({ icon: Icon, title, desc }) => (
-              <div
-                key={title}
-                className="group w-full rounded-3xl border border-navy/10 bg-white p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-pink-deep/10"
-              >
-                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-cream-2 text-pink-deep transition-colors group-hover:bg-pink-deep group-hover:text-white">
-                  <Icon className="h-8 w-8" />
-                </div>
-
-                <h3 className="mb-3 text-xl font-display font-semibold text-navy">
-                  {title}
-                </h3>
-
-                <p className="text-sm leading-relaxed text-navy-soft">
-                  {desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* DYNAMIC CATEGORIES — GRID */}
-      {categories && categories.length > 0 && (
-        <section className="bg-cream-2 py-20 border-y border-navy/5">
-          <div className="mx-auto mb-12 max-w-2xl text-center px-6">
-            <span className="section-tag">Shop By Category</span>
-            <h2 className="text-4xl sm:text-5xl font-display font-semibold text-gradient">Explore the store</h2>
-            <p className="mt-4 text-navy-soft">Every category, curated with care.</p>
-          </div>
-
-          <div className="mx-auto max-w-6xl px-6">
-            <div className="flex flex-wrap justify-center gap-4">
-              {categories.map((cat) => {
-                const Icon = resolveIcon(cat.icon);
-                return (
-                  <Link
-                    key={cat.id}
-                    to={`${ROUTES.PRODUCTS}?category=${cat.slug}`}
-                    className="group flex w-36 flex-col items-center gap-3 rounded-2xl border border-navy/10 bg-white px-4 py-5 text-center transition-all hover:border-pink-deep hover:shadow-lg hover:-translate-y-1"
-                  >
-                    <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-cream-2 text-pink-deep transition-colors group-hover:bg-pink-deep group-hover:text-white">
-                      {cat.image_url ? (
-                        <img src={cat.image_url} alt={cat.name} className="h-full w-full object-cover" />
-                      ) : (
-                        <Icon className="h-6 w-6" />
-                      )}
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-navy leading-tight">{cat.name}</h4>
-                      <p className="mt-0.5 text-[10px] uppercase tracking-wider text-navy-soft">{cat.product_count} items</p>
-                    </div>
-                    <ChevronRight className="h-3.5 w-3.5 text-pink-deep/0 group-hover:text-pink-deep/70 transition-colors -mt-1" />
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="mt-10 text-center">
-            <Link
-              to={ROUTES.PRODUCTS}
-              className="inline-flex items-center gap-2 rounded-full border border-navy/20 bg-white px-6 py-2.5 text-xs font-bold text-navy transition-all hover:bg-navy hover:text-white hover:border-navy"
-            >
-              View all categories <ChevronRight className="h-3.5 w-3.5" />
-            </Link>
+      {(deals.isLoading || (onSale && onSale.length > 0)) && (
+        <section className="section border-y border-sale/10 bg-gradient-to-b from-[#fff5ef] to-white">
+          <div className="container-page">
+            <ProductRail
+              eyebrow={<span className="text-sale"><Tag className="mr-1 inline h-3.5 w-3.5" /> Limited-time deals</span>}
+              title="Deals you'll love"
+              subtitle="The biggest savings in the store right now — while stocks last."
+              products={onSale}
+              isLoading={deals.isLoading}
+              categories={categories}
+              viewAllTo={`${ROUTES.PRODUCTS}?deals=1`}
+              viewAllLabel="Shop all deals"
+            />
           </div>
         </section>
       )}
 
-      {/* FEATURED PRODUCTS — 2 rows of 4 */}
-      <section className="bg-white px-6 py-24">
-        <div className="mx-auto mb-12 max-w-2xl text-center">
-          <span className="section-tag"><Flame className="h-3 w-3" /> Bestsellers</span>
-          <h2 className="text-4xl sm:text-5xl font-display font-semibold text-gradient">Our Best Sellers</h2>
-          <p className="mt-4 text-navy-soft">These premium pieces are in high demand and frequently sell out. Secure yours today.</p>
-          {/* Scarcity warning */}
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-50 px-4 py-1.5">
-            <Zap className="h-3 w-3 text-orange-500" />
-            <span className="text-[11px] font-bold text-orange-600">Very limited stock available today — don't miss out!</span>
-          </div>
-        </div>
-        {loadingFeatured ? (
-          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="animate-pulse overflow-hidden rounded-2xl border border-navy/10 bg-white">
-                <div className="aspect-[4/5] w-full bg-slate-200" />
-                <div className="p-4 space-y-2">
-                  <div className="h-3 w-1/3 rounded-full bg-slate-200" />
-                  <div className="h-4 w-3/4 rounded-full bg-slate-200" />
-                  <div className="h-3 w-full rounded-full bg-slate-200" />
-                  <div className="mt-3 flex items-center justify-between">
-                    <div className="h-5 w-1/3 rounded-full bg-slate-200" />
-                    <div className="h-7 w-16 rounded-full bg-slate-200" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : featured && featured.items.length > 0 ? (
-          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {featured.items.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                categoryName={categories?.find(c => c.id === product.category_id)?.name}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-navy-soft">New items arriving soon — check back shortly!</p>
-        )}
-        <div className="mt-10 text-center">
-          <Link to={ROUTES.PRODUCTS}>
-            <Button variant="secondary" size="lg">View Entire Collection</Button>
-          </Link>
+      <section className="section bg-white">
+        <div className="container-page">
+          <ProductRail
+            eyebrow={<><Flame className="h-3.5 w-3.5" /> Bestsellers</>}
+            title="Customer favourites"
+            subtitle="Our most-loved pieces, chosen again and again."
+            products={bestsellers.data?.items}
+            isLoading={bestsellers.isLoading}
+            categories={categories}
+            viewAllTo={ROUTES.PRODUCTS}
+          />
         </div>
       </section>
 
-      {/* WHY US */}
-      <section className="relative overflow-hidden bg-[#0d0a0a] px-6 py-24 text-cream">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_100%,rgba(201,168,76,0.06),transparent)]" />
-        <div className="relative z-10">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-[#0d0a0a] bg-gradient-to-r from-[#C9A84C] to-[#E8C96D] px-5 py-2 rounded-full mb-4">
-              <ShieldCheck className="h-3.5 w-3.5" /> The OQIRA Standard
-            </span>
-            <h2 className="text-4xl sm:text-5xl text-white font-display font-bold">Why Choose OQIRA?</h2>
-            <p className="mt-4 text-white/40 text-base">Over 5,000 customers trust OQIRA for their premium lifestyle needs</p>
-          </div>
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {whyUs.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="group rounded-2xl border border-[#C9A84C]/15 bg-white/[.04] p-8 backdrop-blur-sm transition-all duration-300 hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/[.06] hover:-translate-y-1">
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#C9A84C]/20 to-[#C9A84C]/5 text-[#C9A84C] border border-[#C9A84C]/20">
-                  <Icon className="h-6 w-6" />
-                </div>
-                <h4 className="text-base font-bold text-white mb-2">{title}</h4>
-                <p className="text-sm text-white/45 leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
+      <MarqueeBand />
+      <WhyUsSection />
+
+      <section className="section bg-cream">
+        <div className="container-page">
+          <ProductRail
+            eyebrow={<><Sparkles className="h-3.5 w-3.5" /> Just in</>}
+            title="New arrivals"
+            subtitle="Fresh additions to the collection."
+            products={newArrivals.data?.items}
+            isLoading={newArrivals.isLoading}
+            categories={categories}
+            viewAllTo={ROUTES.PRODUCTS}
+          />
         </div>
       </section>
 
-      {/* TESTIMONIALS CAROUSEL */}
-      <section className="relative overflow-hidden bg-navy px-6 py-28">
-        {/* Decorative radial glow */}
-        <div className="pointer-events-none absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_50%_0%,_#D1D0D0_0%,_transparent_70%)]" />
-
-        <div className="relative mx-auto max-w-6xl">
-          {/* Header */}
-          <div className="mb-16 text-center">
-            <span className="section-tag">Reviews</span>
-            <h2 className="text-4xl font-display font-semibold text-white sm:text-5xl mt-3">
-              What our clients say
-            </h2>
-            <p className="mt-4 text-cream/60 text-base font-light">Real reviews from verified customers across Pakistan</p>
-          </div>
-
-          {/* Carousel Track */}
-          <div className="relative">
-            {/* Cards wrapper */}
-            <div className="overflow-hidden">
-              <div
-                className="flex transition-transform duration-700 ease-in-out"
-                style={{ transform: `translateX(-${activeTestimonial * 100}%)` }}
-              >
-                {testimonials.map((t) => (
-                  <div key={t.name} className="w-full shrink-0 px-4 sm:px-12 lg:px-24">
-                    <div className="relative rounded-[2rem] border border-white/10 bg-white/5 backdrop-blur-md p-10 sm:p-14">
-                      {/* Big quote icon */}
-                      <Quote className="absolute right-10 top-10 h-16 w-16 text-white/5 rotate-180" strokeWidth={1} />
-
-                      {/* Stars */}
-                      <div className="mb-6 flex gap-1">
-                        {Array.from({ length: t.rating }).map((_, i) => (
-                          <Star key={i} className="h-5 w-5 fill-gold text-gold drop-shadow-sm" />
-                        ))}
-                      </div>
-
-                      {/* Product pill */}
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-gold mb-5">
-                        {t.product}
-                      </span>
-
-                      {/* Quote text */}
-                      <p className="text-xl sm:text-2xl font-display font-medium leading-relaxed text-white italic">
-                        &ldquo;{t.quote}&rdquo;
-                      </p>
-
-                      {/* Author */}
-                      <div className="mt-10 flex items-center gap-4">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-pink-deep to-navy border border-white/20 font-display text-lg font-bold text-white shadow-lg">
-                          {t.name.split(' ').map((n) => n[0]).join('')}
-                        </div>
-                        <div>
-                          <p className="font-bold text-white text-base">{t.name}</p>
-                          <p className="text-xs text-gold/80 uppercase tracking-widest mt-0.5">{t.role} · {t.location}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Prev / Next arrows */}
-            <button
-              onClick={() => { prevTestimonial(); resetTimer(); }}
-              className="absolute -left-2 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white backdrop-blur-md transition-all hover:bg-white hover:text-navy hover:scale-110 sm:-left-6"
-              aria-label="Previous review"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => { nextTestimonial(); resetTimer(); }}
-              className="absolute -right-2 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white backdrop-blur-md transition-all hover:bg-white hover:text-navy hover:scale-110 sm:-right-6"
-              aria-label="Next review"
-            >
-              <ArrowRight className="h-5 w-5" />
-            </button>
-          </div>
-
-          {/* Dot indicators */}
-          <div className="mt-10 flex items-center justify-center gap-2">
-            {testimonials.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => { setActiveTestimonial(idx); resetTimer(); }}
-                className={`rounded-full transition-all duration-300 ${idx === activeTestimonial
-                  ? 'w-8 h-2.5 bg-gold'
-                  : 'w-2.5 h-2.5 bg-white/25 hover:bg-white/50'
-                  }`}
-                aria-label={`Go to review ${idx + 1}`}
-              />
-            ))}
-          </div>
-
-          {/* Counter */}
-          <p className="mt-4 text-center text-xs font-bold tracking-widest text-white/30 uppercase">
-            {activeTestimonial + 1} / {testimonials.length}
-          </p>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="bg-white px-6 py-24">
-        <div className="mx-auto mb-16 max-w-2xl text-center">
-          <span className="section-tag">Information</span>
-          <h2 className="text-4xl sm:text-5xl">Frequently asked questions</h2>
-        </div>
-        <div className="mx-auto max-w-3xl divide-y divide-navy/10 border-y border-navy/10">
-          {faqs.map((faq, i) => (
-            <div key={faq.q}>
-              <button
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="flex w-full items-center justify-between gap-4 py-6 text-left font-display text-xl font-semibold text-navy hover:text-pink-deep transition-colors"
-              >
-                {faq.q}
-                <ChevronDown className={`h-6 w-6 shrink-0 text-pink-deep transition-transform duration-300 ${openFaq === i ? 'rotate-180' : ''}`} />
-              </button>
-              <div className={`overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-40 pb-6 opacity-100' : 'max-h-0 opacity-0'}`}>
-                <p className="text-base text-navy-soft leading-relaxed">{faq.a}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* FINAL CTA — URGENCY DRIVEN */}
-      <section className="relative overflow-hidden bg-[#0d0a0a] px-6 py-24 text-center">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_50%,rgba(201,168,76,0.08),transparent)]" />
-        {/* Gold border top */}
-        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#C9A84C] via-[#E8C96D] to-[#C9A84C]" />
-
-        <div className="relative z-10 mx-auto max-w-3xl">
-          {/* Urgency badge */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-400/10 px-5 py-2">
-            <Clock className="h-3.5 w-3.5 text-orange-400" />
-            <span className="text-[11px] font-bold uppercase tracking-widest text-orange-400">Limited Time — Special Offer Available Today</span>
-          </div>
-
-          <h2 className="font-display text-3xl font-bold text-white sm:text-5xl lg:text-6xl mb-6 leading-tight">
-            Order Today —
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C9A84C] via-[#E8C96D] to-[#C9A84C] animate-[gradient_3s_linear_infinite] bg-[length:200%_auto]">Experience Luxury Tomorrow!</span>
-          </h2>
-          <p className="mx-auto max-w-xl text-lg text-white/50 mb-3 font-light leading-relaxed">
-            Premium cosmetics, jewellery, purses & baby garments.
-            Cash on delivery available across Pakistan.
-          </p>
-          <p className="mb-10 text-sm text-white/30 flex items-center justify-center gap-1.5">
-            <Zap className="h-4 w-4 text-[#C9A84C]" /> These pieces move fast. Secure your order today before they're gone.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full px-2 sm:px-0">
-            <Link to={ROUTES.PRODUCTS} className="w-full sm:w-auto">
-              <button className="w-full flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#C9A84C] via-[#E8C96D] to-[#C9A84C] bg-[length:200%_auto] px-12 py-5 text-sm font-extrabold uppercase tracking-widest text-[#0d0a0a] shadow-[0_8px_40px_rgba(201,168,76,0.4)] transition-all hover:shadow-[0_16px_60px_rgba(201,168,76,0.6)] hover:scale-105 animate-[gradient_3s_linear_infinite]">
-                Shop Now <ShoppingBag className="h-4 w-4" />
-              </button>
-            </Link>
-            <a href="https://wa.me/923247508462" target="_blank" rel="noreferrer" className="w-full sm:w-auto">
-              <button className="w-full rounded-full border-2 border-white/20 px-10 py-5 text-sm font-bold text-white/70 transition-all hover:border-[#C9A84C]/60 hover:text-[#E8C96D] backdrop-blur-sm">
-                Order via WhatsApp
-              </button>
-            </a>
-          </div>
-
-          {/* Final trust strip */}
-          <div className="mt-10 flex flex-wrap justify-center gap-6 text-[10px] text-white/25">
-            <span className="flex items-center gap-1"><ShieldCheck className="h-3 w-3 text-emerald-400" /> Secure COD Payment</span>
-            <span className="flex items-center gap-1"><BadgeCheck className="h-3 w-3 text-[#C9A84C]" /> 100% Original Products</span>
-            <span className="flex items-center gap-1"><Users className="h-3 w-3 text-[#C9A84C]" /> 5,000+ Satisfied Customers</span>
-            <span className="flex items-center gap-1"><Truck className="h-3 w-3 text-[#C9A84C]" /> Free Returns in 7 Days</span>
-          </div>
-        </div>
-      </section>
+      <TestimonialsSection />
+      <MemberCta />
+      <FaqSection />
+      <ClosingCta />
     </PublicLayout>
   );
 }

@@ -5,20 +5,6 @@ import cloudinary.api
 from fastapi import UploadFile, HTTPException, status
 from app.core.config import settings
 
-# Debug prints to verify config loading (masked for security)
-def mask_cred(val: str) -> str:
-    if not val:
-        return "EMPTY"
-    if len(val) <= 4:
-        return val
-    return f"{val[:2]}...{val[-2:]} (len: {len(val)})"
-
-print("--- CLOUDINARY CONFIG DEBUG ---")
-print(f"CLOUD_NAME: {mask_cred(settings.CLOUDINARY_CLOUD_NAME)}")
-print(f"API_KEY: {mask_cred(settings.CLOUDINARY_API_KEY)}")
-print(f"API_SECRET: {mask_cred(settings.CLOUDINARY_API_SECRET)}")
-print("-------------------------------")
-
 # Configure Cloudinary
 cloudinary.config(
     cloud_name=settings.CLOUDINARY_CLOUD_NAME,
