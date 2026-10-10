@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.constants import OrderStatus, PaymentMethod, PaymentStatus
 from app.schemas.common import ORMBase
@@ -16,10 +16,21 @@ class OrderItemCreate(BaseModel):
 class OrderCreate(BaseModel):
     customer_name: str = Field(min_length=1, max_length=128)
     customer_phone: str = Field(default="", max_length=32)
+    # Optional for guests; when present the customer gets a confirmation and
+    # an email at every status change.
+    customer_email: Optional[EmailStr] = None
     customer_address: Optional[str] = Field(default="", max_length=255)
     note: Optional[str] = Field(default="", max_length=255)
     items: List[OrderItemCreate] = Field(min_length=1)
     payment_method: PaymentMethod = PaymentMethod.CASH_ON_DELIVERY
+
+    @field_validator("customer_email", mode="before")
+    @classmethod
+    def blank_email_is_none(cls, v):
+        if isinstance(v, str):
+            v = v.strip().lower()
+            return v or None
+        return v
 
 
 class OrderStatusUpdate(BaseModel):
@@ -53,6 +64,7 @@ class OrderOut(ORMBase):
     id: int
     customer_name: str
     customer_phone: str
+    customer_email: Optional[str] = None
     customer_address: Optional[str]
     status: OrderStatus
     note: Optional[str]
@@ -67,6 +79,7 @@ class OrderOut(ORMBase):
     updated_at: datetime
     items: List[OrderItemOut] = []
     total_amount: Decimal
+    created_by_id: Optional[int] = None
 
 
 class BankDetailsOut(BaseModel):

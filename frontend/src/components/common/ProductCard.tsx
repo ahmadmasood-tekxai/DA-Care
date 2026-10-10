@@ -1,165 +1,153 @@
+import { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Link2, Check, Tag, Star } from 'lucide-react';
-import { useState } from 'react';
+import { Check, Plus } from 'lucide-react';
+import clsx from 'clsx';
 
 import { ProductImage } from '@/components/common/ProductImage';
+import { WishlistButton } from '@/components/common/WishlistButton';
 import { PRODUCT_BADGE_LABELS, ROUTES } from '@/constants';
 import { ProductBadge, type Product } from '@/types';
 import { useCart } from '@/hooks/useCart';
-import { formatCurrency } from '@/utils/format';
+import { useToast } from '@/hooks/useToast';
+import { formatCurrency, getDiscountPercent, getProductImages } from '@/utils/format';
 
 interface ProductCardProps {
   product: Product;
   categoryName?: string;
+  /** Load the image eagerly (first row above the fold). */
+  priority?: boolean;
 }
 
 const BADGE_STYLES: Partial<Record<ProductBadge, string>> = {
-  [ProductBadge.BESTSELLER]:
-    'bg-gradient-to-r from-[#C9A84C] to-[#a07830] text-[#0d0a0a]',
-  [ProductBadge.NEW]:
-    'bg-gradient-to-r from-[#7a4f4f] to-[#5C3838] text-white',
-  [ProductBadge.FAVOURITE]:
-    'bg-gradient-to-r from-rose-500 to-rose-700 text-white',
-  [ProductBadge.STUDIO_PICK]:
-    'bg-gradient-to-r from-[#0d0a0a] to-[#1a0f0f] text-[#C9A84C]',
+  [ProductBadge.BESTSELLER]: 'bg-gold text-navy',
+  [ProductBadge.NEW]: 'bg-navy text-white',
+  [ProductBadge.FAVOURITE]: 'bg-pink-deep text-white',
+  [ProductBadge.STUDIO_PICK]: 'bg-white text-navy ring-1 ring-navy/10',
 };
 
-export function ProductCard({ product, categoryName }: ProductCardProps) {
+const LOW_STOCK_THRESHOLD = 5;
+
+function ProductCardBase({ product, categoryName, priority }: ProductCardProps) {
   const { addItem } = useCart();
-  const [copied, setCopied] = useState(false);
-  const [addedAnim, setAddedAnim] = useState(false);
+  const { toast } = useToast();
+  const [justAdded, setJustAdded] = useState(false);
 
-  const handleCopyLink = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    navigator.clipboard.writeText(`${window.location.origin}${ROUTES.PRODUCT_DETAIL(product.slug)}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const href = ROUTES.PRODUCT_DETAIL(product.slug);
+  const [primaryImage, hoverImage] = getProductImages(product);
+  const discount = getDiscountPercent(product);
+  const soldOut = product.stock <= 0;
+  const lowStock = !soldOut && product.stock <= LOW_STOCK_THRESHOLD;
 
-  const handleAdd = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleAdd = () => {
     addItem(product);
-    setAddedAnim(true);
-    setTimeout(() => setAddedAnim(false), 1200);
+    setJustAdded(true);
+    window.setTimeout(() => setJustAdded(false), 1400);
+    toast({ title: 'Added to your cart', description: product.name, action: { label: 'View cart', to: ROUTES.CART } });
   };
-
-  const displayImageUrl =
-    product.image_url || (product.images && product.images.length > 0 ? product.images[0].url : '');
-
-  const discountPct =
-    product.old_price && product.old_price > product.price
-      ? Math.round(((product.old_price - product.price) / product.old_price) * 100)
-      : 0;
 
   return (
-    <div className="group relative overflow-hidden rounded-3xl border border-navy/8 bg-white shadow-sm shadow-navy/5 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(13,10,10,0.12)] hover:border-[#C9A84C]/30">
-      {/* Shimmer sweep on hover */}
-      <div className="pointer-events-none absolute inset-0 z-10 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-[100%]" />
-
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-navy/[.07] bg-white transition-all duration-300 ease-out-expo hover:-translate-y-1 hover:border-gold/30 hover:shadow-card">
       {/* Image */}
-      <Link
-        to={ROUTES.PRODUCT_DETAIL(product.slug)}
-        className="relative block aspect-[4/5] overflow-hidden bg-gradient-to-br from-[#fdf8f5] to-[#f5ede8]"
-      >
-        {/* Out of Stock */}
-        {product.stock <= 0 && (
-          <span className="absolute left-3 top-3 z-20 rounded-full bg-[#0d0a0a]/85 px-3 py-1 text-[9px] font-extrabold uppercase tracking-widest text-white backdrop-blur-sm">
-            Sold Out
-          </span>
-        )}
-
-        {/* Badge */}
-        {product.stock > 0 && product.badge !== ProductBadge.NONE && (
-          <span
-            className={`absolute left-3 top-3 z-20 rounded-full px-3 py-1 text-[9px] font-extrabold uppercase tracking-widest shadow-sm ${
-              BADGE_STYLES[product.badge] ?? 'bg-[#7a4f4f] text-white'
-            }`}
-          >
-            {PRODUCT_BADGE_LABELS[product.badge]}
-          </span>
-        )}
-
-        {/* Discount pill */}
-        {discountPct > 0 && (
-          <span className="absolute right-3 top-3 z-20 rounded-full bg-rose-500 px-2.5 py-1 text-[9px] font-extrabold text-white shadow-sm">
-            -{discountPct}%
-          </span>
-        )}
-
+      <Link to={href} className="relative block aspect-[4/5] overflow-hidden bg-cream-2" aria-label={product.name} tabIndex={-1}>
         <ProductImage
-          imageUrl={displayImageUrl}
+          imageUrl={primaryImage}
           imageColor={product.image_color}
           alt={product.name}
-          className={`transition-all duration-700 ease-out group-hover:scale-108 ${
-            product.stock <= 0 ? 'opacity-50 grayscale' : ''
-          }`}
+          priority={priority}
+          className={clsx(
+            'transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]',
+            soldOut && 'opacity-60 grayscale'
+          )}
         />
-
-        {/* Copy link button */}
-        <button
-          onClick={handleCopyLink}
-          className="absolute bottom-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#0d0a0a] shadow-md backdrop-blur-sm transition-all hover:bg-[#C9A84C] hover:text-[#0d0a0a] hover:scale-110 opacity-0 group-hover:opacity-100"
-          title="Copy Link"
-        >
-          {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Link2 className="h-3.5 w-3.5" />}
-        </button>
-      </Link>
-
-      {/* Info */}
-      <div className="p-4">
-        {categoryName && (
-          <div className="mb-2 flex items-center gap-1.5">
-            <Tag className="h-2.5 w-2.5 text-[#C9A84C]" />
-            <span className="text-[9px] font-extrabold uppercase tracking-[0.2em] text-[#C9A84C]">
-              {categoryName}
-            </span>
+        {hoverImage && !soldOut && (
+          <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 max-md:hidden">
+            <ProductImage imageUrl={hoverImage} imageColor={product.image_color} alt="" />
           </div>
         )}
 
-        <Link to={ROUTES.PRODUCT_DETAIL(product.slug)}>
-          <h3 className="font-display text-[15px] font-semibold leading-snug text-[#0d0a0a] line-clamp-1 hover:text-[#7a4f4f] transition-colors">
-            {product.name}
-          </h3>
-        </Link>
-
-        <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-[#3a2e2e]/65">
-          {product.short_description}
-        </p>
-
-        {/* Price + CTA */}
-        <div className="mt-3.5 flex items-center justify-between gap-2">
-          <div className="flex flex-col">
-            <span className="font-display text-base font-bold text-[#0d0a0a]">
-              {formatCurrency(product.price)}
+        {/* Badges */}
+        <div className="absolute left-2.5 top-2.5 flex flex-col items-start gap-1.5 sm:left-3 sm:top-3">
+          {soldOut ? (
+            <span className="rounded-full bg-navy/85 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-white backdrop-blur-sm sm:text-[10px]">
+              Sold out
             </span>
-            {product.old_price && (
-              <span className="text-[10px] text-slate-400 line-through leading-tight">
-                {formatCurrency(product.old_price)}
+          ) : (
+            product.badge !== ProductBadge.NONE && (
+              <span
+                className={clsx(
+                  'rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest shadow-sm sm:text-[10px]',
+                  BADGE_STYLES[product.badge] ?? 'bg-navy text-white'
+                )}
+              >
+                {PRODUCT_BADGE_LABELS[product.badge]}
               </span>
+            )
+          )}
+          {discount > 0 && !soldOut && (
+            <span className="rounded-full bg-sale px-2 py-1 text-[10px] font-bold text-white shadow-sm sm:text-[11px]">
+              -{discount}%
+            </span>
+          )}
+        </div>
+      </Link>
+      <WishlistButton product={product} className="absolute right-2.5 top-2.5 sm:right-3 sm:top-3" />
+
+      {/* Info */}
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
+        {categoryName && (
+          <p className="mb-1 truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-gold-dark">{categoryName}</p>
+        )}
+        <h3 className="font-body text-[13px] font-semibold leading-snug text-navy sm:text-[15px]">
+          <Link to={href} className="line-clamp-2 transition-colors after:absolute after:inset-0 hover:text-pink-deep">
+            {product.name}
+          </Link>
+        </h3>
+        {lowStock && (
+          <p className="mt-1.5 text-[11px] font-semibold text-sale">Only {product.stock} left</p>
+        )}
+
+        <div className="mt-auto flex items-end justify-between gap-2 pt-3">
+          <div className="min-w-0">
+            <p className="text-[15px] font-bold leading-none text-navy sm:text-base">{formatCurrency(product.price)}</p>
+            {discount > 0 && (
+              <p className="mt-1 text-[11px] leading-none text-navy-soft/60 line-through sm:text-xs">
+                {formatCurrency(product.old_price!)}
+              </p>
             )}
           </div>
-
           <button
+            type="button"
             onClick={handleAdd}
-            disabled={product.stock <= 0}
-            className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wide shadow-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40 ${
-              addedAnim
-                ? 'bg-emerald-500 text-white scale-95'
-                : 'bg-gradient-to-r from-[#0d0a0a] to-[#1a0f0f] text-white hover:from-[#C9A84C] hover:to-[#a07830] hover:text-[#0d0a0a] hover:scale-105 hover:shadow-[0_4px_16px_rgba(201,168,76,0.35)]'
-            }`}
-          >
-            {addedAnim ? (
-              <><Star className="h-3 w-3 fill-white" /> Added!</>
-            ) : (
-              <><ShoppingBag className="h-3 w-3" /> {product.stock <= 0 ? 'Sold Out' : 'Add'}</>
+            disabled={soldOut}
+            aria-label={soldOut ? `${product.name} is sold out` : `Add ${product.name} to cart`}
+            className={clsx(
+              'relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-30 sm:h-11 sm:w-11',
+              justAdded ? 'bg-emerald-500 text-white' : 'bg-navy text-white hover:bg-gold hover:text-navy active:scale-90'
             )}
+          >
+            {justAdded ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
           </button>
         </div>
       </div>
+    </article>
+  );
+}
 
-      {/* Gold bottom accent */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-[#C9A84C]/0 to-transparent transition-all duration-500 group-hover:via-[#C9A84C]/40" />
+export const ProductCard = memo(ProductCardBase);
+
+/** Matching placeholder while products load — same footprint, no layout shift. */
+export function ProductCardSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-navy/[.07] bg-white">
+      <div className="skeleton aspect-[4/5] rounded-none" />
+      <div className="space-y-2 p-3 sm:p-4">
+        <div className="skeleton h-2.5 w-1/3" />
+        <div className="skeleton h-3.5 w-4/5" />
+        <div className="flex items-end justify-between pt-3">
+          <div className="skeleton h-4 w-1/3" />
+          <div className="skeleton h-10 w-10 rounded-full" />
+        </div>
+      </div>
     </div>
   );
 }

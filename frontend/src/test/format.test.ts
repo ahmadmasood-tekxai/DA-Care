@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import { ProductBadge } from '@/types';
-import { buildWhatsAppOrderLink, formatCurrency, resolveImageUrl } from '@/utils/format';
+import {
+  buildWhatsAppOrderLink,
+  formatCurrency,
+  getDiscountPercent,
+  getProductImages,
+  optimizeImageUrl,
+  resolveImageUrl,
+} from '@/utils/format';
 
 const mockProduct = {
   id: 1,
@@ -56,5 +63,44 @@ describe('buildWhatsAppOrderLink', () => {
     expect(decoded).toContain('The Little Prince Set x2');
     expect(decoded).toContain('Sara Ahmed');
     expect(decoded).toContain('4,998'); // 2499 * 2
+  });
+});
+
+describe('optimizeImageUrl', () => {
+  const cloudinary = 'https://res.cloudinary.com/demo/image/upload/v1/products/a.jpg';
+
+  it('adds auto format/quality and width for Cloudinary URLs', () => {
+    expect(optimizeImageUrl(cloudinary, 640)).toBe(
+      'https://res.cloudinary.com/demo/image/upload/f_auto,q_auto,w_640,c_limit/v1/products/a.jpg'
+    );
+  });
+
+  it('leaves other hosts and empty values untouched', () => {
+    expect(optimizeImageUrl('https://cdn.example.com/x.jpg', 640)).toBe('https://cdn.example.com/x.jpg');
+    expect(optimizeImageUrl(null, 640)).toBeNull();
+  });
+});
+
+describe('getDiscountPercent', () => {
+  it('rounds the saving against old_price', () => {
+    expect(getDiscountPercent({ price: 2499, old_price: 2999 })).toBe(17);
+  });
+
+  it('is 0 when not on sale', () => {
+    expect(getDiscountPercent({ price: 2499, old_price: null })).toBe(0);
+    expect(getDiscountPercent({ price: 2499, old_price: 1999 })).toBe(0);
+  });
+});
+
+describe('getProductImages', () => {
+  it('puts the primary image first and removes duplicates', () => {
+    const images = getProductImages({
+      image_url: 'a.jpg',
+      images: [
+        { id: 1, product_id: 1, url: 'a.jpg', public_id: 'a', created_at: '' },
+        { id: 2, product_id: 1, url: 'b.jpg', public_id: 'b', created_at: '' },
+      ],
+    });
+    expect(images).toEqual(['a.jpg', 'b.jpg']);
   });
 });

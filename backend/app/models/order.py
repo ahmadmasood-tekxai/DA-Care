@@ -18,10 +18,13 @@ class Order(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     customer_name: Mapped[str] = mapped_column(String(128), nullable=False)
     customer_phone: Mapped[str] = mapped_column(String(32), nullable=False, default="")
+    # Where order confirmations and status follow-ups are sent. Optional for guests.
+    customer_email: Mapped[str] = mapped_column(String(128), nullable=True, default=None, index=True)
     customer_address: Mapped[str] = mapped_column(String(255), nullable=True, default="")
     status: Mapped[OrderStatus] = mapped_column(Enum(OrderStatus), default=OrderStatus.PENDING, nullable=False)
     note: Mapped[str] = mapped_column(String(255), nullable=True, default="")
-    created_by_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+    # The signed-in customer who placed the order (null for guest checkout).
+    created_by_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
 
     # Payment fields
     payment_method: Mapped[PaymentMethod] = mapped_column(

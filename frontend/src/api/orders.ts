@@ -1,13 +1,23 @@
 import { apiClient } from '@/api/client';
-import type { Order, OrderCreateInput, OrderStatus, PaymentStatus, BankDetailsOut } from '@/types';
+import type { BankDetailsOut, MessageResponse, Order, OrderCreateInput, OrderStatus, PaymentStatus } from '@/types';
 
 export const ordersApi = {
   create: async (payload: OrderCreateInput): Promise<Order> => {
     const { data } = await apiClient.post<Order>('/orders', payload);
     return data;
   },
-  list: async (status?: OrderStatus, payment_status?: PaymentStatus): Promise<Order[]> => {
-    const { data } = await apiClient.get<Order[]>('/orders', { params: { status, payment_status } });
+  list: async (status?: OrderStatus, payment_status?: PaymentStatus, user_id?: number): Promise<Order[]> => {
+    const { data } = await apiClient.get<Order[]>('/orders', { params: { status, payment_status, user_id } });
+    return data;
+  },
+  /** The signed-in customer's own orders. */
+  mine: async (): Promise<Order[]> => {
+    const { data } = await apiClient.get<Order[]>('/orders/mine');
+    return data;
+  },
+  /** Admin: email the customer an update for the order's current state. */
+  sendFollowUp: async (id: number): Promise<MessageResponse> => {
+    const { data } = await apiClient.post<MessageResponse>(`/orders/${id}/follow-up`);
     return data;
   },
   updateStatus: async (id: number, status: OrderStatus): Promise<Order> => {

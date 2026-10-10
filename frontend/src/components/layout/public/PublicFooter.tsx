@@ -1,168 +1,136 @@
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, Phone, Users, ShoppingBag } from 'lucide-react';
+import { Building2, Mail, MessageCircle, Phone, RefreshCcw, ShieldCheck, Truck, Wallet } from 'lucide-react';
 
-import { ROUTES, STORE_NAME, STORE_TAGLINE, WHATSAPP_NUMBER_1, WHATSAPP_NUMBER_2 } from '@/constants';
 import { HeroBackground } from '@/components/common/HeroBackground';
+import { Logo } from '@/components/layout/public/Logo';
+import { ROUTES, STORE_NAME, STORE_PROMISES, SUPPORT_EMAIL, WHATSAPP_NUMBER_1, WHATSAPP_NUMBER_2 } from '@/constants';
+import { useCategories } from '@/hooks/useCatalog';
+import { buildWhatsAppLink } from '@/utils/format';
 
-const founders = [
-  { name: 'Daud Ansari', role: 'Co-Founder & CEO', initials: 'DA' },
-  { name: 'Ahmad Rajpoot', role: 'Co-Founder & COO', initials: 'AR' },
+const PROMISES = [
+  { icon: Truck, title: 'Free delivery', text: STORE_PROMISES.delivery },
+  { icon: Wallet, title: 'Cash on delivery', text: 'Pay when it arrives' },
+  { icon: RefreshCcw, title: 'Easy exchange', text: 'Within 7 days of delivery' },
+  { icon: ShieldCheck, title: 'Secure checkout', text: 'COD or bank transfer' },
 ];
 
-/** Inline SVG logo for footer (white version) */
-function OqiraLogoMark() {
-  return (
-    <svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-      <defs>
-        <linearGradient id="ftr-bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#2a1818" />
-          <stop offset="100%" stopColor="#0d0a0a" />
-        </linearGradient>
-        <linearGradient id="ftr-gold" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="transparent" />
-          <stop offset="50%" stopColor="#C9A84C" />
-          <stop offset="100%" stopColor="transparent" />
-        </linearGradient>
-        <linearGradient id="ftr-border" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#C9A84C" stopOpacity="0.5" />
-          <stop offset="100%" stopColor="#7a4f4f" stopOpacity="0.2" />
-        </linearGradient>
-      </defs>
-      <rect width="46" height="46" rx="12" fill="url(#ftr-bg)" />
-      <rect x="0.5" y="0.5" width="45" height="45" rx="11.5" stroke="url(#ftr-border)" strokeWidth="1" />
-      <rect x="9" y="9" width="28" height="1" rx="0.5" fill="url(#ftr-gold)" />
-      <text x="23" y="28.5" fontFamily="Georgia,'Times New Roman',serif" fontSize="14" fontWeight="700" fill="#E8C96D" textAnchor="middle" letterSpacing="2">OQ</text>
-      <rect x="9" y="36" width="28" height="1" rx="0.5" fill="url(#ftr-gold)" />
-    </svg>
-  );
+const FOUNDERS = [
+  { name: 'Daud Ansari', role: 'Co-Founder & CEO' },
+  { name: 'Ahmad Rajpoot', role: 'Co-Founder & COO' },
+];
+
+const formatPhone = (n: string) => `+${n.slice(0, 2)} ${n.slice(2, 5)} ${n.slice(5)}`;
+
+function FooterHeading({ children }: { children: string }) {
+  return <h2 className="mb-4 font-body text-xs font-bold uppercase tracking-[0.2em] text-white/40">{children}</h2>;
 }
 
+const linkClass = 'text-sm text-white/65 transition-colors hover:text-gold-light';
+
 export function PublicFooter() {
+  const { data: categories } = useCategories();
+
   return (
-    <footer className="relative overflow-hidden bg-[#0d0a0a] px-6 py-20 text-white/65">
-      <HeroBackground />
+    <footer className="relative overflow-hidden bg-navy text-white">
+      <HeroBackground className="opacity-60" />
 
-      {/* Subtle radial highlight */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_100%,rgba(201,168,76,0.06),transparent)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_40%_at_50%_0%,rgba(122,79,79,0.08),transparent)]" />
+      {/* Promise strip */}
+      <div className="relative border-b border-white/10">
+        <ul className="container-page grid grid-cols-2 gap-x-4 gap-y-6 py-8 lg:grid-cols-4">
+          {PROMISES.map(({ icon: Icon, title, text }) => (
+            <li key={title} className="flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gold/30 bg-gold/10 text-gold">
+                <Icon className="h-[18px] w-[18px]" />
+              </span>
+              <span>
+                <span className="block text-sm font-semibold text-white">{title}</span>
+                <span className="block text-xs text-white/50">{text}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-      {/* Top gold accent */}
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#C9A84C]/50 to-transparent" />
-
-      <div className="relative z-10 mx-auto max-w-6xl">
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 gap-12 border-b border-white/8 pb-12 sm:grid-cols-2 lg:grid-cols-4">
-
-          {/* ── Brand Column ── */}
-          <div className="lg:col-span-1">
-            <div className="mb-5 flex items-center gap-3">
-              <OqiraLogoMark />
-              <div>
-                <p className="font-display text-[18px] font-bold tracking-wide text-white">{STORE_NAME}</p>
-                <p className="mt-0.5 text-[8.5px] font-bold uppercase tracking-[0.22em] text-[#C9A84C]">{STORE_TAGLINE}</p>
-              </div>
-            </div>
-            <p className="text-sm leading-relaxed text-white/55 max-w-[220px]">
-              Pakistan's trusted premium online store — cosmetics, jewellery, designer purses, smart electronics &amp; baby garments.
-            </p>
-            {/* Pakistan badge */}
-            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#C9A84C]/25 bg-[#C9A84C]/8 px-3.5 py-1.5">
-              <MapPin className="h-3 w-3 text-[#C9A84C]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#C9A84C]">Pakistan</span>
-            </div>
-          </div>
-
-          {/* ── Shop Column ── */}
-          <div>
-            <h4 className="mb-5 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-white/35">
-              <ShoppingBag className="h-3.5 w-3.5" /> Shop
-            </h4>
-            <div className="flex flex-col gap-3 text-sm">
-              <Link to={ROUTES.PRODUCTS} className="group flex items-center gap-2 text-white/55 transition-colors hover:text-[#C9A84C]">
-                <span className="h-px w-3 bg-[#C9A84C]/0 transition-all group-hover:w-5 group-hover:bg-[#C9A84C]" />
-                Products
-              </Link>
-              <Link to={ROUTES.ABOUT} className="group flex items-center gap-2 text-white/55 transition-colors hover:text-[#C9A84C]">
-                <span className="h-px w-3 bg-[#C9A84C]/0 transition-all group-hover:w-5 group-hover:bg-[#C9A84C]" />
-                About Us
-              </Link>
-              <Link to={ROUTES.HOME} className="group flex items-center gap-2 text-white/55 transition-colors hover:text-[#C9A84C]">
-                <span className="h-px w-3 bg-[#C9A84C]/0 transition-all group-hover:w-5 group-hover:bg-[#C9A84C]" />
-                Home
-              </Link>
-              <Link to={ROUTES.CART} className="group flex items-center gap-2 text-white/55 transition-colors hover:text-[#C9A84C]">
-                <span className="h-px w-3 bg-[#C9A84C]/0 transition-all group-hover:w-5 group-hover:bg-[#C9A84C]" />
-                Your Cart
-              </Link>
-            </div>
-          </div>
-
-          {/* ── Founders Column ── */}
-          <div>
-            <h4 className="mb-5 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-white/35">
-              <Users className="h-3.5 w-3.5" /> Founders
-            </h4>
-            <div className="flex flex-col gap-5">
-              {founders.map((f) => (
-                <div key={f.name} className="flex items-center gap-3.5">
-                  <div className="founder-avatar relative">
-                    <span>{f.initials}</span>
-                    {/* Pulse ring */}
-                    <div className="absolute inset-0 rounded-full border border-[#C9A84C]/40 animate-ping opacity-30" style={{ animationDuration: '3s' }} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-white leading-tight">{f.name}</p>
-                    <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest text-[#C9A84C]/70">{f.role}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ── Contact Column ── */}
-          <div>
-            <h4 className="mb-5 text-[10px] font-extrabold uppercase tracking-[0.2em] text-white/35">Contact</h4>
-            <div className="flex flex-col gap-3.5 text-sm">
-              <a
-                href={`https://wa.me/${WHATSAPP_NUMBER_1}`}
-                target="_blank"
-                rel="noreferrer"
-                className="group flex items-center gap-3 text-white/55 transition-all hover:text-[#C9A84C]"
-              >
-                <div className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 group-hover:border-[#C9A84C]/40 group-hover:bg-[#C9A84C]/10 transition-all">
-                  <Phone className="h-3.5 w-3.5 shrink-0" />
-                </div>
-                +{WHATSAPP_NUMBER_1}
-              </a>
-              <a
-                href={`https://wa.me/${WHATSAPP_NUMBER_2}`}
-                target="_blank"
-                rel="noreferrer"
-                className="group flex items-center gap-3 text-white/55 transition-all hover:text-[#C9A84C]"
-              >
-                <div className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 group-hover:border-[#C9A84C]/40 group-hover:bg-[#C9A84C]/10 transition-all">
-                  <Phone className="h-3.5 w-3.5 shrink-0" />
-                </div>
-                +{WHATSAPP_NUMBER_2}
-              </a>
-              <a
-                href={`https://wa.me/${WHATSAPP_NUMBER_1}`}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#C9A84C] to-[#a07830] px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-[#0d0a0a] shadow-gold-sm transition-all hover:shadow-gold hover:scale-105"
-              >
-                Order on WhatsApp
-              </a>
-            </div>
-          </div>
+      <div className="container-page relative grid grid-cols-2 gap-x-6 gap-y-10 py-14 md:grid-cols-4 lg:grid-cols-12">
+        <div className="col-span-2 md:col-span-4 lg:col-span-4">
+          <Logo tone="light" />
+          <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/55">
+            Pakistan's trusted premium store for cosmetics, skin care, jewellery, apparel and baby essentials — carefully
+            curated and delivered to your door.
+          </p>
+          <a href={buildWhatsAppLink(WHATSAPP_NUMBER_1)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm mt-6">
+            <MessageCircle className="h-4 w-4" /> Chat on WhatsApp
+          </a>
         </div>
 
-        {/* ── Bottom Bar ── */}
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-3 text-[11px] text-white/30">
-          <span>&copy; {new Date().getFullYear()} {STORE_NAME} Pakistan. All rights reserved.</span>
-          <span className="flex items-center gap-1.5">
-            Made with <Heart className="h-3 w-3 fill-[#C9A84C] text-[#C9A84C]" /> by Daud Ansari &amp; Ahmad Rajpoot
-          </span>
+        <div className="lg:col-span-2">
+          <FooterHeading>Shop</FooterHeading>
+          <ul className="space-y-2.5">
+            <li><Link to={ROUTES.PRODUCTS} className={linkClass}>All products</Link></li>
+            <li><Link to={`${ROUTES.PRODUCTS}?deals=1`} className={linkClass}>Deals</Link></li>
+            {categories?.slice(0, 5).map((c) => (
+              <li key={c.id}>
+                <Link to={ROUTES.CATEGORY_PAGE(c.slug)} className={linkClass}>{c.name}</Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="lg:col-span-2">
+          <FooterHeading>Help</FooterHeading>
+          <ul className="space-y-2.5">
+            <li><Link to={ROUTES.ACCOUNT} className={linkClass}>Track your order</Link></li>
+            <li><Link to={ROUTES.WISHLIST} className={linkClass}>Wishlist</Link></li>
+            <li><Link to={ROUTES.CART} className={linkClass}>Your cart</Link></li>
+            <li><Link to={`${ROUTES.HOME}#faq`} className={linkClass}>FAQs</Link></li>
+            <li><Link to={ROUTES.ABOUT} className={linkClass}>About us</Link></li>
+          </ul>
+        </div>
+
+        <div className="lg:col-span-2">
+          <FooterHeading>Contact</FooterHeading>
+          <ul className="space-y-2.5">
+            {[WHATSAPP_NUMBER_1, WHATSAPP_NUMBER_2].map((n) => (
+              <li key={n}>
+                <a href={buildWhatsAppLink(n)} target="_blank" rel="noopener noreferrer" className={`${linkClass} inline-flex items-center gap-2`}>
+                  <Phone className="h-3.5 w-3.5 text-gold" /> {formatPhone(n)}
+                </a>
+              </li>
+            ))}
+            <li>
+              <a href={`mailto:${SUPPORT_EMAIL}`} className={`${linkClass} inline-flex items-start gap-2`}>
+                <Mail className="mt-1 h-3.5 w-3.5 shrink-0 text-gold" />
+                {/* Let long addresses wrap after the @, never mid-word. */}
+                <span>{SUPPORT_EMAIL.split('@')[0]}@<wbr />{SUPPORT_EMAIL.split('@')[1]}</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div className="lg:col-span-2">
+          <FooterHeading>Founders</FooterHeading>
+          <ul className="space-y-3">
+            {FOUNDERS.map((f) => (
+              <li key={f.name}>
+                <p className="text-sm font-semibold text-white">{f.name}</p>
+                <p className="text-xs text-white/45">{f.role}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="relative border-t border-white/10">
+        <div className="container-page flex flex-col items-center justify-between gap-4 py-6 text-xs text-white/40 sm:flex-row">
+          <p>&copy; {new Date().getFullYear()} {STORE_NAME} Pakistan. All rights reserved.</p>
+          <ul className="flex items-center gap-2" aria-label="Payment methods">
+            <li className="flex items-center gap-1.5 rounded-md border border-white/15 px-2.5 py-1 text-white/60">
+              <Wallet className="h-3.5 w-3.5" /> Cash on delivery
+            </li>
+            <li className="flex items-center gap-1.5 rounded-md border border-white/15 px-2.5 py-1 text-white/60">
+              <Building2 className="h-3.5 w-3.5" /> Bank transfer
+            </li>
+          </ul>
         </div>
       </div>
     </footer>

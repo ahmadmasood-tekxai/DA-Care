@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: { alias: { '@': path.resolve(__dirname, './src') } },
   server: {
     port: 5173,
+    allowedHosts: ['.ngrok-free.dev'],
     proxy: {
       '/api': { target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8000', changeOrigin: true },
       '/uploads': { target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8000', changeOrigin: true },
@@ -15,17 +16,14 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    chunkSizeWarningLimit: 1500,
+    target: 'es2020',
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks: {
-          // React core
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          // Data fetching
+          // Long-term cacheable vendor chunks — they change far less often than app code.
+          'vendor-react': ['react', 'react-dom', 'react-router-dom', 'react-helmet-async'],
           'vendor-query': ['@tanstack/react-query', 'axios'],
-          // Three.js (largest — isolated to its own chunk)
-          'vendor-three': ['three', '@react-three/fiber', '@react-three/drei'],
-          // Icons
           'vendor-icons': ['lucide-react'],
         },
       },
