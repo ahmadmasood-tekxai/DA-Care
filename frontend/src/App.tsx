@@ -32,6 +32,7 @@ const HomePage = lazy(() => import('@/pages/Public/HomePage').then(m => ({ defau
 const NotFoundPage = lazy(() => import('@/pages/Public/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 const ProductDetailPage = lazy(() => import('@/pages/Public/ProductDetailPage').then(m => ({ default: m.ProductDetailPage })));
 const ProductsPage = lazy(() => import('@/pages/Public/ProductsPage').then(m => ({ default: m.ProductsPage })));
+const PoliciesPage = lazy(() => import('@/pages/Public/PoliciesPage').then(m => ({ default: m.PoliciesPage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,6 +75,7 @@ export default function App() {
                       <Route path={ROUTES.CATEGORY_PAGE()} element={<CategoryPage />} />
                       <Route path={ROUTES.CART} element={<CartPage />} />
                       <Route path={ROUTES.WISHLIST} element={<WishlistPage />} />
+                      <Route path={ROUTES.POLICIES} element={<PoliciesPage />} />
 
                       {/* Customer accounts */}
                       <Route path={ROUTES.LOGIN} element={<LoginPage />} />
