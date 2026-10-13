@@ -82,6 +82,7 @@ export function PublicFooter() {
             <li><Link to={ROUTES.ACCOUNT} className={linkClass}>Track your order</Link></li>
             <li><Link to={ROUTES.WISHLIST} className={linkClass}>Wishlist</Link></li>
             <li><Link to={ROUTES.CART} className={linkClass}>Your cart</Link></li>
+            <li><Link to={ROUTES.POLICIES} className={linkClass}>Shipping &amp; Policies</Link></li>
             <li><Link to={`${ROUTES.HOME}#faq`} className={linkClass}>FAQs</Link></li>
             <li><Link to={ROUTES.ABOUT} className={linkClass}>About us</Link></li>
           </ul>

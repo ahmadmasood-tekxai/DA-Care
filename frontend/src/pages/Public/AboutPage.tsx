@@ -5,7 +5,7 @@ import { HeroBackground } from '@/components/common/HeroBackground';
 import { PageHeader } from '@/components/common/PageHeader';
 import { SEO, breadcrumbSchema } from '@/components/common/SEO';
 import { PublicLayout } from '@/components/layout/public/PublicLayout';
-import { ROUTES, STORE_NAME, WHATSAPP_NUMBER_1 } from '@/constants';
+import { ROUTES, SITE_URL, STORE_NAME, WHATSAPP_NUMBER_1 } from '@/constants';
 import { buildWhatsAppLink } from '@/utils/format';
 
 const VALUES = [
@@ -27,7 +27,26 @@ export function AboutPage() {
         title={`About ${STORE_NAME} — Pakistan's Trusted Premium Online Store`}
         description={`The story behind ${STORE_NAME}: premium cosmetics, jewellery, apparel and baby essentials, delivered across Pakistan with cash on delivery.`}
         canonical={ROUTES.ABOUT}
-        schema={breadcrumbSchema([['Home', '/'], ['About', ROUTES.ABOUT]])}
+        schema={[
+          breadcrumbSchema([['Home', '/'], ['About', ROUTES.ABOUT]]),
+          {
+            '@context': 'https://schema.org',
+            '@type': 'AboutPage',
+            name: `About ${STORE_NAME}`,
+            url: `${SITE_URL}${ROUTES.ABOUT}`,
+            description: `The story behind ${STORE_NAME}: premium cosmetics, jewellery, apparel and baby essentials in Pakistan.`,
+            mainEntity: {
+              '@type': 'OnlineStore',
+              name: STORE_NAME,
+              url: SITE_URL,
+              founder: FOUNDERS.map((f) => ({
+                '@type': 'Person',
+                name: f.name,
+                jobTitle: f.role,
+              })),
+            },
+          },
+        ]}
       />
 
       <PageHeader

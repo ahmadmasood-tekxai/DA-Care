@@ -10,7 +10,7 @@ import { Pagination } from '@/components/common/Pagination';
 import { ProductCard, ProductCardSkeleton } from '@/components/common/ProductCard';
 import { SEO, breadcrumbSchema } from '@/components/common/SEO';
 import { PublicLayout } from '@/components/layout/public/PublicLayout';
-import { ROUTES, SORT_OPTIONS, resolveIcon } from '@/constants';
+import { ROUTES, SORT_OPTIONS, STORE_NAME, resolveIcon } from '@/constants';
 import { useCategories, useProducts } from '@/hooks/useCatalog';
 import { useOverlay } from '@/hooks/useOverlay';
 import type { CategoryWithCount, ProductSort } from '@/types';
@@ -196,7 +196,7 @@ export function ProductsPage() {
         title={category ? `${category.name} — Shop Online in Pakistan` : dealsOnly ? 'Deals & Offers' : 'Shop All Products'}
         description={
           category?.description ||
-          `Shop ${category?.name ?? 'cosmetics, skin care, jewellery, apparel and baby essentials'} online at OQIRA — free delivery and cash on delivery across Pakistan.`
+          `Shop ${category?.name ?? 'cosmetics, skin care, jewellery, apparel and baby essentials'} online at ${STORE_NAME} — free delivery and cash on delivery across Pakistan.`
         }
         canonical={category ? ROUTES.CATEGORY_PAGE(category.slug) : ROUTES.PRODUCTS}
         noIndex={!!search}
