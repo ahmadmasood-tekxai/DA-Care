@@ -148,6 +148,7 @@ export const ROUTES = {
   SIGNUP: '/signup',
   ACCOUNT: '/account',
   WISHLIST: '/wishlist',
+  POLICIES: '/policies',
   ADMIN_LOGIN: '/admin/login',
   ADMIN_DASHBOARD: '/admin',
   ADMIN_CATEGORIES: '/admin/categories',
@@ -162,6 +163,66 @@ export const STORE_NAME = 'OQIRA';
 export const STORE_TAGLINE = 'Skin Care · Jewellery · Apparel';
 export const STORE_DESCRIPTION =
   "Pakistan's premium online store for cosmetics, skin care, jewellery, apparel and baby essentials — cash on delivery nationwide.";
+
+/**
+ * Per-category SEO overrides keyed by category slug.
+ * Used by CategoryPage to emit precise, keyword-rich titles and meta descriptions.
+ * Falls back to the generic title/description when a slug is not listed here.
+ */
+export const CATEGORY_SEO: Record<string, { title: string; description: string }> = {
+  // Add your exact category slugs here (as stored in the DB).
+  // These are pattern-matched so partial slug prefixes also work.
+  'baby': {
+    title: 'Baby Clothes Online in Pakistan | OQIRA',
+    description: 'Shop adorable, high-quality baby clothes and kids essentials online in Pakistan. Cash on delivery available. Browse rompers, suits, frocks and more at OQIRA.',
+  },
+  'kids': {
+    title: 'Kids Clothing Online in Pakistan | OQIRA',
+    description: 'Buy premium kids clothing, school wear and essentials online in Pakistan at OQIRA. Free delivery and cash on delivery nationwide.',
+  },
+  'bags': {
+    title: 'Ladies Bags & Handbags Online in Pakistan | OQIRA',
+    description: 'Shop trendy ladies bags and handbags online in Pakistan at OQIRA. Premium quality, affordable prices, cash on delivery across Pakistan.',
+  },
+  'handbag': {
+    title: 'Ladies Handbags Online in Pakistan | OQIRA',
+    description: 'Discover stylish ladies handbags online in Pakistan. Premium brands, fast delivery, and cash on delivery available at OQIRA.',
+  },
+  'jewellery': {
+    title: 'Fashion Jewellery Online in Pakistan | OQIRA',
+    description: 'Buy fashion jewellery and accessories online in Pakistan. Earrings, necklaces, bracelets and more at OQIRA — cash on delivery nationwide.',
+  },
+  'jewelry': {
+    title: 'Fashion Jewellery Online in Pakistan | OQIRA',
+    description: 'Shop premium fashion jewellery online in Pakistan at OQIRA. Earrings, necklaces, bracelets and statement pieces with cash on delivery.',
+  },
+  'cosmetics': {
+    title: 'Cosmetics & Skincare Online in Pakistan | OQIRA',
+    description: 'Buy premium cosmetics and skincare products online in Pakistan at OQIRA. Authentic beauty products with free delivery and cash on delivery.',
+  },
+  'skincare': {
+    title: 'Skincare Products Online in Pakistan | OQIRA',
+    description: 'Shop authentic skincare and beauty products online in Pakistan at OQIRA. Dermatologist-friendly formulations, fast delivery, cash on delivery.',
+  },
+  'apparel': {
+    title: 'Ladies Apparel & Fashion Online in Pakistan | OQIRA',
+    description: 'Shop premium ladies apparel and fashion clothing online in Pakistan at OQIRA. Suits, dresses, kurtis and more — cash on delivery nationwide.',
+  },
+  'garment': {
+    title: 'Fashion Garments Online in Pakistan | OQIRA',
+    description: 'Buy quality fashion garments online in Pakistan at OQIRA. Premium fabrics, elegant designs, cash on delivery across Pakistan.',
+  },
+};
+
+/** Resolve the best-matching category SEO metadata for a given slug. */
+export function getCategorySEO(slug: string): { title: string; description: string } | null {
+  const lower = slug.toLowerCase();
+  const exact = CATEGORY_SEO[lower];
+  if (exact) return exact;
+  // Partial prefix match — useful when the slug starts with a keyword
+  const match = Object.entries(CATEGORY_SEO).find(([key]) => lower.includes(key));
+  return match ? match[1] : null;
+}
 
 /** Store promises shown across the storefront. Keep these true to how orders are actually fulfilled. */
 export const STORE_PROMISES = {

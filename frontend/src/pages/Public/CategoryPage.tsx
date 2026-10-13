@@ -12,7 +12,7 @@ import { Pagination } from '@/components/common/Pagination';
 import { ProductCard, ProductCardSkeleton } from '@/components/common/ProductCard';
 import { SEO, breadcrumbSchema } from '@/components/common/SEO';
 import { PublicLayout } from '@/components/layout/public/PublicLayout';
-import { ROUTES, SORT_OPTIONS, STORE_NAME } from '@/constants';
+import { CATEGORY_SEO, ROUTES, SITE_URL, SORT_OPTIONS, STORE_NAME } from '@/constants';
 import { NotFoundPage } from '@/pages/Public/NotFoundPage';
 import type { ProductSort } from '@/types';
 
@@ -73,18 +73,53 @@ export function CategoryPage() {
     update({ search: query.trim() || null });
   };
 
+  const customSeo = slug
+    ? CATEGORY_SEO[slug] || Object.entries(CATEGORY_SEO).find(([key]) => slug.toLowerCase().includes(key))?.[1]
+    : undefined;
+
+  const pageTitle = customSeo?.title ?? (category ? `${category.name} Online in Pakistan` : 'Category');
+  const pageDescription =
+    customSeo?.description ??
+    (category?.description ||
+      `Shop ${category?.name ?? 'our collection'} online at ${STORE_NAME} — premium quality, fast shipping and cash on delivery across Pakistan.`);
+
+  const schemas = category
+    ? [
+        breadcrumbSchema([
+          ['Home', '/'],
+          ['Products', ROUTES.PRODUCTS],
+          [category.name, ROUTES.CATEGORY_PAGE(slug)],
+        ]),
+        {
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          name: pageTitle,
+          description: pageDescription,
+          url: `${SITE_URL}${ROUTES.CATEGORY_PAGE(slug)}`,
+          mainEntity: {
+            '@type': 'ItemList',
+            numberOfItems: total,
+            itemListElement:
+              products?.items?.slice(0, 10).map((p, index) => ({
+                '@type': 'ListItem',
+                position: index + 1,
+                url: `${SITE_URL}${ROUTES.PRODUCT_DETAIL(p.slug)}`,
+                name: p.name,
+              })) || [],
+          },
+        },
+      ]
+    : undefined;
+
   return (
     <PublicLayout>
       <SEO
-        title={category ? `${category.name} — Buy Online in Pakistan` : 'Category'}
-        description={
-          category?.description ||
-          `Shop ${category?.name ?? 'our collection'} online at ${STORE_NAME} — premium quality, free delivery and cash on delivery across Pakistan.`
-        }
+        title={pageTitle}
+        description={pageDescription}
         canonical={ROUTES.CATEGORY_PAGE(slug)}
         image={category?.image_url ?? undefined}
         noIndex={!!search}
-        schema={category ? breadcrumbSchema([['Home', '/'], ['Products', ROUTES.PRODUCTS], [category.name, ROUTES.CATEGORY_PAGE(slug)]]) : undefined}
+        schema={schemas}
       />
 
       {/* Banner — uses the category image when one is uploaded */}

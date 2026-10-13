@@ -158,11 +158,21 @@ export function ProductDetailPage() {
                   transitTime: { '@type': 'QuantitativeValue', minValue: 3, maxValue: 5, unitCode: 'DAY' },
                 },
               },
+              hasMerchantReturnPolicy: {
+                '@type': 'MerchantReturnPolicy',
+                applicableCountry: 'PK',
+                returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+                merchantReturnDays: 7,
+                returnMethod: 'https://schema.org/ReturnByMail',
+                returnFees: 'https://schema.org/FreeReturn',
+              },
             },
           },
           breadcrumbSchema([
             ['Home', '/'],
-            [product.category.name, ROUTES.CATEGORY_PAGE(product.category.slug)],
+            ...(product.category
+              ? [[product.category.name, ROUTES.CATEGORY_PAGE(product.category.slug)] as [string, string]]
+              : [['Products', ROUTES.PRODUCTS] as [string, string]]),
             [product.name, ROUTES.PRODUCT_DETAIL(product.slug)],
           ]),
         ]}
@@ -173,8 +183,10 @@ export function ProductDetailPage() {
           className="mb-5 sm:mb-8"
           items={[
             { label: 'Home', to: ROUTES.HOME },
-            { label: product.category.name, to: ROUTES.CATEGORY_PAGE(product.category.slug) },
-            ...(product.subcategory
+            ...(product.category
+              ? [{ label: product.category.name, to: ROUTES.CATEGORY_PAGE(product.category.slug) }]
+              : [{ label: 'Products', to: ROUTES.PRODUCTS }]),
+            ...(product.subcategory && product.category
               ? [{ label: product.subcategory.name, to: `${ROUTES.CATEGORY_PAGE(product.category.slug)}?sub=${product.subcategory.id}` }]
               : []),
             { label: product.name },
