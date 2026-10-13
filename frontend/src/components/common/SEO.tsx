@@ -39,6 +39,8 @@ export function SEO({ title, description = STORE_DESCRIPTION, keywords, canonica
       <meta name="robots" content={noIndex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
       {!noIndex && <link rel="canonical" href={url} />}
 
+      <meta name="application-name" content={STORE_NAME} />
+      <meta name="apple-mobile-web-app-title" content={STORE_NAME} />
       <meta property="og:site_name" content={STORE_NAME} />
       <meta property="og:locale" content="en_PK" />
       <meta property="og:type" content={type} />
